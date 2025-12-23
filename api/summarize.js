@@ -35,7 +35,23 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: 'user',
-                        content: `Please provide a clear, concise summary of the following conversation transcript between a UK NHS GP and patient. Include as applicable: history of presenting complaint, past medical history, drug history, allergies, examination findings, impression and management plan:\n\n${transcript}`
+                        content: `Please provide a detailed summary of the following GP consultation transcript. Structure your response with these sections:
+
+HISTORY OF PRESENTING COMPLAINT: Write this as detailed prose paragraphs describing the patient's symptoms, their timeline, severity, aggravating/relieving factors, associated symptoms, and any treatments tried. Include the patient's own words and descriptions where relevant.
+
+PAST MEDICAL HISTORY: List relevant conditions with dates if mentioned.
+
+DRUG HISTORY: List current medications with doses.
+
+ALLERGIES: List any allergies and reactions.
+
+EXAMINATION FINDINGS: Detail vital signs and examination findings.
+
+IMPRESSION: Clinical assessment and diagnosis.
+
+MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice.
+
+Transcript:\n\n${transcript}`
                     }
                 ],
                 max_tokens: 4000
