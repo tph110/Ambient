@@ -78,6 +78,12 @@ function initializeSpeechRecognition() {
             case 'not-allowed':
                 errorMessage = 'Microphone permission denied. Please enable it in browser settings.';
                 break;
+            case 'service-not-allowed':
+                errorMessage = 'Speech recognition not allowed. Please ensure you are using HTTPS and using Chrome/Edge browser.';
+                break;
+            case 'network':
+                errorMessage = 'Network error. Please check your internet connection.';
+                break;
             default:
                 errorMessage = `Error: ${event.error}`;
         }
