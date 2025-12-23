@@ -35,10 +35,10 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: 'user',
-                        content: `Please provide a clear, concise summary of the following conversation transcript. Include key points discussed, any decisions made, and action items if applicable:\n\n${transcript}`
+                        content: `Please provide a clear, concise summary of the following conversation transcript between a UK NHS GP and patient. Include as applicable: history of presenting complaint, past medical history, drug history, allergies, examination findings, impression and management plan:\n\n${transcript}`
                     }
                 ],
-                max_tokens: 1000
+                max_tokens: 4000
             })
         });
 
