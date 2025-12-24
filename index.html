@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AmbientDoc - AI Medical Scribe</title>
+    <meta name="description" content="AI-powered medical scribe for UK GP consultations. Real-time transcription and structured clinical summaries.">
     
     <!-- Google Fonts for professional readability -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Your existing styles.css (update it with suggestions below) -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -30,6 +30,7 @@
         </header>
 
         <main>
+            <!-- Recording Controls -->
             <section class="controls card">
                 <div class="status" id="status">Ready to record</div>
                 <div class="button-group">
@@ -42,16 +43,25 @@
                 </div>
             </section>
 
+            <!-- Transcript Section -->
             <section class="transcript-section card">
-                <h2>Live Consultation Transcript</h2>
-                <div id="transcript" class="content-box">
-                    <p class="placeholder">Transcript will appear here when you start recording...</p>
+                <div class="section-header" onclick="toggleTranscript()">
+                    <h2>Live Consultation Transcript</h2>
+                    <button class="collapse-btn" id="transcriptCollapseBtn" type="button">
+                        <span class="icon">▼</span>
+                    </button>
                 </div>
-                <button id="clearTranscript" class="btn btn-outline" style="display: none;">
-                    Clear Transcript
-                </button>
+                <div id="transcriptContent" class="collapsible-content collapsed">
+                    <div id="transcript" class="content-box">
+                        <p class="placeholder">Transcript will appear here when you start recording...</p>
+                    </div>
+                    <button id="clearTranscript" class="btn btn-outline" style="display: none;">
+                        Clear Transcript
+                    </button>
+                </div>
             </section>
 
+            <!-- Summary Section -->
             <section class="summary-section card">
                 <h2>Structured Clinical Summary</h2>
                 <div id="summary" class="content-box">
@@ -67,6 +77,7 @@
                 </div>
             </section>
 
+            <!-- Privacy Notice -->
             <section class="privacy-notice card">
                 <h3>🔒 Privacy First</h3>
                 <p>Audio is processed <strong>entirely in your browser</strong> — never leaves your device.<br>
@@ -76,7 +87,7 @@
         </main>
 
         <footer>
-            <p>AmbientDoc © 2025 • Built for UK healthcare professionals</p>
+            <p>AmbientDoc © 2025 | Built for UK healthcare professionals</p>
         </footer>
     </div>
 
