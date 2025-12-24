@@ -4,77 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AmbientDoc - AI Medical Scribe</title>
+    
+    <!-- Google Fonts for professional readability -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Your existing styles.css (update it with suggestions below) -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <header>
+        <header class="header">
             <div class="logo-container">
-                <div class="logo">
-                    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="25" cy="25" r="23" fill="white" fill-opacity="0.2"/>
-                        <path d="M25 15c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 2c4.4 0 8 3.6 8 8s-3.6 8-8 8-8-3.6-8-8 3.6-8 8-8z" fill="white"/>
-                        <circle cx="25" cy="25" r="6" fill="white"/>
-                    </svg>
-                </div>
+                <!-- Enhanced logo: microphone with subtle wave -->
+                <svg width="60" height="60" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="25" cy="25" r="24" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="2"/>
+                    <path d="M25 12c-4 0-7 3-7 7v8c0 4 3 7 7 7s7-3 7-7v-8c0-4-3-7-7-7zm-3 7h6v8h-6z" fill="#0ea5e9"/>
+                    <circle cx="25" cy="32" r="3" fill="#0ea5e9"/>
+                    <path d="M19 32c0 3 2 6 6 6s6-3 6-6" stroke="#0ea5e9" stroke-width="2" fill="none"/>
+                </svg>
                 <h1>AmbientDoc</h1>
             </div>
-            <p class="subtitle">Your personal AI scribe for medical consultations</p>
-            <p class="tagline">Saving you time to focus on the needs of the patient</p>
-            <p class="disclaimer">⚠️ For demonstration purposes only</p>
+            <p class="subtitle">AI-Powered Medical Scribe for GP Consultations</p>
+            <p class="tagline">Focus on your patient — let AI handle the notes</p>
+            <p class="disclaimer">⚠️ Demonstration tool • Not for real clinical use without validation</p>
         </header>
 
         <main>
-            <!-- Recording Controls -->
-            <section class="controls">
-                <button id="startBtn" class="btn btn-primary">
-                    <span class="icon">⏺️</span> Start Recording
-                </button>
-                <button id="stopBtn" class="btn btn-danger" disabled>
-                    <span class="icon">⏹️</span> Stop Recording
-                </button>
+            <section class="controls card">
                 <div class="status" id="status">Ready to record</div>
+                <div class="button-group">
+                    <button id="startBtn" class="btn btn-primary large">
+                        <span class="icon">⏺️</span> Start Recording
+                    </button>
+                    <button id="stopBtn" class="btn btn-danger large" disabled>
+                        <span class="icon">⏹️</span> Stop Recording
+                    </button>
+                </div>
             </section>
 
-            <!-- Transcript Section -->
-            <section class="transcript-section">
-                <h2>Consultation Transcript</h2>
-                <div id="transcript" class="transcript-box">
+            <section class="transcript-section card">
+                <h2>Live Consultation Transcript</h2>
+                <div id="transcript" class="content-box">
                     <p class="placeholder">Transcript will appear here when you start recording...</p>
                 </div>
-                <button id="clearTranscript" class="btn btn-secondary" style="display: none;">
+                <button id="clearTranscript" class="btn btn-outline" style="display: none;">
                     Clear Transcript
                 </button>
             </section>
 
-            <!-- Summary Section -->
-            <section class="summary-section">
-                <h2>Clinical Summary</h2>
-                <div id="summary" class="summary-box">
-                    <p class="placeholder">Summary will appear here after you stop recording...</p>
+            <section class="summary-section card">
+                <h2>Structured Clinical Summary</h2>
+                <div id="summary" class="content-box">
+                    <p class="placeholder">AI-generated summary will appear after stopping recording...</p>
                 </div>
                 <div class="button-group">
                     <button id="getSummary" class="btn btn-success" style="display: none;">
                         <span class="icon">✨</span> Generate Summary
                     </button>
-                    <button id="copySummary" class="btn btn-secondary" style="display: none;">
+                    <button id="copySummary" class="btn btn-outline" style="display: none;">
                         <span class="icon">📋</span> Copy to Clipboard
                     </button>
                 </div>
             </section>
 
-            <!-- Privacy Notice -->
-            <section class="privacy-notice">
-                <h3>🔒 Privacy & Security</h3>
-                <p>All audio processing occurs locally in your browser. Only the text transcript is securely transmitted to our AI service for summary generation. No audio recordings or patient data are stored on any server.</p>
+            <section class="privacy-notice card">
+                <h3>🔒 Privacy First</h3>
+                <p>Audio is processed <strong>entirely in your browser</strong> — never leaves your device.<br>
+                Only the anonymised text transcript is sent securely to our AI for summarisation.<br>
+                No recordings or patient data are stored.</p>
             </section>
         </main>
 
         <footer>
-            <p>AmbientDoc © 2025 | Designed for healthcare professionals</p>
+            <p>AmbientDoc © 2025 • Built for UK healthcare professionals</p>
         </footer>
     </div>
 
-    <script src="app.js?v=2"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>
