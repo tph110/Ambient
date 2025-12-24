@@ -1,64 +1,79 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversation Transcriber & Summarizer</title>
+    <title>AmbientDoc - AI Medical Scribe</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎙️ Conversation Transcriber</h1>
-            <p class="subtitle">Record, transcribe, and summarize conversations</p>
+            <div class="logo-container">
+                <div class="logo">
+                    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="25" cy="25" r="23" fill="white" fill-opacity="0.2"/>
+                        <path d="M25 15c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 2c4.4 0 8 3.6 8 8s-3.6 8-8 8-8-3.6-8-8 3.6-8 8-8z" fill="white"/>
+                        <circle cx="25" cy="25" r="6" fill="white"/>
+                    </svg>
+                </div>
+                <h1>AmbientDoc</h1>
+            </div>
+            <p class="subtitle">Your personal AI scribe for medical consultations</p>
+            <p class="tagline">Saving you time to focus on the needs of the patient</p>
+            <p class="disclaimer">⚠️ For demonstration purposes only</p>
         </header>
 
-        <main>
-            <!-- Recording Controls -->
-            <section class="controls">
-                <button id="startBtn" class="btn btn-primary">
-                    <span class="icon">⏺️</span> Start Recording
-                </button>
-                <button id="stopBtn" class="btn btn-danger" disabled>
-                    <span class="icon">⏹️</span> Stop Recording
-                </button>
-                <div class="status" id="status">Ready to record</div>
-            </section>
+```
+    <main>
+        <!-- Recording Controls -->
+        <section class="controls">
+            <button id="startBtn" class="btn btn-primary">
+                <span class="icon">⏺️</span> Start Recording
+            </button>
+            <button id="stopBtn" class="btn btn-danger" disabled>
+                <span class="icon">⏹️</span> Stop Recording
+            </button>
+            <div class="status" id="status">Ready to record</div>
+        </section>
 
-            <!-- Transcript Section -->
-            <section class="transcript-section">
-                <h2>Transcript</h2>
-                <div id="transcript" class="transcript-box">
-                    <p class="placeholder">Transcript will appear here when you start recording...</p>
-                </div>
-                <button id="clearTranscript" class="btn btn-secondary" style="display: none;">
-                    Clear Transcript
-                </button>
-            </section>
+        <!-- Transcript Section -->
+        <section class="transcript-section">
+            <h2>📝 Consultation Transcript</h2>
+            <div id="transcript" class="transcript-box">
+                <p class="placeholder">Transcript will appear here when you start recording...</p>
+            </div>
+            <button id="clearTranscript" class="btn btn-secondary" style="display: none;">
+                Clear Transcript
+            </button>
+        </section>
 
-            <!-- Summary Section -->
-            <section class="summary-section">
-                <h2>AI Summary</h2>
-                <div id="summary" class="summary-box">
-                    <p class="placeholder">Summary will appear here after you stop recording...</p>
-                </div>
-                <button id="getSummary" class="btn btn-success" style="display: none;">
-                    Generate Summary
-                </button>
-            </section>
+        <!-- Summary Section -->
+        <section class="summary-section">
+            <h2>🤖 Clinical Summary</h2>
+            <div id="summary" class="summary-box">
+                <p class="placeholder">Summary will appear here after you stop recording...</p>
+            </div>
+            <button id="getSummary" class="btn btn-success" style="display: none;">
+                Generate Summary
+            </button>
+        </section>
 
-            <!-- Privacy Notice -->
-            <section class="privacy-notice">
-                <h3>🔒 Privacy Notice</h3>
-                <p>This app processes audio locally in your browser. Transcripts are only sent to OpenRouter for summary generation. No data is stored on any server.</p>
-            </section>
-        </main>
+        <!-- Privacy Notice -->
+        <section class="privacy-notice">
+            <h3>🔒 Privacy & Security</h3>
+            <p>All audio processing occurs locally in your browser. Only the text transcript is securely transmitted to our AI service for summary generation. No audio recordings or patient data are stored on any server.</p>
+        </section>
+    </main>
 
-        <footer>
-            <p>Built for secure conversation analysis</p>
-        </footer>
-    </div>
+    <footer>
+        <p>AmbientDoc © 2024 | Designed for healthcare professionals</p>
+    </footer>
+</div>
 
-    <script src="app.js"></script>
+<script src="app.js"></script>
+```
+
 </body>
 </html>
