@@ -15,26 +15,99 @@ let finalTranscript = '';
 
 // Medical terminology correction dictionary
 const medicalCorrections = {
-    // Common misheard medications
+    // === Red flag / Emergency conditions ===
+    'quarter aquinas': 'cauda equina',
+    'corder equina': 'cauda equina',
+    'corda equina': 'cauda equina',
+    'cauda equine': 'cauda equina',
+    'cauda aquina': 'cauda equina',
+    'corder akina': 'cauda equina',
+    'myocardial infarction': 'myocardial infarction',
+    'my oh cardial infarction': 'myocardial infarction',
+    'heart attack': 'myocardial infarction',  // Common patient phrase
+    'pulmonary embolism': 'pulmonary embolism',
+    'pull monary embolism': 'pulmonary embolism',
+    'pe': 'PE',  // Pulmonary embolism
+    'subarachnoid haemorrhage': 'subarachnoid haemorrhage',
+    'sub arachnoid hemorrhage': 'subarachnoid haemorrhage',
+
+    // === Common medications (expanded with UK/NHS favourites) ===
+    // Statins
+    'atorvastatin': 'atorvastatin',
+    'at or vast at in': 'atorvastatin',
+    'a torva statin': 'atorvastatin',
+    'lipitor': 'atorvastatin',  // Brand name often spoken
+    'simvastatin': 'simvastatin',
+    'sim vast at in': 'simvastatin',
+    'zocor': 'simvastatin',  // Brand
+
+    // PPIs & Gastro
+    'lansoprazole': 'lansoprazole',
+    'lan so pra zole': 'lansoprazole',
+    'omeprazole': 'omeprazole',
+    'oh map razal': 'omeprazole',
+    'oh mep raz ole': 'omeprazole',
+
+    // Antidepressants
+    'sertraline': 'sertraline',
+    'sir tra lean': 'sertraline',
+    'sir truh line': 'sertraline',
+    'fluoxetine': 'fluoxetine',
+    'flew ox a teen': 'fluoxetine',
+    'prozac': 'fluoxetine',  // Brand
+    'citalopram': 'citalopram',
+    'sigh tal oh pram': 'citalopram',
+    'amitriptyline': 'amitriptyline',
+    'a mitt trip till een': 'amitriptyline',
+
+    // Antihypertensives & Diuretics
+    'bendroflumethiazide': 'bendroflumethiazide',
+    'ben dro flu meth eye a zide': 'bendroflumethiazide',
+    'lisinopril': 'lisinopril',
+    'lie sin oh pril': 'lisinopril',
+    'amlodipine': 'amlodipine',
+    'am low dip een': 'amlodipine',
+    'losartan': 'losartan',
+    'low sar tan': 'losartan',
+
+    // Antibiotics (additional)
+    'co-amoxiclav': 'co-amoxiclav',
+    'coamoxiclav': 'co-amoxiclav',
+    'augmentin': 'co-amoxiclav',  // Common brand spoken in UK
+    'nitrofurantoin': 'nitrofurantoin',
+    'night row fur an toy in': 'nitrofurantoin',
+    'trimethoprim': 'trimethoprim',
+    'try meth oh prim': 'trimethoprim',
+
+    // Analgesics & Others
+    'codeine': 'codeine',
+    'co deen': 'codeine',
+    'paracetamol': 'paracetamol',
+    'para set a mol': 'paracetamol',
+    'ibuprofen': 'ibuprofen',
+    'eye bew pro fen': 'ibuprofen',
+
+    // Original common misheard medications
     'met form in': 'metformin',
     'met foreman': 'metformin',
     'ram a drill': 'ramipril',
     'ram april': 'ramipril',
     'a mox a silly': 'amoxicillin',
     'a mock silly': 'amoxicillin',
+    'amoxicillin': 'amoxicillin',
     'docks he cycling': 'doxycycline',
     'docks cycling': 'doxycycline',
+    'doxycycline': 'doxycycline',
     'clarify through my sin': 'clarithromycin',
+    'clarithromycin': 'clarithromycin',
     'prednisolone': 'prednisolone',
     'pred nissan alone': 'prednisolone',
-    'omeprazole': 'omeprazole',
-    'oh map razal': 'omeprazole',
     'aspirin': 'aspirin',
     'ass prin': 'aspirin',
     'warfarin': 'warfarin',
     'war for in': 'warfarin',
-    
-    // Common conditions
+
+    // === Common conditions (expanded) ===
     'diabetes': 'diabetes',
     'die a beet ease': 'diabetes',
     'hypertension': 'hypertension',
@@ -42,6 +115,7 @@ const medicalCorrections = {
     'asthma': 'asthma',
     'as ma': 'asthma',
     'copd': 'COPD',
+    'chronic obstructive pulmonary disease': 'COPD',
     'see oh pee dee': 'COPD',
     'pneumonia': 'pneumonia',
     'new moaner': 'pneumonia',
@@ -49,18 +123,24 @@ const medicalCorrections = {
     'ex uhma': 'eczema',
     'arthritis': 'arthritis',
     'arth right us': 'arthritis',
-    
-    // Common symptoms
+    'cellulitis': 'cellulitis',
+    'sell you light us': 'cellulitis',
+    'gout': 'gout',
+    'gowt': 'gout',
+    'urti': 'URTI',
+    'upper respiratory tract infection': 'URTI',
+
+    // === Symptoms & Examination (expanded) ===
     'dyspnea': 'dyspnoea',
     'dis nee uh': 'dyspnoea',
+    'dyspnoea': 'dyspnoea',
     'nausea': 'nausea',
     'nor see uh': 'nausea',
     'diarrhea': 'diarrhoea',
     'die uh ree uh': 'diarrhoea',
+    'diarrhoea': 'diarrhoea',
     'pyrexia': 'pyrexia',
     'pie rex ee uh': 'pyrexia',
-    
-    // Medical terms
     'auscultation': 'auscultation',
     'oz cult a shun': 'auscultation',
     'palpation': 'palpation',
@@ -71,20 +151,26 @@ const medicalCorrections = {
     'crack alls': 'crackles',
     'crepitations': 'crepitations',
     'crep it a shuns': 'crepitations',
-    
-    // Units and measurements
+    'wheeze': 'wheeze',
+    'weez': 'wheeze',
+    'rales': 'rales',
+    'rails': 'rales',
+    'bibasal crepitations': 'bibasal crepitations',
+    'by basal creps': 'bibasal crepitations',
+    'reduced air entry': 'reduced air entry',
+
+    // === Units, measurements & abbreviations ===
     'milligrams': 'mg',
     'mill ee grams': 'mg',
     'micrograms': 'mcg',
     'mike row grams': 'mcg',
     'milliliters': 'ml',
     'mill ee leet ers': 'ml',
+    'millilitres': 'ml',
     'degrees celsius': '°C',
     'degrees c': '°C',
     'percent': '%',
     'per cent': '%',
-    
-    // Common abbreviations when spoken
     'bee dee': 'BD',
     'twice daily': 'BD',
     'oh dee': 'OD',
@@ -95,7 +181,9 @@ const medicalCorrections = {
     'as needed': 'PRN',
     'eye em': 'IM',
     'eye vee': 'IV',
-    'pee oh': 'PO'
+    'pee oh': 'PO',
+    'stat': 'stat',
+    'immediately': 'stat'
 };
 
 // Function to correct medical terminology
@@ -124,7 +212,7 @@ function initializeSpeechRecognition() {
     recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = 'en-GB';
 
     recognition.onstart = () => {
         console.log('Speech recognition started');
