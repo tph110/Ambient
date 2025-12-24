@@ -367,7 +367,7 @@ function initializeSpeechRecognition() {
             try {
                 recognition.start();
                 console.log(`[${timestamp}] Successfully restarted`);
-                statusDiv.textContent = '🔴 Recording...';
+                // Don't update status - let the timer keep running
             } catch (error) {
                 console.warn(`[${timestamp}] Immediate restart failed:`, error.message);
                 
@@ -377,7 +377,7 @@ function initializeSpeechRecognition() {
                         try {
                             recognition.start();
                             console.log(`[${timestamp}] Successfully restarted after delay`);
-                            statusDiv.textContent = '🔴 Recording...';
+                            // Don't update status - let the timer keep running
                         } catch (delayedError) {
                             console.error(`[${timestamp}] Restart failed:`, delayedError);
                             statusDiv.textContent = '⚠️ Recording paused - Click Start to resume';
@@ -385,11 +385,19 @@ function initializeSpeechRecognition() {
                             statusDiv.style.background = '#fef3c7';
                             statusDiv.style.color = '#92400e';
                             statusDiv.style.borderColor = '#fbbf24';
+                            
+                            // Stop timer on permanent failure
+                            if (recordingTimer) {
+                                clearInterval(recordingTimer);
+                                recordingTimer = null;
+                            }
                             // Don't call stopRecording() - keep transcript
                         }
                     }
                 }, 200);
             }
+        } else {
+            console.log(`[${timestamp}] Recording stopped by user, not restarting`);
         }
     };
 
@@ -416,23 +424,32 @@ function startRecording() {
 // Stop Recording
 function stopRecording() {
     if (recognition && isRecording) {
+        // Set flag first to prevent auto-restart
         isRecording = false;
-        recognition.stop();
         
-        // Stop timer
+        // Stop timer immediately
         if (recordingTimer) {
             clearInterval(recordingTimer);
             recordingTimer = null;
         }
         
+        // Stop recognition
+        recognition.stop();
+        
+        // Update UI
         statusDiv.textContent = 'Recording stopped';
         statusDiv.classList.remove('recording');
+        statusDiv.style.background = '';
+        statusDiv.style.color = '';
+        statusDiv.style.borderColor = '';
         startBtn.disabled = false;
         stopBtn.disabled = true;
         
         if (finalTranscript.trim()) {
             getSummaryBtn.style.display = 'inline-block';
         }
+        
+        console.log('Recording stopped by user');
     }
 }
 
