@@ -17,6 +17,8 @@ let finalTranscript = '';
 const medicalCorrections = {
     // === Red flag / Emergency conditions ===
     'quarter aquinas': 'cauda equina',
+    'quarter aquin a syndrome': 'cauda equina syndrome',
+    'quarter aquinas syndrome': 'cauda equina syndrome',
     'corder equina': 'cauda equina',
     'corda equina': 'cauda equina',
     'cauda equine': 'cauda equina',
@@ -28,14 +30,17 @@ const medicalCorrections = {
     'pulmonary embolism': 'pulmonary embolism',
     'pull monary embolism': 'pulmonary embolism',
     'pe': 'PE',  // Pulmonary embolism
+    'tia': 'TIA',
     'subarachnoid haemorrhage': 'subarachnoid haemorrhage',
     'sub arachnoid hemorrhage': 'subarachnoid haemorrhage',
+    'subarachnoid hemorrhage': 'subarachnoid haemorrhage',
 
     // === Common medications (expanded with UK/NHS favourites) ===
     // Statins
     'atorvastatin': 'atorvastatin',
     'at or vast at in': 'atorvastatin',
     'a torva statin': 'atorvastatin',
+    'a tour of a statin': 'atorvastatin',
     'lipitor': 'atorvastatin',  // Brand name often spoken
     'simvastatin': 'simvastatin',
     'sim vast at in': 'simvastatin',
@@ -67,8 +72,13 @@ const medicalCorrections = {
     'lie sin oh pril': 'lisinopril',
     'amlodipine': 'amlodipine',
     'am low dip een': 'amlodipine',
+    'i am not a pain': 'amlodipine',
+    'am not a peen': 'amlodipine',
     'losartan': 'losartan',
     'low sar tan': 'losartan',
+    'bisoprolol': 'bisoprolol',
+    'by soprolol': 'bisoprolol',
+    'bye so pro lol': 'bisoprolol',
 
     // Antibiotics (additional)
     'co-amoxiclav': 'co-amoxiclav',
@@ -86,6 +96,14 @@ const medicalCorrections = {
     'para set a mol': 'paracetamol',
     'ibuprofen': 'ibuprofen',
     'eye bew pro fen': 'ibuprofen',
+
+    // Inhalers & Respiratory
+    'beclometasone': 'beclometasone',
+    'that clomettazone': 'beclometasone',
+    'beck low met a zone': 'beclometasone',
+    'salbutamol': 'salbutamol',
+    'sal but a mol': 'salbutamol',
+    'ventolin': 'salbutamol',
 
     // Original common misheard medications
     'met form in': 'metformin',
@@ -158,6 +176,18 @@ const medicalCorrections = {
     'bibasal crepitations': 'bibasal crepitations',
     'by basal creps': 'bibasal crepitations',
     'reduced air entry': 'reduced air entry',
+
+    // === Anatomical terms ===
+    'glenohumeral joint': 'glenohumeral joint',
+    'glen o humeral joint': 'glenohumeral joint',
+    'sternocleidomastoid': 'sternocleidomastoid',
+    'nasal turbinates': 'nasal turbinates',
+    'nasal turbines': 'nasal turbinates',
+
+    // === Microbiology ===
+    'campylobacter': 'Campylobacter',
+    'camilla bacter': 'Campylobacter',
+    'cam pee low bacter': 'Campylobacter',
 
     // === Units, measurements & abbreviations ===
     'milligrams': 'mg',
