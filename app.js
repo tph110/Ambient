@@ -286,10 +286,18 @@ function initializeSpeechRecognition() {
     recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         
+        // Handle 'no-speech' error by auto-restarting (silence timeout)
+        if (event.error === 'no-speech' && isRecording) {
+            console.log('No speech detected - auto-restarting...');
+            statusDiv.textContent = '🔴 Recording... (brief pause detected)';
+            // The onend handler will restart it automatically
+            return;
+        }
+        
         let errorMessage = 'An error occurred';
         switch(event.error) {
             case 'no-speech':
-                errorMessage = 'No speech detected. Please try again.';
+                errorMessage = 'No speech detected - restarting...';
                 break;
             case 'audio-capture':
                 errorMessage = 'Microphone not accessible. Please check permissions.';
@@ -307,16 +315,33 @@ function initializeSpeechRecognition() {
                 errorMessage = `Error: ${event.error}`;
         }
         
-        statusDiv.textContent = errorMessage;
-        statusDiv.classList.remove('recording');
-        stopRecording();
+        // Only stop recording for serious errors (not 'no-speech')
+        if (event.error !== 'no-speech') {
+            statusDiv.textContent = errorMessage;
+            statusDiv.classList.remove('recording');
+            stopRecording();
+        }
     };
 
     recognition.onend = () => {
         console.log('Speech recognition ended');
         if (isRecording) {
-            // Restart if we're still supposed to be recording
-            recognition.start();
+            console.log('Auto-restarting recognition...');
+            statusDiv.textContent = '🔴 Recording... (restarting)';
+            
+            // Small delay before restarting to avoid rapid restart loops
+            setTimeout(() => {
+                if (isRecording) {
+                    try {
+                        recognition.start();
+                        statusDiv.textContent = '🔴 Recording...';
+                    } catch (error) {
+                        console.error('Failed to restart recognition:', error);
+                        statusDiv.textContent = 'Recording stopped unexpectedly. Click Start to resume.';
+                        stopRecording();
+                    }
+                }
+            }, 100);
         }
     };
 
