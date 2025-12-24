@@ -43,6 +43,60 @@ header::before {
     pointer-events: none;
 }
 
+/* Microphone Selector */
+.microphone-selector {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 10px 16px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 10;
+}
+
+.microphone-selector label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: white;
+    margin: 0;
+}
+
+.mic-icon {
+    font-size: 1.1rem;
+}
+
+.mic-dropdown {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    color: #1e3a8a;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    min-width: 200px;
+    transition: all 0.2s ease;
+}
+
+.mic-dropdown:hover {
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mic-dropdown:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+}
+
 .logo-container {
     display: flex;
     align-items: center;
@@ -514,6 +568,22 @@ footer {
     .logo-container {
         flex-direction: column;
         gap: 15px;
+    }
+
+    /* Microphone selector - move below logo on mobile */
+    .microphone-selector {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 20px auto 0;
+        width: 100%;
+        max-width: 350px;
+        justify-content: center;
+    }
+
+    .mic-dropdown {
+        flex: 1;
+        min-width: auto;
     }
 
     .controls {
