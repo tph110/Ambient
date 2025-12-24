@@ -28,7 +28,7 @@ export default async function handler(req, res) {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
                 'HTTP-Referer': req.headers.referer || 'https://yourdomain.vercel.app',
-                'X-Title': 'Conversation Transcriber'
+                'X-Title': 'AmbientDoc'
             },
             body: JSON.stringify({
                 model: 'anthropic/claude-3.5-sonnet',
@@ -44,6 +44,8 @@ PAST MEDICAL HISTORY: List relevant conditions with dates if mentioned.
 DRUG HISTORY: List current medications with doses.
 
 ALLERGIES: List any allergies and reactions.
+
+SOCIAL HISTORY: Include occupation, smoking status (pack-years if mentioned), alcohol consumption (units per week if mentioned), recreational drug use, living situation (alone/with family, house/flat/bungalow), mobility aids (walking stick, zimmer frame, wheelchair), home adaptations (stairlift, grab rails, wet room), care arrangements (carers, frequency of visits), support network, and any other relevant social factors affecting health.
 
 EXAMINATION FINDINGS: Detail vital signs and examination findings.
 
