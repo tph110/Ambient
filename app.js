@@ -12,6 +12,8 @@ const copySummaryBtn = document.getElementById('copySummary');
 let recognition = null;
 let isRecording = false;
 let finalTranscript = '';
+let recordingStartTime = null;
+let recordingTimer = null;
 
 // Medical terminology correction dictionary
 const medicalCorrections = {
@@ -104,6 +106,13 @@ const medicalCorrections = {
     'salbutamol': 'salbutamol',
     'sal but a mol': 'salbutamol',
     'ventolin': 'salbutamol',
+    
+    // Herbal/OTC
+    'st john\'s wort': 'St John\'s Wort',
+    'saint john\'s wort': 'St John\'s Wort',
+    'john\'s ward': 'St John\'s Wort',
+    'john\'s wart': 'St John\'s Wort',
+    'saint johns wort': 'St John\'s Wort',
 
     // Original common misheard medications
     'met form in': 'metformin',
@@ -247,7 +256,16 @@ function initializeSpeechRecognition() {
     recognition.onstart = () => {
         console.log('Speech recognition started');
         isRecording = true;
-        statusDiv.textContent = '🔴 Recording...';
+        recordingStartTime = Date.now();
+        
+        // Start timer display
+        recordingTimer = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            statusDiv.textContent = `🔴 Recording... ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+        
         statusDiv.classList.add('recording');
         startBtn.disabled = true;
         stopBtn.disabled = false;
@@ -294,10 +312,21 @@ function initializeSpeechRecognition() {
             return;
         }
         
+        // Handle 'network' error by auto-restarting (connection issue)
+        if (event.error === 'network' && isRecording) {
+            console.log('Network error - attempting to reconnect...');
+            statusDiv.textContent = '🔴 Recording... (reconnecting)';
+            // The onend handler will restart it automatically
+            return;
+        }
+        
         let errorMessage = 'An error occurred';
         switch(event.error) {
             case 'no-speech':
                 errorMessage = 'No speech detected - restarting...';
+                break;
+            case 'network':
+                errorMessage = 'Network error - reconnecting...';
                 break;
             case 'audio-capture':
                 errorMessage = 'Microphone not accessible. Please check permissions.';
@@ -308,40 +337,59 @@ function initializeSpeechRecognition() {
             case 'service-not-allowed':
                 errorMessage = 'Speech recognition not allowed. Please ensure you are using HTTPS and using Chrome/Edge browser.';
                 break;
-            case 'network':
-                errorMessage = 'Network error. Please check your internet connection.';
-                break;
             default:
                 errorMessage = `Error: ${event.error}`;
         }
         
-        // Only stop recording for serious errors (not 'no-speech')
-        if (event.error !== 'no-speech') {
+        // Only stop recording for serious errors (not 'no-speech' or 'network')
+        if (event.error !== 'no-speech' && event.error !== 'network') {
             statusDiv.textContent = errorMessage;
             statusDiv.classList.remove('recording');
+            
+            // Stop timer
+            if (recordingTimer) {
+                clearInterval(recordingTimer);
+                recordingTimer = null;
+            }
+            
             stopRecording();
         }
     };
 
     recognition.onend = () => {
-        console.log('Speech recognition ended');
+        const timestamp = new Date().toLocaleTimeString();
+        console.log(`[${timestamp}] Speech recognition ended. isRecording: ${isRecording}`);
+        
         if (isRecording) {
-            console.log('Auto-restarting recognition...');
-            statusDiv.textContent = '🔴 Recording... (restarting)';
+            console.log(`[${timestamp}] Attempting auto-restart...`);
             
-            // Small delay before restarting to avoid rapid restart loops
-            setTimeout(() => {
-                if (isRecording) {
-                    try {
-                        recognition.start();
-                        statusDiv.textContent = '🔴 Recording...';
-                    } catch (error) {
-                        console.error('Failed to restart recognition:', error);
-                        statusDiv.textContent = 'Recording stopped unexpectedly. Click Start to resume.';
-                        stopRecording();
+            // Try to restart immediately first
+            try {
+                recognition.start();
+                console.log(`[${timestamp}] Successfully restarted`);
+                statusDiv.textContent = '🔴 Recording...';
+            } catch (error) {
+                console.warn(`[${timestamp}] Immediate restart failed:`, error.message);
+                
+                // If immediate restart fails, try with delay
+                setTimeout(() => {
+                    if (isRecording) {
+                        try {
+                            recognition.start();
+                            console.log(`[${timestamp}] Successfully restarted after delay`);
+                            statusDiv.textContent = '🔴 Recording...';
+                        } catch (delayedError) {
+                            console.error(`[${timestamp}] Restart failed:`, delayedError);
+                            statusDiv.textContent = '⚠️ Recording paused - Click Start to resume';
+                            statusDiv.classList.remove('recording');
+                            statusDiv.style.background = '#fef3c7';
+                            statusDiv.style.color = '#92400e';
+                            statusDiv.style.borderColor = '#fbbf24';
+                            // Don't call stopRecording() - keep transcript
+                        }
                     }
-                }
-            }, 100);
+                }, 200);
+            }
         }
     };
 
@@ -370,6 +418,13 @@ function stopRecording() {
     if (recognition && isRecording) {
         isRecording = false;
         recognition.stop();
+        
+        // Stop timer
+        if (recordingTimer) {
+            clearInterval(recordingTimer);
+            recordingTimer = null;
+        }
+        
         statusDiv.textContent = 'Recording stopped';
         statusDiv.classList.remove('recording');
         startBtn.disabled = false;
