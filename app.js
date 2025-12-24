@@ -7,6 +7,7 @@ const statusDiv = document.getElementById('status');
 const getSummaryBtn = document.getElementById('getSummary');
 const clearTranscriptBtn = document.getElementById('clearTranscript');
 const copySummaryBtn = document.getElementById('copySummary');
+const micSelect = document.getElementById('micSelect');
 
 // State
 let recognition = null;
@@ -14,6 +15,7 @@ let isRecording = false;
 let finalTranscript = '';
 let recordingStartTime = null;
 let recordingTimer = null;
+let selectedMicId = null;
 
 // Medical terminology correction dictionary
 const medicalCorrections = {
@@ -560,6 +562,59 @@ stopBtn.addEventListener('click', stopRecording);
 getSummaryBtn.addEventListener('click', generateSummary);
 clearTranscriptBtn.addEventListener('click', clearTranscript);
 copySummaryBtn.addEventListener('click', copySummaryToClipboard);
+micSelect.addEventListener('change', handleMicrophoneChange);
+
+// Populate Microphone List
+async function populateMicrophones() {
+    try {
+        // Request microphone permission first
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Get list of all media devices
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        
+        // Filter for audio input devices
+        const microphones = devices.filter(device => device.kind === 'audioinput');
+        
+        // Clear existing options (except default)
+        micSelect.innerHTML = '<option value="">Default</option>';
+        
+        // Add each microphone as an option
+        microphones.forEach((mic, index) => {
+            const option = document.createElement('option');
+            option.value = mic.deviceId;
+            option.textContent = mic.label || `Microphone ${index + 1}`;
+            micSelect.appendChild(option);
+        });
+        
+        console.log(`Found ${microphones.length} microphone(s)`);
+        
+    } catch (error) {
+        console.error('Error enumerating microphones:', error);
+        // If permission denied, show message
+        if (error.name === 'NotAllowedError') {
+            console.warn('Microphone permission denied - cannot list devices');
+        }
+    }
+}
+
+// Handle Microphone Selection Change
+function handleMicrophoneChange(event) {
+    selectedMicId = event.target.value;
+    const selectedOption = event.target.options[event.target.selectedIndex];
+    console.log('Selected microphone:', selectedOption.textContent);
+    
+    // Note: Web Speech API doesn't support device selection
+    // The browser uses the system default microphone
+    // This selector helps users identify which mic to set as default in system settings
+    
+    if (selectedMicId) {
+        alert(`Note: The Web Speech API uses your system's default microphone.\n\nTo use "${selectedOption.textContent}", please:\n1. Set it as default in your system sound settings\n2. Refresh this page\n3. Start recording`);
+    }
+    
+    // Reset to default option
+    micSelect.value = '';
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -571,4 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusDiv.style.color = '#dc3545';
         startBtn.disabled = true;
     }
+    
+    // Populate microphone list
+    populateMicrophones();
 });
