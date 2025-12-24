@@ -6,6 +6,7 @@ const summaryDiv = document.getElementById('summary');
 const statusDiv = document.getElementById('status');
 const getSummaryBtn = document.getElementById('getSummary');
 const clearTranscriptBtn = document.getElementById('clearTranscript');
+const copySummaryBtn = document.getElementById('copySummary');
 
 // State
 let recognition = null;
@@ -272,6 +273,9 @@ async function generateSummary() {
         // Display summary
         summaryDiv.innerHTML = `<p>${summary.replace(/\n/g, '<br>')}</p>`;
         
+        // Show copy button
+        copySummaryBtn.style.display = 'inline-flex';
+        
     } catch (error) {
         console.error('Error generating summary:', error);
         summaryDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
@@ -288,6 +292,37 @@ function clearTranscript() {
     summaryDiv.innerHTML = '<p class="placeholder">Summary will appear here after you stop recording...</p>';
     clearTranscriptBtn.style.display = 'none';
     getSummaryBtn.style.display = 'none';
+    copySummaryBtn.style.display = 'none';
+}
+
+// Copy Summary to Clipboard
+async function copySummaryToClipboard() {
+    const summaryText = summaryDiv.innerText;
+    
+    // Check if there's actual content (not just placeholder)
+    if (!summaryText || summaryText.includes('Summary will appear here')) {
+        alert('No summary to copy. Please generate a summary first.');
+        return;
+    }
+    
+    try {
+        await navigator.clipboard.writeText(summaryText);
+        
+        // Visual feedback
+        const originalText = copySummaryBtn.innerHTML;
+        copySummaryBtn.innerHTML = '<span class="icon">✓</span> Copied!';
+        copySummaryBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            copySummaryBtn.innerHTML = originalText;
+            copySummaryBtn.style.background = '';
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Failed to copy:', error);
+        alert('Failed to copy to clipboard. Please try selecting and copying manually.');
+    }
 }
 
 // Event Listeners
@@ -295,6 +330,7 @@ startBtn.addEventListener('click', startRecording);
 stopBtn.addEventListener('click', stopRecording);
 getSummaryBtn.addEventListener('click', generateSummary);
 clearTranscriptBtn.addEventListener('click', clearTranscript);
+copySummaryBtn.addEventListener('click', copySummaryToClipboard);
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
