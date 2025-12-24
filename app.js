@@ -493,6 +493,20 @@ function clearTranscript() {
     copySummaryBtn.style.display = 'none';
 }
 
+// Toggle Transcript Section
+function toggleTranscript() {
+    const transcriptContent = document.getElementById('transcriptContent');
+    const collapseBtn = document.getElementById('transcriptCollapseBtn');
+    
+    if (transcriptContent.classList.contains('collapsed')) {
+        transcriptContent.classList.remove('collapsed');
+        collapseBtn.classList.add('expanded');
+    } else {
+        transcriptContent.classList.add('collapsed');
+        collapseBtn.classList.remove('expanded');
+    }
+}
+
 // Copy Summary to Clipboard
 async function copySummaryToClipboard() {
     const summaryText = summaryDiv.innerText;
