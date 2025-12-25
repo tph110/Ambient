@@ -113,12 +113,16 @@ async function transcribeAudio(audioBlob) {
         statusDiv.textContent = '⏳ Transcribing with AI...';
         transcriptDiv.innerHTML = '<p class="placeholder">Transcribing your consultation...</p>';
         
+        console.log('Audio blob size:', audioBlob.size, 'bytes');
+        console.log('Audio blob type:', audioBlob.type);
+        
         // Convert blob to base64
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         
         reader.onloadend = async () => {
             const base64Audio = reader.result.split(',')[1];
+            console.log('Base64 audio length:', base64Audio.length);
             
             // Call our Whisper API endpoint
             const response = await fetch('/api/transcribe', {
@@ -131,13 +135,30 @@ async function transcribeAudio(audioBlob) {
                 })
             });
             
+            console.log('API response status:', response.status);
+            
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Transcription failed');
+                let errorMessage = 'Transcription failed';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                    console.error('API error:', errorData);
+                } catch (e) {
+                    const errorText = await response.text();
+                    console.error('API error (text):', errorText);
+                    errorMessage = errorText || errorMessage;
+                }
+                throw new Error(errorMessage);
             }
             
             const data = await response.json();
+            console.log('Transcription response:', data);
+            
             finalTranscript = data.transcript;
+            
+            if (!finalTranscript || finalTranscript.trim() === '') {
+                throw new Error('Received empty transcript from API');
+            }
             
             // Display transcript
             transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
@@ -154,7 +175,12 @@ async function transcribeAudio(audioBlob) {
                 getSummaryBtn.style.display = 'inline-flex';
             }
             
-            console.log('Transcription complete');
+            console.log('Transcription complete, length:', finalTranscript.length, 'characters');
+        };
+        
+        reader.onerror = (error) => {
+            console.error('FileReader error:', error);
+            throw new Error('Failed to read audio file');
         };
         
     } catch (error) {
