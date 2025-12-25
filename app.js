@@ -7,7 +7,6 @@ const statusDiv = document.getElementById('status');
 const getSummaryBtn = document.getElementById('getSummary');
 const clearTranscriptBtn = document.getElementById('clearTranscript');
 const copySummaryBtn = document.getElementById('copySummary');
-const micSelect = document.getElementById('micSelect');
 
 // State
 let recognition = null;
@@ -15,7 +14,6 @@ let isRecording = false;
 let finalTranscript = '';
 let recordingStartTime = null;
 let recordingTimer = null;
-let selectedMicId = null;
 
 // Medical terminology correction dictionary
 const medicalCorrections = {
@@ -562,13 +560,15 @@ stopBtn.addEventListener('click', stopRecording);
 getSummaryBtn.addEventListener('click', generateSummary);
 clearTranscriptBtn.addEventListener('click', clearTranscript);
 copySummaryBtn.addEventListener('click', copySummaryToClipboard);
-micSelect.addEventListener('change', handleMicrophoneChange);
 
-// Populate Microphone List
-async function populateMicrophones() {
+// Detect and Display Active Microphone
+async function detectActiveMicrophone() {
     try {
         // Request microphone permission first
-        await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Stop the stream immediately - we just needed permission
+        stream.getTracks().forEach(track => track.stop());
         
         // Get list of all media devices
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -576,44 +576,63 @@ async function populateMicrophones() {
         // Filter for audio input devices
         const microphones = devices.filter(device => device.kind === 'audioinput');
         
-        // Clear existing options (except default)
-        micSelect.innerHTML = '<option value="">Default</option>';
+        // Find the default/active device
+        const activeDevice = microphones.find(d => d.deviceId === 'default') || microphones[0];
         
-        // Add each microphone as an option
-        microphones.forEach((mic, index) => {
-            const option = document.createElement('option');
-            option.value = mic.deviceId;
-            option.textContent = mic.label || `Microphone ${index + 1}`;
-            micSelect.appendChild(option);
-        });
+        // Update the label in the header
+        const micLabel = document.getElementById('currentMicLabel');
+        if (activeDevice && activeDevice.label) {
+            micLabel.textContent = activeDevice.label;
+        } else {
+            micLabel.textContent = 'System Default';
+        }
         
-        console.log(`Found ${microphones.length} microphone(s)`);
+        console.log(`Active microphone: ${activeDevice?.label || 'Default'}`);
+        console.log(`Total microphones found: ${microphones.length}`);
+        
+        return microphones;
         
     } catch (error) {
-        console.error('Error enumerating microphones:', error);
-        // If permission denied, show message
-        if (error.name === 'NotAllowedError') {
-            console.warn('Microphone permission denied - cannot list devices');
-        }
+        console.error('Error detecting microphone:', error);
+        const micLabel = document.getElementById('currentMicLabel');
+        micLabel.textContent = 'Permission needed';
+        return [];
     }
 }
 
-// Handle Microphone Selection Change
-function handleMicrophoneChange(event) {
-    selectedMicId = event.target.value;
-    const selectedOption = event.target.options[event.target.selectedIndex];
-    console.log('Selected microphone:', selectedOption.textContent);
+// Show Microphone Help Modal
+async function showMicrophoneHelp() {
+    const modal = document.getElementById('microphoneHelpModal');
+    const modalMicLabel = document.getElementById('modalMicLabel');
+    const availableMicsList = document.getElementById('availableMicsList');
     
-    // Note: Web Speech API doesn't support device selection
-    // The browser uses the system default microphone
-    // This selector helps users identify which mic to set as default in system settings
+    // Get current microphone info
+    const microphones = await detectActiveMicrophone();
     
-    if (selectedMicId) {
-        alert(`Note: The Web Speech API uses your system's default microphone.\n\nTo use "${selectedOption.textContent}", please:\n1. Set it as default in your system sound settings\n2. Refresh this page\n3. Start recording`);
+    // Update modal with current active mic
+    const currentMicLabel = document.getElementById('currentMicLabel');
+    modalMicLabel.textContent = currentMicLabel.textContent;
+    
+    // Populate available microphones list
+    availableMicsList.innerHTML = '';
+    if (microphones.length > 0) {
+        microphones.forEach((mic, index) => {
+            const li = document.createElement('li');
+            li.textContent = mic.label || `Microphone ${index + 1}`;
+            availableMicsList.appendChild(li);
+        });
+    } else {
+        availableMicsList.innerHTML = '<li>Unable to list devices. Grant microphone permission first.</li>';
     }
     
-    // Reset to default option
-    micSelect.value = '';
+    // Show modal
+    modal.classList.add('show');
+}
+
+// Close Microphone Help Modal
+function closeMicrophoneHelp(event) {
+    const modal = document.getElementById('microphoneHelpModal');
+    modal.classList.remove('show');
 }
 
 // Initialize
@@ -627,6 +646,6 @@ document.addEventListener('DOMContentLoaded', () => {
         startBtn.disabled = true;
     }
     
-    // Populate microphone list
-    populateMicrophones();
+    // Detect active microphone on page load
+    detectActiveMicrophone();
 });
