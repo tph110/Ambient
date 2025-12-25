@@ -48,53 +48,250 @@ header::before {
     position: absolute;
     top: 20px;
     right: 30px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.15);
-    padding: 10px 16px;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 10;
 }
 
-.microphone-selector label {
+.mic-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.mic-info label {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
-    color: white;
-    margin: 0;
+    color: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 14px;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .mic-icon {
     font-size: 1.1rem;
 }
 
-.mic-dropdown {
-    background: rgba(255, 255, 255, 0.95);
+.mic-help-btn {
+    background: rgba(255, 255, 255, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    color: #1e3a8a;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
-    outline: none;
-    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
     transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
 }
 
-.mic-dropdown:hover {
+.mic-help-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px);
+}
+
+.mic-help-btn .icon {
+    font-size: 1rem;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
     background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+    animation: slideUp 0.3s ease;
 }
 
-.mic-dropdown:focus {
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 25px 30px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.modal-header h2::before {
+    display: none;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+.mic-device-info {
+    background: #f0f9ff;
+    border-left: 4px solid #3b82f6;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-size: 1rem;
+}
+
+.current-device {
+    display: block;
+    font-weight: 600;
+    color: #1e3a8a;
+    margin-top: 5px;
+    font-size: 1.1rem;
+}
+
+.instruction-section h3 {
+    color: #1e3a8a;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.instruction-list {
+    list-style: none;
+    counter-reset: step-counter;
+    padding-left: 0;
+}
+
+.instruction-list li {
+    counter-increment: step-counter;
+    margin-bottom: 15px;
+    padding-left: 40px;
+    position: relative;
+    line-height: 1.6;
+}
+
+.instruction-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.help-note {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.help-note p {
+    margin: 8px 0;
+    font-size: 0.95rem;
+    color: #92400e;
+}
+
+.available-devices {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.available-devices h4 {
+    color: #1e3a8a;
+    margin-bottom: 12px;
+    font-size: 1rem;
+}
+
+#availableMicsList {
+    list-style: none;
+    padding: 0;
+}
+
+#availableMicsList li {
+    padding: 10px 15px;
+    background: #f8fafc;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border-left: 3px solid #3b82f6;
+    font-size: 0.9rem;
+}
+
+.modal-footer {
+    padding: 20px 30px;
+    background: #f8fafc;
+    border-radius: 0 0 16px 16px;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .logo-container {
@@ -578,12 +775,27 @@ footer {
         margin: 20px auto 0;
         width: 100%;
         max-width: 350px;
-        justify-content: center;
     }
 
-    .mic-dropdown {
-        flex: 1;
-        min-width: auto;
+    .mic-info {
+        align-items: center;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .modal-header {
+        padding: 20px;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .modal-footer {
+        padding: 15px 20px;
     }
 
     .controls {
