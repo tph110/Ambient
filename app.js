@@ -294,8 +294,10 @@ async function copySummaryToClipboard() {
     }
 }
 
-// Detect and Display Active Microphone
-async function detectActiveMicrophone() {
+// Detect and Populate Microphone Dropdown
+async function populateMicrophoneDropdown() {
+    const dropdown = document.getElementById('microphoneDropdown');
+    
     try {
         // Request microphone permission first
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -309,72 +311,60 @@ async function detectActiveMicrophone() {
         // Filter for audio input devices
         const microphones = devices.filter(device => device.kind === 'audioinput');
         
-        // Find the default/active device
-        const activeDevice = microphones.find(d => d.deviceId === 'default') || microphones[0];
+        console.log('Found microphones:', microphones.length);
         
-        // Update the label in the header
-        const micLabel = document.getElementById('currentMicLabel');
-        if (activeDevice && activeDevice.label) {
-            micLabel.textContent = activeDevice.label;
-        } else {
-            micLabel.textContent = 'System Default';
+        // Clear dropdown
+        dropdown.innerHTML = '';
+        
+        if (microphones.length === 0) {
+            dropdown.innerHTML = '<option value="">No microphones found</option>';
+            dropdown.disabled = true;
+            return;
         }
         
-        console.log(`Active microphone: ${activeDevice?.label || 'Default'}`);
-        console.log(`Total microphones found: ${microphones.length}`);
+        // Add each microphone to dropdown
+        microphones.forEach((mic, index) => {
+            const option = document.createElement('option');
+            option.value = mic.deviceId;
+            
+            // Use device label or fallback to generic name
+            const label = mic.label || `Microphone ${index + 1}`;
+            option.textContent = label;
+            
+            // Select the default device
+            if (mic.deviceId === 'default' || index === 0) {
+                option.selected = true;
+                selectedMicId = mic.deviceId;
+            }
+            
+            dropdown.appendChild(option);
+        });
         
-        return microphones;
+        console.log('Microphone dropdown populated with', microphones.length, 'devices');
         
     } catch (error) {
-        console.error('Error detecting microphone:', error);
-        const micLabel = document.getElementById('currentMicLabel');
-        micLabel.textContent = 'Permission needed';
-        return [];
+        console.error('Error detecting microphones:', error);
+        dropdown.innerHTML = '<option value="">Permission denied</option>';
+        dropdown.disabled = true;
+        
+        if (error.name === 'NotAllowedError') {
+            console.warn('Microphone permission denied');
+        }
     }
 }
 
-// Show Microphone Help Modal
-async function showMicrophoneHelp() {
-    const modal = document.getElementById('microphoneHelpModal');
-    const modalMicLabel = document.getElementById('modalMicLabel');
-    const availableMicsList = document.getElementById('availableMicsList');
+// Handle Microphone Selection from Dropdown
+function handleMicrophoneSelection() {
+    const dropdown = document.getElementById('microphoneDropdown');
+    selectedMicId = dropdown.value;
     
-    // Get current microphone info
-    const microphones = await detectActiveMicrophone();
+    const selectedOption = dropdown.options[dropdown.selectedIndex];
+    console.log('Microphone selected:', selectedOption.textContent);
     
-    // Update modal with current active mic
-    const currentMicLabel = document.getElementById('currentMicLabel');
-    modalMicLabel.textContent = currentMicLabel.textContent;
-    
-    // Populate available microphones list
-    availableMicsList.innerHTML = '';
-    if (microphones.length > 0) {
-        microphones.forEach((mic, index) => {
-            const li = document.createElement('li');
-            li.textContent = mic.label || `Microphone ${index + 1}`;
-            
-            // Add click handler to select this mic
-            li.style.cursor = 'pointer';
-            li.onclick = () => {
-                selectedMicId = mic.deviceId;
-                alert(`Microphone selected: ${mic.label}.\n\nClick "Start Recording" to use this microphone.`);
-                closeMicrophoneHelp();
-            };
-            
-            availableMicsList.appendChild(li);
-        });
-    } else {
-        availableMicsList.innerHTML = '<li>Unable to list devices. Grant microphone permission first.</li>';
+    // Show confirmation to user
+    if (isRecording) {
+        alert('Microphone changed! Please stop and restart recording to use the new microphone.');
     }
-    
-    // Show modal
-    modal.classList.add('show');
-}
-
-// Close Microphone Help Modal
-function closeMicrophoneHelp(event) {
-    const modal = document.getElementById('microphoneHelpModal');
-    modal.classList.remove('show');
 }
 
 // Event Listeners
@@ -383,6 +373,14 @@ stopBtn.addEventListener('click', stopRecording);
 getSummaryBtn.addEventListener('click', generateSummary);
 clearTranscriptBtn.addEventListener('click', clearTranscript);
 copySummaryBtn.addEventListener('click', copySummaryToClipboard);
+
+// Add microphone dropdown change listener
+document.addEventListener('DOMContentLoaded', () => {
+    const micDropdown = document.getElementById('microphoneDropdown');
+    if (micDropdown) {
+        micDropdown.addEventListener('change', handleMicrophoneSelection);
+    }
+});
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -395,6 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
         startBtn.disabled = true;
     }
     
-    // Detect active microphone on page load
-    detectActiveMicrophone();
+    // Populate microphone dropdown
+    populateMicrophoneDropdown();
 });
