@@ -27,13 +27,16 @@
             
             <!-- Microphone Selector -->
             <div class="microphone-selector">
-                <label for="micSelect">
-                    <span class="mic-icon">🎤</span>
-                    Microphone:
-                </label>
-                <select id="micSelect" class="mic-dropdown">
-                    <option value="">Default</option>
-                </select>
+                <div class="mic-info">
+                    <label>
+                        <span class="mic-icon">🎤</span>
+                        <span id="currentMicLabel">Checking...</span>
+                    </label>
+                    <button type="button" class="mic-help-btn" onclick="showMicrophoneHelp()">
+                        <span class="icon">⚙️</span>
+                        Change Mic
+                    </button>
+                </div>
             </div>
             
             <p class="subtitle">AI-Powered Medical Scribe for GP Consultations</p>
@@ -101,6 +104,56 @@
         <footer>
             <p>AmbientDoc © 2025 | Built for UK healthcare professionals</p>
         </footer>
+    </div>
+
+    <!-- Microphone Help Modal -->
+    <div id="microphoneHelpModal" class="modal" onclick="closeMicrophoneHelp(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>🎤 How to Change Your Microphone</h2>
+                <button class="modal-close" onclick="closeMicrophoneHelp()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="mic-device-info">
+                    <strong>Currently Active:</strong>
+                    <span id="modalMicLabel" class="current-device">Checking...</span>
+                </div>
+                
+                <div class="instruction-section">
+                    <h3>To switch to your headset, dictaphone, or USB microphone:</h3>
+                    <ol class="instruction-list">
+                        <li>
+                            <strong>Click the Lock icon 🔒</strong> in your browser's address bar (top left)
+                        </li>
+                        <li>
+                            <strong>Click "Site settings"</strong> or find "Permissions"
+                        </li>
+                        <li>
+                            <strong>Find "Microphone"</strong> in the permissions list
+                        </li>
+                        <li>
+                            <strong>Select your desired device</strong> from the dropdown
+                        </li>
+                        <li>
+                            <strong>Refresh this page</strong> (F5 or Ctrl+R)
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="help-note">
+                    <p><strong>💡 Tip:</strong> This setting is remembered for future visits!</p>
+                    <p><strong>🌐 Browser Support:</strong> Works in Chrome, Edge, and Brave. Safari/Firefox use system default only.</p>
+                </div>
+
+                <div class="available-devices">
+                    <h4>Available Microphones:</h4>
+                    <ul id="availableMicsList"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeMicrophoneHelp()">Got it!</button>
+            </div>
+        </div>
     </div>
 
     <script src="app.js?v=3"></script>
