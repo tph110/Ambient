@@ -24,20 +24,6 @@
                 </svg>
                 <h1>AmbientDoc</h1>
             </div>
-            
-            <!-- Microphone Selector -->
-            <div class="microphone-selector">
-                <div class="mic-select-container">
-                    <label for="microphoneDropdown">
-                        <span class="mic-icon">🎤</span>
-                        Microphone:
-                    </label>
-                    <select id="microphoneDropdown" class="mic-dropdown">
-                        <option value="">Loading microphones...</option>
-                    </select>
-                </div>
-            </div>
-            
             <p class="subtitle">AI-Powered Medical Scribe for GP Consultations</p>
             <p class="tagline">Focus on your patient — let AI handle the notes</p>
             <p class="disclaimer">⚠️ Demonstration tool • Not for real clinical use without validation</p>
@@ -46,6 +32,17 @@
         <main>
             <!-- Recording Controls -->
             <section class="controls card">
+                <!-- Microphone Selector -->
+                <div class="mic-select-container-inline">
+                    <label for="microphoneDropdown">
+                        <span class="mic-icon">🎤</span>
+                        Microphone:
+                    </label>
+                    <select id="microphoneDropdown" class="mic-dropdown">
+                        <option value="">Loading microphones...</option>
+                    </select>
+                </div>
+                
                 <div class="status" id="status">Ready to record</div>
                 <div class="button-group">
                     <button id="startBtn" class="btn btn-primary large">
@@ -82,7 +79,7 @@
             <section class="summary-section card">
                 <h2>Structured Clinical Summary</h2>
                 <div id="summary" class="content-box">
-                    <p class="placeholder">AI-generated summary will appear after stopping recording...</p>
+                    <p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>
                 </div>
                 <div class="button-group">
                     <button id="getSummary" class="btn btn-success" style="display: none;">
@@ -96,10 +93,10 @@
 
             <!-- Privacy Notice -->
             <section class="privacy-notice card">
-                <h3>🔒 Privacy First</h3>
-                <p>Audio is processed <strong>entirely in your browser</strong> — never leaves your device.<br>
-                Only the anonymised text transcript is sent securely to our AI for summarisation.<br>
-                No recordings or patient data are stored.</p>
+                <h3>🔒 Privacy & Security</h3>
+                <p>Audio is recorded <strong>locally in your browser</strong> and sent securely via encrypted connection to OpenAI Whisper for transcription.<br>
+                Only anonymised text transcripts are processed by AI for clinical summarisation — no audio files or patient identifiers are stored.<br>
+                All data transmission uses industry-standard encryption (HTTPS/TLS).</p>
             </section>
         </main>
 
