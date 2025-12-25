@@ -77,54 +77,61 @@ header::before {
     z-index: 10;
 }
 
-.mic-info {
+.mic-select-container {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 10px 16px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.mic-info label {
+.mic-select-container label {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.95);
-    background: rgba(255, 255, 255, 0.15);
-    padding: 8px 14px;
-    border-radius: 8px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    margin: 0;
+    white-space: nowrap;
 }
 
 .mic-icon {
     font-size: 1.1rem;
 }
 
-.mic-help-btn {
-    background: rgba(255, 255, 255, 0.25);
+.mic-dropdown {
+    background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.8rem;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    color: #1e3a8a;
     font-weight: 500;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    outline: none;
+    min-width: 200px;
+    max-width: 300px;
     transition: all 0.2s ease;
-    backdrop-filter: blur(10px);
 }
 
-.mic-help-btn:hover {
-    background: rgba(255, 255, 255, 0.35);
-    transform: translateY(-1px);
+.mic-dropdown:hover {
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.mic-help-btn .icon {
-    font-size: 1rem;
+.mic-dropdown:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+    background: white;
+}
+
+.mic-dropdown option {
+    padding: 8px;
+    color: #1e3a8a;
 }
 
 /* Modal Styles */
@@ -802,18 +809,30 @@ footer {
         width: fit-content;
     }
 
-    /* Microphone selector - move below logo on mobile */
+    /* Microphone selector - stack below logo on mobile */
     .microphone-selector {
         position: relative;
         top: auto;
         right: auto;
         margin: 20px auto 0;
         width: 100%;
-        max-width: 350px;
+        max-width: 400px;
     }
 
-    .mic-info {
-        align-items: center;
+    .mic-select-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .mic-select-container label {
+        justify-content: center;
+    }
+
+    .mic-dropdown {
+        width: 100%;
+        min-width: auto;
+        max-width: none;
     }
 
     .modal-content {
