@@ -1,5 +1,6 @@
 // DOM Elements
 const startBtn = document.getElementById('startBtn');
+const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
 const transcriptDiv = document.getElementById('transcript');
 const summaryDiv = document.getElementById('summary');
@@ -12,9 +13,12 @@ const copySummaryBtn = document.getElementById('copySummary');
 let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
+let isPaused = false;
 let finalTranscript = '';
 let recordingStartTime = null;
 let recordingTimer = null;
+let pausedDuration = 0;
+let pauseStartTime = null;
 let selectedMicId = null;
 
 // Start Recording with MediaRecorder
@@ -65,6 +69,7 @@ async function startRecording() {
         
         statusDiv.classList.add('recording');
         startBtn.disabled = true;
+        pauseBtn.disabled = false;
         stopBtn.disabled = false;
         
         console.log('Recording started with Whisper API');
@@ -87,12 +92,17 @@ async function startRecording() {
 function stopRecording() {
     if (mediaRecorder && isRecording) {
         isRecording = false;
+        isPaused = false;
         
         // Stop timer
         if (recordingTimer) {
             clearInterval(recordingTimer);
             recordingTimer = null;
         }
+        
+        // Reset pause tracking
+        pausedDuration = 0;
+        pauseStartTime = null;
         
         // Stop recording
         mediaRecorder.stop();
@@ -101,9 +111,54 @@ function stopRecording() {
         statusDiv.textContent = 'Processing audio...';
         statusDiv.classList.remove('recording');
         startBtn.disabled = true; // Keep disabled while processing
+        pauseBtn.disabled = true;
         stopBtn.disabled = true;
         
         console.log('Recording stopped, sending to Whisper API');
+    }
+}
+
+// Pause Recording
+function pauseRecording() {
+    if (mediaRecorder && isRecording && !isPaused) {
+        mediaRecorder.pause();
+        isPaused = true;
+        pauseStartTime = Date.now();
+        
+        // Stop timer
+        if (recordingTimer) {
+            clearInterval(recordingTimer);
+            recordingTimer = null;
+        }
+        
+        statusDiv.textContent = '⏸️ Recording Paused';
+        statusDiv.classList.remove('recording');
+        pauseBtn.innerHTML = '<span class="icon">▶️</span> Resume';
+        
+        console.log('Recording paused');
+    } else if (mediaRecorder && isPaused) {
+        // Resume
+        mediaRecorder.resume();
+        isPaused = false;
+        
+        // Track total paused time
+        if (pauseStartTime) {
+            pausedDuration += Date.now() - pauseStartTime;
+            pauseStartTime = null;
+        }
+        
+        // Restart timer
+        recordingTimer = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - recordingStartTime - pausedDuration) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            statusDiv.textContent = `🔴 Recording... ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+        
+        statusDiv.classList.add('recording');
+        pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
+        
+        console.log('Recording resumed');
     }
 }
 
@@ -167,6 +222,8 @@ async function transcribeAudio(audioBlob) {
             statusDiv.textContent = 'Transcription complete!';
             statusDiv.classList.remove('recording');
             startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
             stopBtn.disabled = true;
             
             // Show buttons
@@ -188,6 +245,8 @@ async function transcribeAudio(audioBlob) {
         statusDiv.textContent = 'Transcription failed';
         transcriptDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
         startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
         stopBtn.disabled = true;
     }
 }
@@ -243,11 +302,19 @@ async function generateSummary() {
 function clearTranscript() {
     finalTranscript = '';
     audioChunks = [];
-    transcriptDiv.innerHTML = '<p class="placeholder">Transcript will appear here when you start recording...</p>';
+    isPaused = false;
+    pausedDuration = 0;
+    pauseStartTime = null;
+    
+    transcriptDiv.innerHTML = '<p class="placeholder">Transcription will appear here once you have finished recording</p>';
     summaryDiv.innerHTML = '<p class="placeholder">Summary will appear here after you stop recording...</p>';
+    
     clearTranscriptBtn.style.display = 'none';
     getSummaryBtn.style.display = 'none';
     copySummaryBtn.style.display = 'none';
+    
+    // Reset pause button
+    pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
 }
 
 // Toggle Transcript Section
@@ -369,6 +436,7 @@ function handleMicrophoneSelection() {
 
 // Event Listeners
 startBtn.addEventListener('click', startRecording);
+pauseBtn.addEventListener('click', pauseRecording);
 stopBtn.addEventListener('click', stopRecording);
 getSummaryBtn.addEventListener('click', generateSummary);
 clearTranscriptBtn.addEventListener('click', clearTranscript);
