@@ -557,4 +557,29 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Populate microphone dropdown
     populateMicrophoneDropdown();
+    
+    // Setup editable content boxes
+    setupEditableContent();
 });
+
+// Setup editable content boxes
+function setupEditableContent() {
+    const editableBoxes = [transcriptDiv, summaryDiv, referralLetterDiv];
+    
+    editableBoxes.forEach(box => {
+        // Remove placeholder text when user starts typing
+        box.addEventListener('focus', function() {
+            if (this.querySelector('.placeholder')) {
+                // Don't remove placeholder, just let user type over it
+            }
+        });
+        
+        // Prevent editing placeholder text
+        box.addEventListener('input', function() {
+            const placeholder = this.querySelector('.placeholder');
+            if (placeholder && this.textContent.trim() !== placeholder.textContent.trim()) {
+                placeholder.remove();
+            }
+        });
+    });
+}
