@@ -608,8 +608,9 @@ h3 {
 
 /* Transcript and Summary Boxes */
 .transcript-section,
-.summary-section {
-    /* Styling now handled by .card class */
+.summary-section,
+.referral-section {
+    position: relative; /* For edit indicator positioning */
 }
 
 .content-box {
@@ -623,6 +624,45 @@ h3 {
     line-height: 1.8;
     font-size: 1.05rem;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Editable content boxes */
+.content-box.editable {
+    cursor: text;
+    transition: all 0.2s ease;
+}
+
+.content-box.editable:hover {
+    border-color: #cbd5e1;
+    background: #fefefe;
+}
+
+.content-box.editable:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Show edit indicator when hovering over editable content */
+.content-box.editable::after {
+    content: '✎ Click to edit';
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.content-box.editable:hover::after {
+    opacity: 1;
+}
+
+.content-box.editable:focus::after {
+    display: none;
 }
 
 .transcript-section .content-box {
