@@ -25,15 +25,101 @@ let pausedDuration = 0;
 let pauseStartTime = null;
 let selectedMicId = null;
 
+// Setup Telephone Recording (Mix Microphone + System Audio)
+async function setupTelephoneRecording() {
+    try {
+        console.log('Setting up telephone consultation recording...');
+        
+        // Step 1: Get microphone stream
+        const micConstraints = {
+            audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
+        };
+        const micStream = await navigator.mediaDevices.getUserMedia(micConstraints);
+        console.log('✓ Microphone stream acquired');
+        
+        // Step 2: Get system audio (requires screen share with audio)
+        console.log('Please select your telephony software window and enable "Share audio"...');
+        const systemStream = await navigator.mediaDevices.getDisplayMedia({
+            video: true,  // Required by Chrome to access audio
+            audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false
+            }
+        });
+        console.log('✓ System audio stream acquired');
+        
+        // Step 3: Create audio context for mixing
+        const audioContext = new AudioContext();
+        const destination = audioContext.createMediaStreamDestination();
+        
+        // Step 4: Connect microphone to mixer
+        const micSource = audioContext.createMediaStreamSource(micStream);
+        micSource.connect(destination);
+        console.log('✓ Microphone connected to mixer');
+        
+        // Step 5: Connect system audio to mixer (if available)
+        const audioTracks = systemStream.getAudioTracks();
+        if (audioTracks.length > 0) {
+            const systemSource = audioContext.createMediaStreamSource(
+                new MediaStream(audioTracks)
+            );
+            systemSource.connect(destination);
+            console.log('✓ System audio connected to mixer');
+        } else {
+            console.warn('⚠️ No system audio track found. Make sure you checked "Share audio" in the screen share dialog.');
+            alert('Warning: No system audio detected.\n\nMake sure you:\n1. Selected a window/tab (not entire screen)\n2. Checked "Share audio" checkbox\n\nRecording will continue with microphone only.');
+        }
+        
+        // Step 6: Stop the video track (we only need audio)
+        const videoTracks = systemStream.getVideoTracks();
+        videoTracks.forEach(track => track.stop());
+        console.log('✓ Video track stopped (audio-only recording)');
+        
+        console.log('✓ Telephone recording setup complete!');
+        
+        // Return the mixed audio stream
+        return destination.stream;
+        
+    } catch (error) {
+        console.error('Error setting up telephone recording:', error);
+        
+        if (error.name === 'NotAllowedError') {
+            alert('Screen sharing was cancelled or denied.\n\nFalling back to microphone-only recording.');
+        } else {
+            alert('Failed to setup telephone recording: ' + error.message + '\n\nFalling back to microphone-only recording.');
+        }
+        
+        // Fallback to microphone only
+        const micConstraints = {
+            audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
+        };
+        return await navigator.mediaDevices.getUserMedia(micConstraints);
+    }
+}
+
 // Start Recording with MediaRecorder
 async function startRecording() {
     try {
-        // Request microphone access
-        const constraints = {
-            audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
-        };
+        // Check if user wants to record telephone consultation (system audio + mic)
+        const recordTelephone = confirm(
+            "Telephone Consultation Mode?\n\n" +
+            "Click OK to record both you and the patient (via phone system).\n" +
+            "Click Cancel for standard recording (microphone only)."
+        );
         
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        let finalStream;
+        
+        if (recordTelephone) {
+            // TELEPHONE MODE: Capture both microphone and system audio
+            finalStream = await setupTelephoneRecording();
+        } else {
+            // STANDARD MODE: Just microphone
+            const constraints = {
+                audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
+            };
+            finalStream = await navigator.mediaDevices.getUserMedia(constraints);
+        }
         
         // Try to find the best supported codec with compression
         let options;
@@ -63,7 +149,7 @@ async function startRecording() {
         }
         
         // Create MediaRecorder with best available options
-        mediaRecorder = new MediaRecorder(stream, options);
+        mediaRecorder = new MediaRecorder(finalStream, options);
         audioChunks = [];
         
         console.log('Recording with:', options.mimeType || 'default', 'at', options.audioBitsPerSecond/1000, 'kbps (requested)');
@@ -77,8 +163,8 @@ async function startRecording() {
         
         // Handle recording stop
         mediaRecorder.onstop = async () => {
-            // Stop all tracks
-            stream.getTracks().forEach(track => track.stop());
+            // Stop all tracks from the stream
+            finalStream.getTracks().forEach(track => track.stop());
             
             // Create audio blob
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
