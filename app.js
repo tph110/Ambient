@@ -35,24 +35,38 @@ async function startRecording() {
         
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         
-        // Configure MediaRecorder with aggressive compression for smaller files
-        const options = {
-            mimeType: 'audio/webm;codecs=opus',
-            audioBitsPerSecond: 12000  // 12kbps - very compressed, still good for speech
-        };
+        // Try to find the best supported codec with compression
+        let options;
+        const preferredCodecs = [
+            { mimeType: 'audio/webm;codecs=opus', bitrate: 12000 },
+            { mimeType: 'audio/ogg;codecs=opus', bitrate: 12000 },
+            { mimeType: 'audio/webm', bitrate: 12000 },
+            { mimeType: 'audio/mp4', bitrate: 12000 }
+        ];
         
-        // Fallback for browsers that don't support the preferred codec
-        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-            options.mimeType = 'audio/webm';
-            options.audioBitsPerSecond = 12000;
-            console.log('Using fallback audio codec');
+        // Find first supported codec
+        for (const codec of preferredCodecs) {
+            if (MediaRecorder.isTypeSupported(codec.mimeType)) {
+                options = {
+                    mimeType: codec.mimeType,
+                    audioBitsPerSecond: codec.bitrate
+                };
+                console.log('Selected codec:', codec.mimeType);
+                break;
+            }
         }
         
-        // Create MediaRecorder with compression
+        // Fallback to default if none supported
+        if (!options) {
+            options = { audioBitsPerSecond: 12000 };
+            console.warn('No preferred codec supported, using browser default (may not compress well)');
+        }
+        
+        // Create MediaRecorder with best available options
         mediaRecorder = new MediaRecorder(stream, options);
         audioChunks = [];
         
-        console.log('Recording with codec:', options.mimeType, 'at', options.audioBitsPerSecond/1000, 'kbps');
+        console.log('Recording with:', options.mimeType || 'default', 'at', options.audioBitsPerSecond/1000, 'kbps (requested)');
         
         // Collect audio data
         mediaRecorder.ondataavailable = (event) => {
@@ -68,6 +82,20 @@ async function startRecording() {
             
             // Create audio blob
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            
+            // Calculate actual bitrate achieved
+            const durationSeconds = (Date.now() - recordingStartTime - pausedDuration) / 1000;
+            const actualBitrate = (audioBlob.size * 8) / durationSeconds;
+            
+            console.log('Recording duration:', Math.floor(durationSeconds), 'seconds');
+            console.log('File size:', audioBlob.size, 'bytes');
+            console.log('Actual bitrate achieved:', Math.floor(actualBitrate), 'bps (', Math.floor(actualBitrate/1000), 'kbps)');
+            
+            // Warn if compression didn't work
+            if (actualBitrate > 20000) {
+                console.warn('⚠️ Compression may not be working! Actual bitrate', Math.floor(actualBitrate/1000), 'kbps exceeds requested 12 kbps');
+                console.warn('Your browser may not support bitrate control. Consider using Chrome for better compression.');
+            }
             
             // Transcribe the audio
             await transcribeAudio(audioBlob);
@@ -586,12 +614,39 @@ document.addEventListener('DOMContentLoaded', () => {
         startBtn.disabled = true;
     }
     
+    // Check browser compression support
+    checkBrowserCompression();
+    
     // Populate microphone dropdown
     populateMicrophoneDropdown();
     
     // Setup editable content boxes
     setupEditableContent();
 });
+
+// Check if browser supports audio compression
+function checkBrowserCompression() {
+    const hasOpusSupport = MediaRecorder.isTypeSupported('audio/webm;codecs=opus');
+    const userAgent = navigator.userAgent;
+    
+    console.log('Opus codec support:', hasOpusSupport);
+    
+    // Detect Safari
+    const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
+    const isChrome = /chrome/i.test(userAgent) && !/edge/i.test(userAgent);
+    const isFirefox = /firefox/i.test(userAgent);
+    
+    console.log('Browser:', isSafari ? 'Safari' : isChrome ? 'Chrome' : isFirefox ? 'Firefox' : 'Other');
+    
+    if (isSafari) {
+        console.warn('⚠️ Safari detected: May not compress audio properly. Recording time may be limited to ~10 minutes.');
+        console.warn('💡 For longer recordings, use Chrome, Edge, or Firefox.');
+    }
+    
+    if (!hasOpusSupport) {
+        console.warn('⚠️ Opus codec not supported. Audio compression may not work effectively.');
+    }
+}
 
 // Setup editable content boxes
 function setupEditableContent() {
