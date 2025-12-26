@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { transcript } = req.body;
+        const { transcript, isReferral } = req.body;
 
         if (!transcript) {
             return res.status(400).json({ error: 'Transcript is required' });
@@ -21,21 +21,27 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'API key not configured' });
         }
 
-        // Call OpenRouter API
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': req.headers.referer || 'https://yourdomain.vercel.app',
-                'X-Title': 'AmbientDoc'
-            },
-            body: JSON.stringify({
-                model: 'anthropic/claude-3.5-sonnet',
-                messages: [
-                    {
-                        role: 'user',
-                        content: `Please provide a detailed summary of the following GP consultation transcript. Structure your response with these sections:
+        // Choose prompt based on whether this is a referral letter or clinical summary
+        let userPrompt;
+        
+        if (isReferral) {
+            // Referral letter prompt
+            userPrompt = `Please write a referral letter from a GP to a secondary care specialist based on this clinical summary. 
+
+Requirements:
+- Write in professional medical letter format
+- Use prose paragraphs, avoid bullet points
+- Include relevant clinical history, examination findings, and reason for referral
+- Be concise but comprehensive
+- Use appropriate medical terminology
+- Body of the letter only (no "Dear Dr..." greeting or signature block needed)
+
+Clinical Summary:
+
+${transcript}`;
+        } else {
+            // Clinical summary prompt
+            userPrompt = `Please provide a detailed summary of the following GP consultation transcript. Structure your response with these sections:
 
 HISTORY OF PRESENTING COMPLAINT: Write this as detailed prose paragraphs describing the patient's symptoms, their timeline, severity, aggravating/relieving factors, associated symptoms, and any treatments tried. Include the patient's own words and descriptions where relevant.
 
@@ -53,7 +59,26 @@ IMPRESSION: Clinical assessment and diagnosis.
 
 MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice.
 
-Transcript:\n\n${transcript}`
+Transcript:
+
+${transcript}`;
+        }
+
+        // Call OpenRouter API
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': req.headers.referer || 'https://yourdomain.vercel.app',
+                'X-Title': 'AmbientDoc'
+            },
+            body: JSON.stringify({
+                model: 'anthropic/claude-3.5-sonnet',
+                messages: [
+                    {
+                        role: 'user',
+                        content: userPrompt
                     }
                 ],
                 max_tokens: 4000
