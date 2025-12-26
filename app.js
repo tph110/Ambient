@@ -4,10 +4,13 @@ const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
 const transcriptDiv = document.getElementById('transcript');
 const summaryDiv = document.getElementById('summary');
+const referralLetterDiv = document.getElementById('referralLetter');
 const statusDiv = document.getElementById('status');
 const getSummaryBtn = document.getElementById('getSummary');
 const clearTranscriptBtn = document.getElementById('clearTranscript');
 const copySummaryBtn = document.getElementById('copySummary');
+const generateReferralBtn = document.getElementById('generateReferral');
+const copyReferralBtn = document.getElementById('copyReferral');
 
 // State
 let mediaRecorder = null;
@@ -15,6 +18,7 @@ let audioChunks = [];
 let isRecording = false;
 let isPaused = false;
 let finalTranscript = '';
+let finalSummary = '';
 let recordingStartTime = null;
 let recordingTimer = null;
 let pausedDuration = 0;
@@ -283,11 +287,17 @@ async function generateSummary() {
         const data = await response.json();
         const summary = data.summary;
 
+        // Store summary for referral letter generation
+        finalSummary = summary;
+
         // Display summary
         summaryDiv.innerHTML = `<p>${summary.replace(/\n/g, '<br>')}</p>`;
         
         // Show copy button
         copySummaryBtn.style.display = 'inline-flex';
+        
+        // Show referral letter button
+        generateReferralBtn.style.display = 'inline-flex';
         
     } catch (error) {
         console.error('Error generating summary:', error);
@@ -298,20 +308,72 @@ async function generateSummary() {
     }
 }
 
+// Generate Referral Letter
+async function generateReferralLetter() {
+    if (!finalSummary || finalSummary.trim() === '') {
+        alert('Please generate a clinical summary first');
+        return;
+    }
+
+    // Show loading state
+    generateReferralBtn.disabled = true;
+    generateReferralBtn.innerHTML = '<span class="loading"></span> Generating...';
+    referralLetterDiv.innerHTML = '<p style="color: #667eea;">Generating referral letter...</p>';
+
+    try {
+        // Call our secure API endpoint with referral letter prompt
+        const response = await fetch('/api/summarize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                transcript: finalSummary,
+                isReferral: true  // Flag to use different prompt
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `API request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const referralLetter = data.summary;
+
+        // Display referral letter
+        referralLetterDiv.innerHTML = `<p>${referralLetter.replace(/\n/g, '<br>')}</p>`;
+        
+        // Show copy button
+        copyReferralBtn.style.display = 'inline-flex';
+        
+    } catch (error) {
+        console.error('Error generating referral letter:', error);
+        referralLetterDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
+    } finally {
+        generateReferralBtn.disabled = false;
+        generateReferralBtn.innerHTML = '<span class="icon">📄</span> Generate Referral Letter';
+    }
+}
+
 // Clear Transcript
 function clearTranscript() {
     finalTranscript = '';
+    finalSummary = '';
     audioChunks = [];
     isPaused = false;
     pausedDuration = 0;
     pauseStartTime = null;
     
     transcriptDiv.innerHTML = '<p class="placeholder">Transcription will appear here once you have finished recording</p>';
-    summaryDiv.innerHTML = '<p class="placeholder">Summary will appear here after you stop recording...</p>';
+    summaryDiv.innerHTML = '<p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>';
+    referralLetterDiv.innerHTML = '<p class="placeholder">Generate a clinical summary first, then create a referral letter for secondary care specialists</p>';
     
     clearTranscriptBtn.style.display = 'none';
     getSummaryBtn.style.display = 'none';
     copySummaryBtn.style.display = 'none';
+    generateReferralBtn.style.display = 'none';
+    copyReferralBtn.style.display = 'none';
     
     // Reset pause button
     pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
@@ -353,6 +415,36 @@ async function copySummaryToClipboard() {
         setTimeout(() => {
             copySummaryBtn.innerHTML = originalText;
             copySummaryBtn.style.background = '';
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Failed to copy:', error);
+        alert('Failed to copy to clipboard. Please try selecting and copying manually.');
+    }
+}
+
+// Copy Referral Letter to Clipboard
+async function copyReferralToClipboard() {
+    const referralText = referralLetterDiv.innerText;
+    
+    // Check if there's actual content (not just placeholder)
+    if (!referralText || referralText.includes('Generate a clinical summary first')) {
+        alert('No referral letter to copy. Please generate a referral letter first.');
+        return;
+    }
+    
+    try {
+        await navigator.clipboard.writeText(referralText);
+        
+        // Visual feedback
+        const originalText = copyReferralBtn.innerHTML;
+        copyReferralBtn.innerHTML = '<span class="icon">✓</span> Copied!';
+        copyReferralBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            copyReferralBtn.innerHTML = originalText;
+            copyReferralBtn.style.background = '';
         }, 2000);
         
     } catch (error) {
@@ -441,6 +533,8 @@ stopBtn.addEventListener('click', stopRecording);
 getSummaryBtn.addEventListener('click', generateSummary);
 clearTranscriptBtn.addEventListener('click', clearTranscript);
 copySummaryBtn.addEventListener('click', copySummaryToClipboard);
+generateReferralBtn.addEventListener('click', generateReferralLetter);
+copyReferralBtn.addEventListener('click', copyReferralToClipboard);
 
 // Add microphone dropdown change listener
 document.addEventListener('DOMContentLoaded', () => {
