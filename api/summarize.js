@@ -30,6 +30,7 @@ export default async function handler(req, res) {
 
 Requirements:
 - Write in professional medical letter format
+- Use British English spelling and terminology throughout (e.g., "favour" not "favor", "organised" not "organized")
 - Use prose paragraphs, avoid bullet points
 - Include relevant clinical history, examination findings, and reason for referral
 - Be concise but comprehensive
