@@ -44,7 +44,9 @@ ${transcript}`;
             // Clinical summary prompt
             userPrompt = `Please provide a detailed summary of the following GP consultation transcript. Structure your response with these sections:
 
-HISTORY OF PRESENTING COMPLAINT: Write this as detailed prose paragraphs describing the patient's symptoms, their timeline, severity, aggravating/relieving factors, associated symptoms, and any treatments tried. Include the patient's own words and descriptions where relevant.
+PRESENTING COMPLAINTS: If the patient presents with multiple unrelated complaints, list them clearly (e.g., "1. Chest pain 2. Skin rash 3. Medication review"). If there is only one complaint, simply state it.
+
+HISTORY OF PRESENTING COMPLAINT: Write detailed prose paragraphs for each presenting complaint. If there are multiple unrelated complaints, use clear subheadings (e.g., "Chest pain:", "Skin rash:", "Medication review:"). For each complaint, describe the patient's symptoms, timeline, severity, aggravating/relieving factors, associated symptoms, and any treatments tried. Include the patient's own words and descriptions where relevant.
 
 PAST MEDICAL HISTORY: List relevant conditions with dates if mentioned.
 
@@ -54,11 +56,11 @@ ALLERGIES: List any allergies and reactions.
 
 SOCIAL HISTORY: Include occupation, smoking status (pack-years if mentioned), alcohol consumption (units per week if mentioned), recreational drug use, living situation (alone/with family, house/flat/bungalow), mobility aids (walking stick, zimmer frame, wheelchair), home adaptations (stairlift, grab rails, wet room), care arrangements (carers, frequency of visits), support network, and any other relevant social factors affecting health.
 
-EXAMINATION FINDINGS: Detail vital signs and examination findings.
+EXAMINATION FINDINGS: Detail vital signs and examination findings for each complaint where relevant.
 
-IMPRESSION: Clinical assessment and diagnosis.
+IMPRESSION: Clinical assessment and diagnosis for each complaint.
 
-MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice.
+MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice. Clearly indicate which actions relate to which complaint if there are multiple issues.
 
 Transcript:
 
