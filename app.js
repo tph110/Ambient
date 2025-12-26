@@ -24,6 +24,7 @@ let recordingTimer = null;
 let pausedDuration = 0;
 let pauseStartTime = null;
 let selectedMicId = null;
+let telephoneStreams = null;  // Store telephone mode streams for cleanup
 
 // Setup Telephone Recording (Mix Microphone + System Audio)
 async function setupTelephoneRecording() {
@@ -71,15 +72,21 @@ async function setupTelephoneRecording() {
             alert('Warning: No system audio detected.\n\nMake sure you:\n1. Selected a window/tab (not entire screen)\n2. Checked "Share audio" checkbox\n\nRecording will continue with microphone only.');
         }
         
-        // Step 6: Stop the video track (we only need audio)
-        const videoTracks = systemStream.getVideoTracks();
-        videoTracks.forEach(track => track.stop());
-        console.log('✓ Video track stopped (audio-only recording)');
+        // IMPORTANT: Keep video track alive! Stopping it will kill the audio in Chrome.
+        // We keep a reference to the full systemStream so it stays active.
+        // It will be stopped when the user clicks "Stop Recording"
+        console.log('✓ Video track kept alive (required for audio capture)');
         
         console.log('✓ Telephone recording setup complete!');
         
-        // Return the mixed audio stream
-        return destination.stream;
+        // Return both the mixed stream AND the original systemStream
+        // We need to keep systemStream alive for audio to work
+        return {
+            mixedStream: destination.stream,
+            systemStream: systemStream,  // Keep reference to stop later
+            micStream: micStream,
+            audioContext: audioContext
+        };
         
     } catch (error) {
         console.error('Error setting up telephone recording:', error);
@@ -94,7 +101,15 @@ async function setupTelephoneRecording() {
         const micConstraints = {
             audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
         };
-        return await navigator.mediaDevices.getUserMedia(micConstraints);
+        const micStream = await navigator.mediaDevices.getUserMedia(micConstraints);
+        
+        // Return consistent structure (no system stream in fallback mode)
+        return {
+            mixedStream: micStream,
+            systemStream: null,
+            micStream: micStream,
+            audioContext: null
+        };
     }
 }
 
@@ -112,9 +127,11 @@ async function startRecording() {
         
         if (recordTelephone) {
             // TELEPHONE MODE: Capture both microphone and system audio
-            finalStream = await setupTelephoneRecording();
+            telephoneStreams = await setupTelephoneRecording();
+            finalStream = telephoneStreams.mixedStream;
         } else {
             // STANDARD MODE: Just microphone
+            telephoneStreams = null;  // Clear any previous telephone streams
             const constraints = {
                 audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
             };
@@ -163,8 +180,33 @@ async function startRecording() {
         
         // Handle recording stop
         mediaRecorder.onstop = async () => {
-            // Stop all tracks from the stream
+            // Stop all tracks from the mixed stream
             finalStream.getTracks().forEach(track => track.stop());
+            
+            // If in telephone mode, clean up all the streams properly
+            if (telephoneStreams) {
+                console.log('Cleaning up telephone mode streams...');
+                
+                // Stop microphone stream
+                if (telephoneStreams.micStream) {
+                    telephoneStreams.micStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Stop system stream (this includes video track - safe to stop now)
+                if (telephoneStreams.systemStream) {
+                    telephoneStreams.systemStream.getTracks().forEach(track => track.stop());
+                    console.log('✓ System stream stopped (video + audio)');
+                }
+                
+                // Close audio context
+                if (telephoneStreams.audioContext) {
+                    telephoneStreams.audioContext.close();
+                    console.log('✓ Audio context closed');
+                }
+                
+                // Clear the reference
+                telephoneStreams = null;
+            }
             
             // Create audio blob
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
