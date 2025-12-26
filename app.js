@@ -35,9 +35,24 @@ async function startRecording() {
         
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         
-        // Create MediaRecorder
-        mediaRecorder = new MediaRecorder(stream);
+        // Configure MediaRecorder with aggressive compression for smaller files
+        const options = {
+            mimeType: 'audio/webm;codecs=opus',
+            audioBitsPerSecond: 12000  // 12kbps - very compressed, still good for speech
+        };
+        
+        // Fallback for browsers that don't support the preferred codec
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            options.mimeType = 'audio/webm';
+            options.audioBitsPerSecond = 12000;
+            console.log('Using fallback audio codec');
+        }
+        
+        // Create MediaRecorder with compression
+        mediaRecorder = new MediaRecorder(stream, options);
         audioChunks = [];
+        
+        console.log('Recording with codec:', options.mimeType, 'at', options.audioBitsPerSecond/1000, 'kbps');
         
         // Collect audio data
         mediaRecorder.ondataavailable = (event) => {
@@ -169,6 +184,13 @@ function pauseRecording() {
 // Transcribe Audio using Whisper API
 async function transcribeAudio(audioBlob) {
     try {
+        // Check file size before uploading (Vercel limit is ~4.5MB for request body)
+        const maxSize = 4 * 1024 * 1024; // 4MB to be safe
+        if (audioBlob.size > maxSize) {
+            const minutes = Math.floor(audioBlob.size / (12000 / 8) / 60); // Estimate duration
+            throw new Error(`Recording too long (approximately ${minutes} minutes). Please keep consultations under 10-15 minutes, or stop and restart recording for longer sessions.`);
+        }
+        
         statusDiv.textContent = '⏳ Transcribing with AI...';
         transcriptDiv.innerHTML = '<p class="placeholder">Transcribing your consultation...</p>';
         
@@ -198,15 +220,24 @@ async function transcribeAudio(audioBlob) {
             
             if (!response.ok) {
                 let errorMessage = 'Transcription failed';
+                
+                // Handle specific error codes
+                if (response.status === 413) {
+                    errorMessage = 'Recording too long. Please keep consultations under 15 minutes, or stop and restart recording for longer sessions.';
+                    console.error('413 Payload Too Large - Audio size:', audioBlob.size, 'bytes');
+                    throw new Error(errorMessage);
+                }
+                
+                // Try to get error details
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.error || errorMessage;
                     console.error('API error:', errorData);
                 } catch (e) {
-                    const errorText = await response.text();
-                    console.error('API error (text):', errorText);
-                    errorMessage = errorText || errorMessage;
+                    // If JSON parsing fails, don't try to read body again
+                    console.error('Could not parse error response');
                 }
+                
                 throw new Error(errorMessage);
             }
             
