@@ -709,8 +709,17 @@ h3 {
 /* Transcript and Summary Boxes */
 .transcript-section,
 .summary-section,
-.referral-section {
+.referral-section,
+.patient-summary-section {
     position: relative; /* For edit indicator positioning */
+}
+
+/* Section Description */
+.section-description {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: -5px 0 15px 0;
+    font-style: italic;
 }
 
 /* AI Disclaimer */
