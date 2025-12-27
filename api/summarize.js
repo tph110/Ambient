@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { transcript, isReferral } = req.body;
+        const { transcript, isReferral, isPatientSummary } = req.body;
 
         if (!transcript) {
             return res.status(400).json({ error: 'Transcript is required' });
@@ -21,10 +21,33 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'API key not configured' });
         }
 
-        // Choose prompt based on whether this is a referral letter or clinical summary
+        // Choose prompt based on whether this is a referral letter, patient summary, or clinical summary
         let userPrompt;
         
-        if (isReferral) {
+        if (isPatientSummary) {
+            // Patient-friendly summary prompt
+            userPrompt = `Please create a patient-friendly summary based on this clinical summary. This will be given to the patient to take home.
+
+Requirements:
+- Use simple, everyday language (avoid medical jargon)
+- Explain medical terms in plain English when they must be used
+- Write in short, clear sentences
+- Use a warm, reassuring tone
+- Organise information in a way that's easy for patients to understand
+- Include:
+  * What we discussed today
+  * What we found during the examination
+  * What we think is causing your symptoms (diagnosis in simple terms)
+  * What you need to do next (medications, lifestyle changes, follow-up)
+  * When to seek urgent help (if relevant)
+- Write in second person ("you", "your") to speak directly to the patient
+- Keep it concise but complete
+- Use British English spelling
+
+Clinical Summary:
+
+${transcript}`;
+        } else if (isReferral) {
             // Referral letter prompt
             userPrompt = `Please write a referral letter from a GP to a secondary care specialist based on this clinical summary. 
 
