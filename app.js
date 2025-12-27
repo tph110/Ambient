@@ -5,12 +5,15 @@ const stopBtn = document.getElementById('stopBtn');
 const transcriptDiv = document.getElementById('transcript');
 const summaryDiv = document.getElementById('summary');
 const referralLetterDiv = document.getElementById('referralLetter');
+const patientSummaryDiv = document.getElementById('patientSummary');
 const statusDiv = document.getElementById('status');
 const getSummaryBtn = document.getElementById('getSummary');
 const clearTranscriptBtn = document.getElementById('clearTranscript');
 const copySummaryBtn = document.getElementById('copySummary');
 const generateReferralBtn = document.getElementById('generateReferral');
 const copyReferralBtn = document.getElementById('copyReferral');
+const generatePatientSummaryBtn = document.getElementById('generatePatientSummary');
+const copyPatientSummaryBtn = document.getElementById('copyPatientSummary');
 
 // State
 let mediaRecorder = null;
@@ -483,6 +486,9 @@ async function generateSummary() {
         // Show referral letter button
         generateReferralBtn.style.display = 'inline-flex';
         
+        // Show patient summary button
+        generatePatientSummaryBtn.style.display = 'inline-flex';
+        
     } catch (error) {
         console.error('Error generating summary:', error);
         summaryDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
@@ -540,6 +546,54 @@ async function generateReferralLetter() {
     }
 }
 
+// Generate Patient Summary
+async function generatePatientSummary() {
+    if (!finalSummary || finalSummary.trim() === '') {
+        alert('Please generate a clinical summary first');
+        return;
+    }
+
+    // Show loading state
+    generatePatientSummaryBtn.disabled = true;
+    generatePatientSummaryBtn.innerHTML = '<span class="loading"></span> Generating...';
+    patientSummaryDiv.innerHTML = '<p style="color: #667eea;">Generating patient-friendly summary...</p>';
+
+    try {
+        // Call our secure API endpoint with patient summary prompt
+        const response = await fetch('/api/summarize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                transcript: finalSummary,
+                isPatientSummary: true  // Flag to use patient-friendly prompt
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `API request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const patientSummary = data.summary;
+
+        // Display patient summary
+        patientSummaryDiv.innerHTML = `<p>${patientSummary.replace(/\n/g, '<br>')}</p>`;
+        
+        // Show copy button
+        copyPatientSummaryBtn.style.display = 'inline-flex';
+        
+    } catch (error) {
+        console.error('Error generating patient summary:', error);
+        patientSummaryDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
+    } finally {
+        generatePatientSummaryBtn.disabled = false;
+        generatePatientSummaryBtn.innerHTML = '<span class="icon">👤</span> Generate Patient Summary';
+    }
+}
+
 // Clear Transcript
 function clearTranscript() {
     finalTranscript = '';
@@ -552,12 +606,15 @@ function clearTranscript() {
     transcriptDiv.innerHTML = '<p class="placeholder">Transcription will appear here once you have finished recording</p>';
     summaryDiv.innerHTML = '<p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>';
     referralLetterDiv.innerHTML = '<p class="placeholder">Generate a clinical summary first, then create a referral letter for secondary care specialists</p>';
+    patientSummaryDiv.innerHTML = '<p class="placeholder">Generate a clinical summary first, then create a patient-friendly summary to share</p>';
     
     clearTranscriptBtn.style.display = 'none';
     getSummaryBtn.style.display = 'none';
     copySummaryBtn.style.display = 'none';
     generateReferralBtn.style.display = 'none';
     copyReferralBtn.style.display = 'none';
+    generatePatientSummaryBtn.style.display = 'none';
+    copyPatientSummaryBtn.style.display = 'none';
     
     // Reset pause button
     pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
@@ -629,6 +686,36 @@ async function copyReferralToClipboard() {
         setTimeout(() => {
             copyReferralBtn.innerHTML = originalText;
             copyReferralBtn.style.background = '';
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Failed to copy:', error);
+        alert('Failed to copy to clipboard. Please try selecting and copying manually.');
+    }
+}
+
+// Copy Patient Summary to Clipboard
+async function copyPatientSummaryToClipboard() {
+    const patientText = patientSummaryDiv.innerText;
+    
+    // Check if there's actual content (not just placeholder)
+    if (!patientText || patientText.includes('Generate a clinical summary first')) {
+        alert('No patient summary to copy. Please generate a patient summary first.');
+        return;
+    }
+    
+    try {
+        await navigator.clipboard.writeText(patientText);
+        
+        // Visual feedback
+        const originalText = copyPatientSummaryBtn.innerHTML;
+        copyPatientSummaryBtn.innerHTML = '<span class="icon">✓</span> Copied!';
+        copyPatientSummaryBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            copyPatientSummaryBtn.innerHTML = originalText;
+            copyPatientSummaryBtn.style.background = '';
         }, 2000);
         
     } catch (error) {
@@ -719,6 +806,8 @@ clearTranscriptBtn.addEventListener('click', clearTranscript);
 copySummaryBtn.addEventListener('click', copySummaryToClipboard);
 generateReferralBtn.addEventListener('click', generateReferralLetter);
 copyReferralBtn.addEventListener('click', copyReferralToClipboard);
+generatePatientSummaryBtn.addEventListener('click', generatePatientSummary);
+copyPatientSummaryBtn.addEventListener('click', copyPatientSummaryToClipboard);
 
 // Add microphone dropdown change listener
 document.addEventListener('DOMContentLoaded', () => {
@@ -775,7 +864,7 @@ function checkBrowserCompression() {
 
 // Setup editable content boxes
 function setupEditableContent() {
-    const editableBoxes = [transcriptDiv, summaryDiv, referralLetterDiv];
+    const editableBoxes = [transcriptDiv, summaryDiv, referralLetterDiv, patientSummaryDiv];
     
     editableBoxes.forEach(box => {
         // Remove placeholder text when user starts typing
