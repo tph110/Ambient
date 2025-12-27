@@ -116,12 +116,9 @@ async function setupTelephoneRecording() {
 // Start Recording with MediaRecorder
 async function startRecording() {
     try {
-        // Check if user wants to record telephone consultation (system audio + mic)
-        const recordTelephone = confirm(
-            "Telephone Consultation Mode?\n\n" +
-            "Click OK to record both you and the patient (via phone system).\n" +
-            "Click Cancel for standard recording (microphone only)."
-        );
+        // Check if telephone mode is enabled via checkbox
+        const telephoneModeCheckbox = document.getElementById('telephoneModeCheckbox');
+        const recordTelephone = telephoneModeCheckbox.checked;
         
         let finalStream;
         
