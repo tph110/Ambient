@@ -100,7 +100,7 @@ ${transcript}`;
                 'X-Title': 'AmbientDoc'
             },
             body: JSON.stringify({
-                model: 'anthropic/claude-3.5-sonnet',
+                model: 'google/gemini-flash-1.5',
                 messages: [
                     {
                         role: 'user',
