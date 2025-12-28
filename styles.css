@@ -1285,6 +1285,7 @@ h3 {
     border: 2px solid #e0e7ff;
     text-align: center;
     width: 100%;
+    transition: all 0.3s ease;
 }
 
 .status.recording {
@@ -1294,12 +1295,45 @@ h3 {
     animation: pulse-recording 1.5s ease-in-out infinite;
 }
 
+/* Size warning states (override via inline styles) */
+.status.warning {
+    background: #fbbf24;
+    color: #78350f;
+    border-color: #f59e0b;
+    animation: pulse-warning 1.5s ease-in-out infinite;
+}
+
+.status.danger {
+    background: #ef4444;
+    color: white;
+    border-color: #dc2626;
+    animation: pulse-danger 1s ease-in-out infinite;
+}
+
 @keyframes pulse-recording {
     0%, 100% {
         box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
     }
     50% {
         box-shadow: 0 4px 16px rgba(239, 68, 68, 0.6);
+    }
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(251, 191, 36, 0.8);
+    }
+}
+
+@keyframes pulse-danger {
+    0%, 100% {
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.6);
+    }
+    50% {
+        box-shadow: 0 6px 24px rgba(239, 68, 68, 1);
     }
 }
 
