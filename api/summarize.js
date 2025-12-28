@@ -100,7 +100,7 @@ ${transcript}`;
                 'X-Title': 'AmbientDoc'
             },
             body: JSON.stringify({
-                model: 'google/gemini-flash-1.5',
+                model: 'deepseek/deepseek-chat',
                 messages: [
                     {
                         role: 'user',
