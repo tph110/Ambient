@@ -130,6 +130,9 @@ function checkRecordingSize() {
     const sizeMB = (currentRecordingSize / (1024 * 1024)).toFixed(1);
     const estimatedMinutes = Math.floor(currentRecordingSize / (12000 / 8) / 60);
     
+    // Update visual timer display
+    updateRecordingTimer();
+    
     // Show warning at 3MB
     if (currentRecordingSize >= SIZE_WARNING_THRESHOLD && !hasShownSizeWarning) {
         hasShownSizeWarning = true;
@@ -162,14 +165,67 @@ function checkRecordingSize() {
         // Auto-stop the recording
         stopRecording();
     }
+}
+
+// Update Recording Timer Display
+function updateRecordingTimer() {
+    const timerDiv = document.getElementById('recordingTimer');
+    if (!timerDiv || timerDiv.style.display === 'none') return;
     
-    // Update status with size info during recording (subtle)
-    if (currentRecordingSize < SIZE_WARNING_THRESHOLD && isRecording && !isPaused) {
-        // Show size in status bar (non-intrusive)
-        const timeDisplay = statusDiv.textContent.includes('Recording') ? statusDiv.textContent : 'Recording...';
-        if (!timeDisplay.includes('MB')) {
-            statusDiv.textContent = `${timeDisplay} (${sizeMB}MB)`;
-        }
+    // Calculate elapsed time
+    const now = Date.now();
+    const elapsed = Math.floor((now - recordingStartTime - pausedDuration) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    const elapsedDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    // Calculate size and progress
+    const sizeMB = (currentRecordingSize / (1024 * 1024)).toFixed(1);
+    const percentage = Math.min((currentRecordingSize / SIZE_MAX_LIMIT) * 100, 100);
+    
+    // Estimate time remaining (based on current rate)
+    const bytesPerSecond = elapsed > 0 ? currentRecordingSize / elapsed : 12000 / 8;
+    const remainingBytes = SIZE_MAX_LIMIT - currentRecordingSize;
+    const remainingSeconds = remainingBytes / bytesPerSecond;
+    const remainingMinutes = Math.floor(remainingSeconds / 60);
+    
+    let remainingDisplay;
+    if (remainingMinutes < 1) {
+        remainingDisplay = '<1 min';
+    } else if (remainingMinutes > 60) {
+        remainingDisplay = '>60 min';
+    } else {
+        remainingDisplay = `~${remainingMinutes} min`;
+    }
+    
+    // Update timer displays
+    document.getElementById('timerElapsed').textContent = elapsedDisplay;
+    document.getElementById('timerRemaining').textContent = remainingDisplay;
+    document.getElementById('timerSize').textContent = `${sizeMB} MB`;
+    
+    // Update progress bar
+    const progressBar = document.getElementById('progressBar');
+    const progressPercentage = document.getElementById('progressPercentage');
+    
+    progressBar.style.width = `${percentage}%`;
+    progressPercentage.textContent = `${percentage.toFixed(0)}%`;
+    
+    // Change progress bar color based on percentage
+    progressBar.classList.remove('warning', 'danger');
+    if (percentage >= 90) {
+        progressBar.classList.add('danger');
+    } else if (percentage >= 75) {
+        progressBar.classList.add('warning');
+    }
+    
+    // Update remaining time color
+    const timerRemainingValue = document.getElementById('timerRemaining');
+    if (remainingMinutes < 5) {
+        timerRemainingValue.style.color = '#ef4444'; // Red
+    } else if (remainingMinutes < 15) {
+        timerRemainingValue.style.color = '#f59e0b'; // Amber
+    } else {
+        timerRemainingValue.style.color = '#10b981'; // Green
     }
 }
 
@@ -307,9 +363,17 @@ async function startRecording() {
         isRecording = true;
         recordingStartTime = Date.now();
         
+        // Show recording timer display
+        const timerDiv = document.getElementById('recordingTimer');
+        if (timerDiv) {
+            timerDiv.style.display = 'block';
+            // Initialize timer display
+            updateRecordingTimer();
+        }
+        
         // Start timer display
         recordingTimer = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const elapsed = Math.floor((Date.now() - recordingStartTime - pausedDuration) / 1000);
             const minutes = Math.floor(elapsed / 60);
             const seconds = elapsed % 60;
             statusDiv.textContent = `🔴 Recording... ${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -368,6 +432,12 @@ function stopRecording() {
         if (sizeMonitorInterval) {
             clearInterval(sizeMonitorInterval);
             sizeMonitorInterval = null;
+        }
+        
+        // Hide recording timer display
+        const timerDiv = document.getElementById('recordingTimer');
+        if (timerDiv) {
+            timerDiv.style.display = 'none';
         }
         
         // Reset pause tracking
