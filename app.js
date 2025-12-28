@@ -28,6 +28,14 @@ let pausedDuration = 0;
 let pauseStartTime = null;
 let selectedMicId = null;
 let telephoneStreams = null;  // Store telephone mode streams for cleanup
+let sizeMonitorInterval = null;  // Monitor recording size
+let currentRecordingSize = 0;  // Track current size
+let hasShownSizeWarning = false;  // Track if warning shown
+
+// Size limits (in bytes)
+const SIZE_WARNING_THRESHOLD = 3 * 1024 * 1024;  // 3MB - show warning
+const SIZE_MAX_LIMIT = 4 * 1024 * 1024;  // 4MB - auto-stop
+const SIZE_SAFE_LIMIT = 4.2 * 1024 * 1024;  // 4.2MB - absolute max before data loss
 
 // Setup Telephone Recording (Mix Microphone + System Audio)
 async function setupTelephoneRecording() {
@@ -117,6 +125,55 @@ async function setupTelephoneRecording() {
 }
 
 // Start Recording with MediaRecorder
+// Check Recording Size and Show Warnings
+function checkRecordingSize() {
+    const sizeMB = (currentRecordingSize / (1024 * 1024)).toFixed(1);
+    const estimatedMinutes = Math.floor(currentRecordingSize / (12000 / 8) / 60);
+    
+    // Show warning at 3MB
+    if (currentRecordingSize >= SIZE_WARNING_THRESHOLD && !hasShownSizeWarning) {
+        hasShownSizeWarning = true;
+        statusDiv.style.backgroundColor = '#fbbf24';  // Amber warning
+        statusDiv.style.color = '#78350f';
+        statusDiv.textContent = `⚠️ Warning: Recording size ${sizeMB}MB (~${estimatedMinutes} min). Approaching limit!`;
+        
+        // Show browser notification if permitted
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('AmbientDoc - File Size Warning', {
+                body: `Recording is ${sizeMB}MB. Please stop soon to avoid data loss.`,
+                icon: '/favicon.ico'
+            });
+        }
+        
+        console.warn(`⚠️ Recording size warning: ${sizeMB}MB`);
+    }
+    
+    // Auto-stop at 4MB to prevent data loss
+    if (currentRecordingSize >= SIZE_MAX_LIMIT) {
+        console.error(`🛑 Auto-stopping recording at ${sizeMB}MB to prevent data loss`);
+        
+        statusDiv.style.backgroundColor = '#ef4444';  // Red alert
+        statusDiv.style.color = 'white';
+        statusDiv.textContent = `🛑 Recording auto-stopped at ${sizeMB}MB to prevent data loss`;
+        
+        // Show alert to user
+        alert(`Recording automatically stopped at ${sizeMB}MB to prevent data loss.\n\nThe recording will now be transcribed safely.\n\nTip: For longer consultations, stop and restart recording every 10-15 minutes.`);
+        
+        // Auto-stop the recording
+        stopRecording();
+    }
+    
+    // Update status with size info during recording (subtle)
+    if (currentRecordingSize < SIZE_WARNING_THRESHOLD && isRecording && !isPaused) {
+        // Show size in status bar (non-intrusive)
+        const timeDisplay = statusDiv.textContent.includes('Recording') ? statusDiv.textContent : 'Recording...';
+        if (!timeDisplay.includes('MB')) {
+            statusDiv.textContent = `${timeDisplay} (${sizeMB}MB)`;
+        }
+    }
+}
+
+// Start Recording
 async function startRecording() {
     try {
         // Check if telephone mode is enabled via checkbox
@@ -171,6 +228,8 @@ async function startRecording() {
         // Create MediaRecorder with best available options
         mediaRecorder = new MediaRecorder(finalStream, options);
         audioChunks = [];
+        currentRecordingSize = 0;  // Reset size tracking
+        hasShownSizeWarning = false;  // Reset warning flag
         
         console.log('Recording with:', options.mimeType || 'default', 'at', options.audioBitsPerSecond/1000, 'kbps (requested)');
         
@@ -178,8 +237,19 @@ async function startRecording() {
         mediaRecorder.ondataavailable = (event) => {
             if (event.data.size > 0) {
                 audioChunks.push(event.data);
+                currentRecordingSize += event.data.size;
+                
+                // Check size in real-time
+                checkRecordingSize();
             }
         };
+        
+        // Start size monitoring (check every 5 seconds)
+        sizeMonitorInterval = setInterval(() => {
+            if (isRecording && !isPaused) {
+                checkRecordingSize();
+            }
+        }, 5000);
         
         // Handle recording stop
         mediaRecorder.onstop = async () => {
@@ -294,9 +364,19 @@ function stopRecording() {
             recordingTimer = null;
         }
         
+        // Stop size monitor
+        if (sizeMonitorInterval) {
+            clearInterval(sizeMonitorInterval);
+            sizeMonitorInterval = null;
+        }
+        
         // Reset pause tracking
         pausedDuration = 0;
         pauseStartTime = null;
+        
+        // Reset status bar colors
+        statusDiv.style.backgroundColor = '';
+        statusDiv.style.color = '';
         
         // Stop recording
         mediaRecorder.stop();
@@ -359,11 +439,40 @@ function pauseRecording() {
 // Transcribe Audio using Whisper API
 async function transcribeAudio(audioBlob) {
     try {
-        // Check file size before uploading (Vercel limit is ~4.5MB for request body)
+        // Final safety check before uploading
         const maxSize = 4 * 1024 * 1024; // 4MB to be safe
         if (audioBlob.size > maxSize) {
-            const minutes = Math.floor(audioBlob.size / (12000 / 8) / 60); // Estimate duration
-            throw new Error(`Recording too long (approximately ${minutes} minutes). Please keep consultations under 10-15 minutes, or stop and restart recording for longer sessions.`);
+            const sizeMB = (audioBlob.size / (1024 * 1024)).toFixed(1);
+            const minutes = Math.floor(audioBlob.size / (12000 / 8) / 60);
+            
+            // Show error with download option to save the audio
+            const shouldDownload = confirm(
+                `⚠️ RECORDING TOO LARGE\n\n` +
+                `Size: ${sizeMB}MB (limit: 4MB)\n` +
+                `Duration: ~${minutes} minutes\n\n` +
+                `The recording cannot be transcribed due to file size limits.\n\n` +
+                `Click OK to download the audio file so you don't lose your recording.\n` +
+                `Click Cancel to discard it.\n\n` +
+                `💡 Tip: For longer consultations, stop and restart recording every 10-15 minutes.`
+            );
+            
+            if (shouldDownload) {
+                // Download the audio file as backup
+                const url = URL.createObjectURL(audioBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `consultation-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.webm`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                statusDiv.textContent = `✓ Audio saved! Recording was ${sizeMB}MB (~${minutes} min). Please record in shorter segments.`;
+                statusDiv.style.backgroundColor = '#10b981';
+                statusDiv.style.color = 'white';
+            } else {
+                statusDiv.textContent = 'Recording discarded. Keep recordings under 15 minutes.';
+            }
+            
+            throw new Error(`Recording too large: ${sizeMB}MB (approximately ${minutes} minutes). Maximum is 4MB (~40 minutes at 12kbps).`);
         }
         
         statusDiv.textContent = '⏳ Transcribing with AI...';
