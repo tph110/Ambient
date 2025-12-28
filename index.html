@@ -57,6 +57,32 @@
                 </div>
                 
                 <div class="status" id="status">Ready to record</div>
+                
+                <!-- Recording Timer with Visual Countdown -->
+                <div class="recording-timer" id="recordingTimer" style="display: none;">
+                    <div class="timer-info">
+                        <div class="timer-elapsed">
+                            <span class="timer-label">Elapsed:</span>
+                            <span class="timer-value" id="timerElapsed">00:00</span>
+                        </div>
+                        <div class="timer-remaining">
+                            <span class="timer-label">Est. Time Left:</span>
+                            <span class="timer-value" id="timerRemaining">~45 min</span>
+                        </div>
+                        <div class="timer-size">
+                            <span class="timer-label">Size:</span>
+                            <span class="timer-value" id="timerSize">0.0 MB</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span id="progressPercentage">0%</span>
+                        <span id="progressLimit">Limit: 4.0 MB</span>
+                    </div>
+                </div>
+                
                 <div class="button-group">
                     <button id="startBtn" class="btn btn-primary large btn-record-animated">
                         <span class="record-icon"></span>
