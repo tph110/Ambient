@@ -387,10 +387,14 @@ header::before {
 }
 
 .btn-stop-animated:hover {
-    color: #3b82f6;
+    color: #3b82f6 !important;
     border-color: #3b82f6;
     transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+}
+
+.btn-stop-animated:hover span {
+    color: #3b82f6 !important;
 }
 
 .btn-stop-animated:active {
