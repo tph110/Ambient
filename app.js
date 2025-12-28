@@ -136,6 +136,9 @@ async function startRecording() {
                 audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
             };
             finalStream = await navigator.mediaDevices.getUserMedia(constraints);
+            
+            // Now that we have permission, refresh the microphone list with proper labels
+            await populateMicrophoneDropdown();
         }
         
         // Try to find the best supported codec with compression
@@ -322,7 +325,7 @@ function pauseRecording() {
             recordingTimer = null;
         }
         
-        statusDiv.textContent = '⏸️ Recording Paused';
+        statusDiv.textContent = 'Recording Paused';
         statusDiv.classList.remove('recording');
         pauseBtn.innerHTML = '<span class="resume-icon"></span><span>Resume</span>';
         
@@ -792,13 +795,7 @@ async function populateMicrophoneDropdown() {
     const dropdown = document.getElementById('microphoneDropdown');
     
     try {
-        // Request microphone permission first
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        // Stop the stream immediately - we just needed permission
-        stream.getTracks().forEach(track => track.stop());
-        
-        // Get list of all media devices
+        // Try to enumerate devices without permission first
         const devices = await navigator.mediaDevices.enumerateDevices();
         
         // Filter for audio input devices
@@ -810,7 +807,7 @@ async function populateMicrophoneDropdown() {
         dropdown.innerHTML = '';
         
         if (microphones.length === 0) {
-            dropdown.innerHTML = '<option value="">No microphones found</option>';
+            dropdown.innerHTML = '<option value="">No microphones detected</option>';
             dropdown.disabled = true;
             return;
         }
@@ -820,7 +817,8 @@ async function populateMicrophoneDropdown() {
             const option = document.createElement('option');
             option.value = mic.deviceId;
             
-            // Use device label or fallback to generic name
+            // If no permission yet, device labels will be empty
+            // Use generic names or actual labels if available
             const label = mic.label || `Microphone ${index + 1}`;
             option.textContent = label;
             
