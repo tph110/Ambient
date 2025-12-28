@@ -158,11 +158,11 @@ header::before {
 }
 
 /* Pause button variant (when recording) */
-.btn-pause-animated {
+.btn-pause-animated.btn-warning {
     position: relative;
-    background: #FF342B;
-    color: white;
-    border: none;
+    background: #FF342B !important;
+    color: white !important;
+    border: none !important;
     font-weight: 600;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
@@ -216,6 +216,24 @@ header::before {
 
 .btn-pause-animated:hover .pause-icon::after {
     transform: translateX(2px);
+}
+
+/* Resume icon (play triangle) */
+.btn-pause-animated .resume-icon {
+    width: 0;
+    height: 0;
+    border-left: 12px solid white;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    display: inline-block;
+    margin-right: 8px;
+    transition: all 0.3s;
+}
+
+.btn-pause-animated:hover .resume-icon {
+    border-left-width: 14px;
+    border-top-width: 9px;
+    border-bottom-width: 9px;
 }
 
 /* Glassmorphism Button Style */
