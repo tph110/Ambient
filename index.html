@@ -58,13 +58,15 @@
                 
                 <div class="status" id="status">Ready to record</div>
                 <div class="button-group">
-                    <button id="startBtn" class="btn btn-primary large btn-gradient-shift">
-                        <span class="icon">⏺️</span> Start Recording
+                    <button id="startBtn" class="btn btn-primary large btn-record-animated">
+                        <span class="record-icon"></span>
+                        <span>Start Recording</span>
                     </button>
-                    <button id="pauseBtn" class="btn btn-warning large btn-glass" disabled>
-                        <span class="icon">⏸️</span> Pause
+                    <button id="pauseBtn" class="btn btn-warning large btn-pause-animated" disabled style="display: none;">
+                        <span class="pause-icon"></span>
+                        <span>Pause</span>
                     </button>
-                    <button id="stopBtn" class="btn btn-danger large btn-3d" disabled>
+                    <button id="stopBtn" class="btn btn-danger large btn-stop-animated" disabled>
                         <span class="icon">⏹️</span> Stop Recording
                     </button>
                 </div>
@@ -96,8 +98,8 @@
                     <p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>
                 </div>
                 <div class="button-group">
-                    <button id="getSummary" class="btn btn-success btn-neon" style="display: none;">
-                        <span class="icon">✨</span> Generate Summary
+                    <button id="getSummary" class="btn btn-success btn-ai-generate" style="display: none;">
+                        <span class="sparkle">✨</span> Generate Summary
                     </button>
                     <button id="copySummary" class="btn btn-outline btn-slide-border" style="display: none;">
                         <span class="icon">📋</span> Copy to Clipboard
@@ -112,8 +114,8 @@
                     <p class="placeholder">Generate a clinical summary first, then create a referral letter for secondary care specialists</p>
                 </div>
                 <div class="button-group">
-                    <button id="generateReferral" class="btn btn-success btn-ripple" style="display: none;">
-                        <span class="icon">📄</span> Generate Referral Letter
+                    <button id="generateReferral" class="btn btn-success btn-ai-generate" style="display: none;">
+                        <span class="sparkle">✨</span> Generate Referral Letter
                     </button>
                     <button id="copyReferral" class="btn btn-outline btn-slide-border" style="display: none;">
                         <span class="icon">📋</span> Copy to Clipboard
@@ -129,8 +131,8 @@
                     <p class="placeholder">Generate a clinical summary first, then create a patient-friendly summary to share</p>
                 </div>
                 <div class="button-group">
-                    <button id="generatePatientSummary" class="btn btn-success btn-neon" style="display: none;">
-                        <span class="icon">👤</span> Generate Patient Summary
+                    <button id="generatePatientSummary" class="btn btn-success btn-ai-generate" style="display: none;">
+                        <span class="sparkle">✨</span> Generate Patient Summary
                     </button>
                     <button id="copyPatientSummary" class="btn btn-outline btn-slide-border" style="display: none;">
                         <span class="icon">📋</span> Copy to Clipboard
