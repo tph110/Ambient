@@ -324,7 +324,7 @@ function pauseRecording() {
         
         statusDiv.textContent = '⏸️ Recording Paused';
         statusDiv.classList.remove('recording');
-        pauseBtn.innerHTML = '<span class="icon">▶️</span> Resume';
+        pauseBtn.innerHTML = '<span class="resume-icon"></span><span>Resume</span>';
         
         console.log('Recording paused');
     } else if (mediaRecorder && isPaused) {
