@@ -347,7 +347,7 @@ function pauseRecording() {
         }, 1000);
         
         statusDiv.classList.add('recording');
-        pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
+        pauseBtn.innerHTML = '<span class="pause-icon"></span><span>Pause</span>';
         
         console.log('Recording resumed');
     }
@@ -472,7 +472,7 @@ async function transcribeAudio(audioBlob) {
         transcriptDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
         startBtn.disabled = false;
         pauseBtn.disabled = true;
-        pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
+        pauseBtn.innerHTML = '<span class="pause-icon"></span><span>Pause</span>';
         stopBtn.disabled = true;
     }
 }
