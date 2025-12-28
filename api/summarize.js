@@ -44,6 +44,14 @@ Requirements:
 - Keep it concise but complete
 - Use British English spelling
 
+IMPORTANT FORMATTING RULES:
+- Use PLAIN TEXT ONLY (no Markdown formatting)
+- Do NOT use hashtags (#), asterisks (**), underscores (_), or other Markdown symbols
+- Use simple section headings followed by colons (e.g., "What we discussed today:")
+- Write in clear prose paragraphs
+- Do NOT include any preamble like "Here's your summary:"
+- Start directly with the patient summary content
+
 Clinical Summary:
 
 ${transcript}`;
@@ -59,6 +67,13 @@ Requirements:
 - Be concise but comprehensive
 - Use appropriate medical terminology
 - Body of the letter only (no "Dear Dr..." greeting or signature block needed)
+
+IMPORTANT FORMATTING RULES:
+- Use PLAIN TEXT ONLY (no Markdown formatting)
+- Do NOT use hashtags (#), asterisks (**), underscores (_), or other Markdown symbols
+- Write in prose paragraphs with proper punctuation
+- Do NOT include any preamble like "Here's the referral letter:"
+- Start directly with the body of the referral letter
 
 Clinical Summary:
 
@@ -84,6 +99,15 @@ EXAMINATION FINDINGS: Detail vital signs and examination findings for each compl
 IMPRESSION: Clinical assessment and diagnosis for each complaint.
 
 MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice. Clearly indicate which actions relate to which complaint if there are multiple issues.
+
+IMPORTANT FORMATTING RULES:
+- Use PLAIN TEXT ONLY (no Markdown formatting)
+- Do NOT use hashtags (#), asterisks (**), underscores (_), or other Markdown symbols
+- Use CAPITAL LETTERS for section headings (e.g., "PRESENTING COMPLAINTS")
+- Use simple numbered lists where appropriate (e.g., "1. ", "2. ")
+- Use colons (:) for subheadings
+- Do NOT include any preamble like "Here's the summary:" or "Let me know if you'd like modifications"
+- Start directly with "PRESENTING COMPLAINTS" as the first line
 
 Transcript:
 
@@ -117,7 +141,27 @@ ${transcript}`;
         }
 
         const data = await response.json();
-        const summary = data.choices[0].message.content;
+        let summary = data.choices[0].message.content;
+        
+        // Clean up any Markdown formatting that slipped through
+        summary = summary
+            // Remove Markdown headers (### Header)
+            .replace(/^#{1,6}\s+/gm, '')
+            // Remove bold (**text** or __text__)
+            .replace(/\*\*(.+?)\*\*/g, '$1')
+            .replace(/__(.+?)__/g, '$1')
+            // Remove italic (*text* or _text_)
+            .replace(/\*(.+?)\*/g, '$1')
+            .replace(/_(.+?)_/g, '$1')
+            // Remove horizontal rules (---, ___, ***)
+            .replace(/^[\-_\*]{3,}$/gm, '')
+            // Remove any preambles
+            .replace(/^Here'?s? (the|a) .+?:?\s*/i, '')
+            .replace(/^Let me know if .+$/mi, '')
+            // Clean up extra blank lines (more than 2 consecutive)
+            .replace(/\n{3,}/g, '\n\n')
+            // Trim whitespace
+            .trim();
 
         return res.status(200).json({ summary });
 
