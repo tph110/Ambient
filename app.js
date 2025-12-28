@@ -244,7 +244,12 @@ async function startRecording() {
         
         statusDiv.classList.add('recording');
         startBtn.disabled = true;
+        
+        // Swap Start button to Pause button with animation
+        startBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-flex';
         pauseBtn.disabled = false;
+        
         stopBtn.disabled = false;
         
         // Update button colors based on new state
@@ -424,9 +429,12 @@ async function transcribeAudio(audioBlob) {
             statusDiv.textContent = 'Transcription complete!';
             statusDiv.classList.remove('recording');
             
-            startBtn.disabled = false;
+            // Swap Pause button back to Start button
+            pauseBtn.style.display = 'none';
             pauseBtn.disabled = true;
-            pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
+            startBtn.style.display = 'inline-flex';
+            startBtn.disabled = false;
+            
             stopBtn.disabled = true;
             
             // Update button colors based on new state
@@ -670,8 +678,9 @@ function clearTranscript() {
     generatePatientSummaryBtn.style.display = 'none';
     copyPatientSummaryBtn.style.display = 'none';
     
-    // Reset pause button
-    pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
+    // Reset button visibility - show Start, hide Pause
+    pauseBtn.style.display = 'none';
+    startBtn.style.display = 'inline-flex';
 }
 
 // Toggle Transcript Section
