@@ -93,6 +93,131 @@ header::before {
 
 /* UIverse Professional Button Styles */
 
+/* Andrew Demchenk0 - Yellow Otter 87 (Modified to Red) */
+/* Start Recording / Pause Button with Icon Animation */
+.btn-record-animated {
+    position: relative;
+    background: #FF342B;
+    color: white;
+    border: none;
+    font-weight: 600;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-record-animated::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+    background-size: 200% 200%;
+    background-position: 100% 0;
+    transition: background-position 0.6s;
+}
+
+.btn-record-animated:hover::before {
+    background-position: 0 0;
+}
+
+.btn-record-animated:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(255, 52, 43, 0.4);
+}
+
+.btn-record-animated:active {
+    transform: scale(0.98);
+}
+
+.btn-record-animated .record-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.btn-record-animated .record-icon::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: #FF342B;
+    border-radius: 50%;
+    position: absolute;
+}
+
+.btn-record-animated:hover .record-icon {
+    transform: rotate(90deg);
+}
+
+/* Pause button variant (when recording) */
+.btn-pause-animated {
+    position: relative;
+    background: #FF342B;
+    color: white;
+    border: none;
+    font-weight: 600;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-pause-animated::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+    background-size: 200% 200%;
+    background-position: 100% 0;
+    transition: background-position 0.6s;
+}
+
+.btn-pause-animated:hover::before {
+    background-position: 0 0;
+}
+
+.btn-pause-animated:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(255, 52, 43, 0.4);
+}
+
+.btn-pause-animated .pause-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-pause-animated .pause-icon::before,
+.btn-pause-animated .pause-icon::after {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s;
+}
+
+.btn-pause-animated:hover .pause-icon::before {
+    transform: translateX(-2px);
+}
+
+.btn-pause-animated:hover .pause-icon::after {
+    transform: translateX(2px);
+}
+
 /* Glassmorphism Button Style */
 .btn-glass {
     background: rgba(255, 255, 255, 0.1);
@@ -178,6 +303,142 @@ header::before {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+}
+
+/* Satyamchaudharydev - Rude Wolverine 24 */
+/* Stop Recording Button with Border Animation */
+.btn-stop-animated {
+    position: relative;
+    background: #3b82f6;
+    color: white;
+    border: 2px solid transparent;
+    font-weight: 600;
+    overflow: hidden;
+    z-index: 1;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.btn-stop-animated::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    z-index: -1;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.btn-stop-animated::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: -2;
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.btn-stop-animated:hover::before {
+    transform: scaleX(0);
+}
+
+.btn-stop-animated:hover::after {
+    opacity: 1;
+}
+
+.btn-stop-animated:hover {
+    color: #3b82f6;
+    border-color: #3b82f6;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+}
+
+.btn-stop-animated:active {
+    transform: translateY(-1px);
+}
+
+/* Ilkhoeri - Foolish Shrimp 59 */
+/* Generate AI Summary Button with Shimmer */
+.btn-ai-generate {
+    position: relative;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-ai-generate::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+.btn-ai-generate::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.btn-ai-generate:hover::after {
+    opacity: 1;
+}
+
+.btn-ai-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+}
+
+.btn-ai-generate:active {
+    transform: translateY(0);
+}
+
+.btn-ai-generate .sparkle {
+    display: inline-block;
+    margin-right: 8px;
+    animation: sparkle 2s infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2) rotate(180deg);
+        opacity: 0.8;
+    }
 }
 
 /* 3D Button with Shadow */
