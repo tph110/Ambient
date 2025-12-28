@@ -247,6 +247,26 @@ async function startRecording() {
         pauseBtn.disabled = false;
         stopBtn.disabled = false;
         
+        // Animate status div with pulsing effect
+        anime({
+            targets: '#status',
+            scale: [1.1, 1],
+            duration: 300,
+            easing: 'easeOutElastic(1, .5)'
+        });
+        
+        // Add continuous pulse animation while recording
+        const pulseAnimation = anime({
+            targets: '#status',
+            scale: [1, 1.05, 1],
+            duration: 2000,
+            loop: true,
+            easing: 'easeInOutQuad'
+        });
+        
+        // Store animation reference to stop it later
+        window.recordingPulse = pulseAnimation;
+        
         console.log('Recording started with Whisper API');
         
     } catch (error) {
@@ -412,6 +432,17 @@ async function transcribeAudio(audioBlob) {
             // Update UI
             statusDiv.textContent = 'Transcription complete!';
             statusDiv.classList.remove('recording');
+            
+            // Stop pulsing animation
+            if (window.recordingPulse) {
+                window.recordingPulse.pause();
+                anime({
+                    targets: '#status',
+                    scale: 1,
+                    duration: 200
+                });
+            }
+            
             startBtn.disabled = false;
             pauseBtn.disabled = true;
             pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
@@ -421,6 +452,18 @@ async function transcribeAudio(audioBlob) {
             if (finalTranscript.trim()) {
                 clearTranscriptBtn.style.display = 'inline-block';
                 getSummaryBtn.style.display = 'inline-flex';
+                
+                // Animate buttons appearing
+                setTimeout(() => {
+                    anime({
+                        targets: [clearTranscriptBtn, getSummaryBtn],
+                        scale: [0, 1],
+                        opacity: [0, 1],
+                        duration: 400,
+                        delay: anime.stagger(100),
+                        easing: 'easeOutBack'
+                    });
+                }, 100);
             }
             
             console.log('Transcription complete, length:', finalTranscript.length, 'characters');
@@ -451,8 +494,8 @@ async function generateSummary() {
 
     // Show loading state
     getSummaryBtn.disabled = true;
-    getSummaryBtn.innerHTML = '<span class="loading"></span> Generating...';
-    summaryDiv.innerHTML = '<p style="color: #667eea;">Generating summary...</p>';
+    getSummaryBtn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+    summaryDiv.innerHTML = '<p style="color: #667eea;"><span class="loading-spinner"></span>Generating summary...</p>';
 
     try {
         // Call our secure API endpoint
@@ -480,6 +523,15 @@ async function generateSummary() {
         // Display summary
         summaryDiv.innerHTML = `<p>${summary.replace(/\n/g, '<br>')}</p>`;
         
+        // Animate summary appearance
+        anime({
+            targets: '#summary',
+            opacity: [0, 1],
+            translateY: [30, 0],
+            duration: 700,
+            easing: 'easeOutCubic'
+        });
+        
         // Show copy button
         copySummaryBtn.style.display = 'inline-flex';
         
@@ -488,6 +540,18 @@ async function generateSummary() {
         
         // Show patient summary button
         generatePatientSummaryBtn.style.display = 'inline-flex';
+        
+        // Animate buttons appearing with stagger
+        setTimeout(() => {
+            anime({
+                targets: [copySummaryBtn, generateReferralBtn, generatePatientSummaryBtn],
+                scale: [0, 1],
+                opacity: [0, 1],
+                duration: 400,
+                delay: anime.stagger(100, {start: 200}),
+                easing: 'easeOutBack'
+            });
+        }, 100);
         
     } catch (error) {
         console.error('Error generating summary:', error);
@@ -507,8 +571,8 @@ async function generateReferralLetter() {
 
     // Show loading state
     generateReferralBtn.disabled = true;
-    generateReferralBtn.innerHTML = '<span class="loading"></span> Generating...';
-    referralLetterDiv.innerHTML = '<p style="color: #667eea;">Generating referral letter...</p>';
+    generateReferralBtn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+    referralLetterDiv.innerHTML = '<p style="color: #667eea;"><span class="loading-spinner"></span>Generating referral letter...</p>';
 
     try {
         // Call our secure API endpoint with referral letter prompt
@@ -555,8 +619,8 @@ async function generatePatientSummary() {
 
     // Show loading state
     generatePatientSummaryBtn.disabled = true;
-    generatePatientSummaryBtn.innerHTML = '<span class="loading"></span> Generating...';
-    patientSummaryDiv.innerHTML = '<p style="color: #667eea;">Generating patient-friendly summary...</p>';
+    generatePatientSummaryBtn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+    patientSummaryDiv.innerHTML = '<p style="color: #667eea;"><span class="loading-spinner"></span>Generating patient-friendly summary...</p>';
 
     try {
         // Call our secure API endpoint with patient summary prompt
@@ -809,6 +873,58 @@ copyReferralBtn.addEventListener('click', copyReferralToClipboard);
 generatePatientSummaryBtn.addEventListener('click', generatePatientSummary);
 copyPatientSummaryBtn.addEventListener('click', copyPatientSummaryToClipboard);
 
+// Add button hover animations
+function addButtonHoverEffects() {
+    const buttons = document.querySelectorAll('.btn');
+    
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', () => {
+            if (!button.disabled) {
+                anime({
+                    targets: button,
+                    scale: 1.05,
+                    duration: 200,
+                    easing: 'easeOutQuad'
+                });
+            }
+        });
+        
+        button.addEventListener('mouseleave', () => {
+            anime({
+                targets: button,
+                scale: 1,
+                duration: 200,
+                easing: 'easeOutQuad'
+            });
+        });
+        
+        button.addEventListener('mousedown', () => {
+            if (!button.disabled) {
+                anime({
+                    targets: button,
+                    scale: 0.95,
+                    duration: 100,
+                    easing: 'easeOutQuad'
+                });
+            }
+        });
+        
+        button.addEventListener('mouseup', () => {
+            if (!button.disabled) {
+                anime({
+                    targets: button,
+                    scale: 1.05,
+                    duration: 100,
+                    easing: 'easeOutQuad'
+                });
+            }
+        });
+    });
+}
+
+// Initialize hover effects
+addButtonHoverEffects();
+
 // Add microphone dropdown change listener
 document.addEventListener('DOMContentLoaded', () => {
     const micDropdown = document.getElementById('microphoneDropdown');
@@ -820,6 +936,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     console.log('AmbientDoc initialized with Whisper API');
+    
+    // Initialize page animations
+    initializeAnimations();
     
     // Check for browser support
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -837,6 +956,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup editable content boxes
     setupEditableContent();
 });
+
+// Initialize Anime.js animations
+function initializeAnimations() {
+    // Animate header on load
+    anime({
+        targets: '.header',
+        translateY: [-50, 0],
+        opacity: [0, 1],
+        duration: 800,
+        easing: 'easeOutExpo'
+    });
+    
+    // Animate cards with stagger effect
+    anime({
+        targets: '.card',
+        translateY: [30, 0],
+        opacity: [0, 1],
+        duration: 600,
+        delay: anime.stagger(100, {start: 200}),
+        easing: 'easeOutQuad'
+    });
+    
+    // Animate buttons
+    anime({
+        targets: '.btn',
+        scale: [0.9, 1],
+        opacity: [0, 1],
+        duration: 400,
+        delay: anime.stagger(50, {start: 600}),
+        easing: 'easeOutBack'
+    });
+}
 
 // Check if browser supports audio compression
 function checkBrowserCompression() {
