@@ -247,25 +247,16 @@ async function startRecording() {
         pauseBtn.disabled = false;
         stopBtn.disabled = false;
         
-        // Animate status div with pulsing effect
+        // Update button colors based on new state
+        updateButtonColors();
+        
+        // Animate status div (no continuous pulse)
         anime({
             targets: '#status',
             scale: [1.1, 1],
             duration: 300,
             easing: 'easeOutElastic(1, .5)'
         });
-        
-        // Add continuous pulse animation while recording
-        const pulseAnimation = anime({
-            targets: '#status',
-            scale: [1, 1.05, 1],
-            duration: 2000,
-            loop: true,
-            easing: 'easeInOutQuad'
-        });
-        
-        // Store animation reference to stop it later
-        window.recordingPulse = pulseAnimation;
         
         console.log('Recording started with Whisper API');
         
@@ -433,20 +424,13 @@ async function transcribeAudio(audioBlob) {
             statusDiv.textContent = 'Transcription complete!';
             statusDiv.classList.remove('recording');
             
-            // Stop pulsing animation
-            if (window.recordingPulse) {
-                window.recordingPulse.pause();
-                anime({
-                    targets: '#status',
-                    scale: 1,
-                    duration: 200
-                });
-            }
-            
             startBtn.disabled = false;
             pauseBtn.disabled = true;
             pauseBtn.innerHTML = '<span class="icon">⏸️</span> Pause';
             stopBtn.disabled = true;
+            
+            // Update button colors based on new state
+            updateButtonColors();
             
             // Show buttons
             if (finalTranscript.trim()) {
@@ -496,6 +480,9 @@ async function generateSummary() {
     getSummaryBtn.disabled = true;
     getSummaryBtn.innerHTML = '<span class="loading-spinner"></span> Generating...';
     summaryDiv.innerHTML = '<p style="color: #667eea;"><span class="loading-spinner"></span>Generating summary...</p>';
+    
+    // Update button color to show loading state
+    updateButtonColors();
 
     try {
         // Call our secure API endpoint
@@ -559,6 +546,9 @@ async function generateSummary() {
     } finally {
         getSummaryBtn.disabled = false;
         getSummaryBtn.innerHTML = '<span class="icon">✨</span> Generate Summary';
+        
+        // Update button color back to active state
+        updateButtonColors();
     }
 }
 
@@ -922,6 +912,44 @@ function addButtonHoverEffects() {
     });
 }
 
+// Animate button color changes based on state
+function animateButtonState(button, targetColor, targetBackground) {
+    anime({
+        targets: button,
+        backgroundColor: targetBackground,
+        color: targetColor,
+        duration: 400,
+        easing: 'easeInOutQuad'
+    });
+}
+
+// Update button colors when state changes
+function updateButtonColors() {
+    // Start button - changes based on recording state
+    if (startBtn.disabled) {
+        animateButtonState(startBtn, '#94a3b8', 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)');
+    } else {
+        animateButtonState(startBtn, '#ffffff', 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)');
+    }
+    
+    // Pause button - active during recording
+    if (!pauseBtn.disabled) {
+        animateButtonState(pauseBtn, '#1e293b', 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)');
+    }
+    
+    // Stop button - active during recording
+    if (!stopBtn.disabled) {
+        animateButtonState(stopBtn, '#ffffff', 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)');
+    }
+    
+    // Generate Summary button - changes when clicked
+    if (getSummaryBtn.disabled) {
+        animateButtonState(getSummaryBtn, '#94a3b8', 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)');
+    } else if (getSummaryBtn.style.display !== 'none') {
+        animateButtonState(getSummaryBtn, '#ffffff', 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)');
+    }
+}
+
 // Initialize hover effects
 addButtonHoverEffects();
 
@@ -939,6 +967,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize page animations
     initializeAnimations();
+    
+    // Initialize parallax scroll effect
+    initializeParallax();
     
     // Check for browser support
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -986,6 +1017,33 @@ function initializeAnimations() {
         duration: 400,
         delay: anime.stagger(50, {start: 600}),
         easing: 'easeOutBack'
+    });
+}
+
+// Initialize Parallax Scroll Effect
+function initializeParallax() {
+    const header = document.querySelector('header');
+    const cards = document.querySelectorAll('.card');
+    
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        
+        // Parallax effect on header (moves slower than scroll)
+        if (header) {
+            header.style.transform = `translateY(${scrolled * 0.5}px)`;
+            header.style.opacity = Math.max(1 - scrolled / 500, 0);
+        }
+        
+        // Parallax effect on cards (subtle movement)
+        cards.forEach((card, index) => {
+            const cardTop = card.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            
+            if (cardTop < windowHeight) {
+                const offset = (windowHeight - cardTop) * 0.1;
+                card.style.transform = `translateY(${-offset}px)`;
+            }
+        });
     });
 }
 
