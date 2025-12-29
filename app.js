@@ -74,14 +74,14 @@ async function startAudioVisualizer() {
         source.connect(analyser);
         
         // Start drawing
-        drawVisualizer(canvas, analyser, dataArray, bufferLength, statusDiv);
+        drawVisualizer(canvas, analyser, dataArray, bufferLength);
         
     } catch (error) {
         console.error('Error starting audio visualizer:', error);
     }
 }
 
-function drawVisualizer(canvas, analyser, dataArray, bufferLength, statusDiv) {
+function drawVisualizer(canvas, analyser, dataArray, bufferLength) {
     const ctx = canvas.getContext('2d');
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
@@ -94,18 +94,6 @@ function drawVisualizer(canvas, analyser, dataArray, bufferLength, statusDiv) {
         // Clear canvas
         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.fillRect(0, 0, WIDTH, HEIGHT);
-        
-        // Calculate average volume
-        const average = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-        
-        // Update status
-        if (average > 10) {
-            statusDiv.textContent = '✓ Audio detected';
-            statusDiv.classList.add('active');
-        } else {
-            statusDiv.textContent = 'No audio detected';
-            statusDiv.classList.remove('active');
-        }
         
         // Draw bars
         const barWidth = (WIDTH / bufferLength) * 2.5;
