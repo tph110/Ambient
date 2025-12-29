@@ -80,49 +80,57 @@ Clinical Summary:
 ${transcript}`;
         } else {
             // Clinical summary prompt
-            userPrompt = `Please provide a CONCISE summary of the following GP consultation transcript. Structure your response with these sections:
+            userPrompt = `Please provide a CONCISE but COMPLETE summary of the following GP consultation transcript. Structure your response with these sections:
 
-PRESENTING COMPLAINTS: Brief statement only (e.g., "1. Chest pain 2. Skin rash"). One line per complaint.
+PRESENTING COMPLAINTS: Brief statement (e.g., "1. Chest pain 2. Skin rash"). One line per complaint.
 
-HISTORY OF PRESENTING COMPLAINT: Write BRIEF, factual paragraphs. For each complaint:
-- Key symptoms and duration only
-- Relevant positives/negatives
-- Treatments tried
-- NO repetition, NO unnecessary detail, NO conversational filler
-- 2-4 sentences maximum per complaint
+HISTORY OF PRESENTING COMPLAINT: For each complaint, include key clinical details in 3-5 sentences:
+- Onset, duration, and progression
+- Key symptoms with relevant descriptors (severity, character, timing)
+- Aggravating/relieving factors
+- Associated symptoms
+- Previous treatments and response
+- Red flags if present
+Be factual and clinical. Use medical terminology. NO repetition of information in other sections.
 
-PAST MEDICAL HISTORY: List only (e.g., "1. Type 2 diabetes (2015) 2. Hypertension"). No explanations.
+PAST MEDICAL HISTORY: List relevant conditions. Include dates if mentioned.
 
-DRUG HISTORY: List medications with doses only. No commentary.
+DRUG HISTORY: List medications with doses. If dose not mentioned in consultation, write "dose not stated".
 
-ALLERGIES: List only. If none mentioned, write "None documented".
+ALLERGIES: List allergies. If none mentioned, write "None documented".
 
-SOCIAL HISTORY: Brief bullet points or short sentences. Include ONLY if relevant to presenting complaint:
-- Smoking/alcohol if applicable
-- Living situation if relevant to care
-- Mobility/functional status if relevant
-- OMIT generic social chat and irrelevant details
+SOCIAL HISTORY: Include ONLY clinically relevant information:
+- Smoking (pack-years if calculable)
+- Alcohol (units/week if mentioned)
+- Living situation ONLY if affects care
+- Functional status ONLY if relevant
+OMIT: irrelevant social chat, family celebrations, hobbies unless medically relevant.
 
-EXAMINATION FINDINGS: List vital signs and findings only. No prose.
+EXAMINATION FINDINGS: List all findings concisely:
+- Vital signs with values
+- System examination findings
+- Test results (urine dip, ECG, etc.)
 
-IMPRESSION: 1-2 sentences maximum. State diagnosis/assessment only.
+IMPRESSION: Clear clinical assessment. 2-3 sentences maximum. Include:
+- Working diagnosis/diagnoses
+- Severity assessment if relevant
+- Any diagnostic uncertainty
 
-MANAGEMENT PLAN: Numbered list. Each item should be ONE concise line:
-1. Prescriptions (drug, dose, duration)
-2. Investigations ordered
-3. Follow-up timeframe
-4. Safety-netting (one line)
+MANAGEMENT PLAN: Numbered list with specific details:
+1. Prescriptions: drug name, dose, frequency, duration
+2. Investigations: specify tests and timeframes
+3. Follow-up: when and why
+4. Safety-netting: specific symptoms to watch for
+Each item should be 1-2 lines with necessary detail.
 
-CRITICAL RULES FOR CONCISENESS:
-- Use medical shorthand where appropriate (BP, HR, SOB, PND, etc.)
-- NEVER repeat information already stated in other sections
-- OMIT irrelevant social conversation (birthdays, grandchildren, etc. unless medically relevant)
-- Focus ONLY on clinically relevant information
-- Use short, direct sentences
-- Remove all unnecessary adjectives and adverbs
-- NO phrases like "the patient reports", "she mentions", "she describes" - just state facts
-- Maximum 150 words for History of Presenting Complaint section
-- Management plan items should be 5-10 words each
+BALANCE RULES:
+- Be concise but include ALL clinically relevant information
+- Include specific details (doses, durations, measurements)
+- Use medical shorthand appropriately (BP, HR, SOB, PND, etc.)
+- Remove conversational filler but keep clinical facts
+- History section should be 100-200 words (not 50, not 500)
+- Each presenting complaint needs enough detail for continuity of care
+- Management plan must be specific enough to action
 
 IMPORTANT FORMATTING RULES:
 - Use PLAIN TEXT ONLY (no Markdown formatting)
