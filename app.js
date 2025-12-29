@@ -421,6 +421,8 @@ async function startRecording() {
                 audioChunks.push(event.data);
                 currentRecordingSize += event.data.size;
                 
+                console.log('Audio chunk received:', event.data.size, 'bytes. Total:', currentRecordingSize, 'bytes');
+                
                 // Check size in real-time
                 checkRecordingSize();
             }
@@ -484,8 +486,8 @@ async function startRecording() {
             await transcribeAudio(audioBlob);
         };
         
-        // Start recording
-        mediaRecorder.start();
+        // Start recording with 1 second timeslice to get regular size updates
+        mediaRecorder.start(1000);
         isRecording = true;
         recordingStartTime = Date.now();
         
