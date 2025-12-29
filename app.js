@@ -864,14 +864,20 @@ async function generateSummary() {
             });
         }, 100);
         
+        // Change button text to indicate completion
+        getSummaryBtn.disabled = false;
+        getSummaryBtn.innerHTML = '✓ Summary Complete';
+        
+        // Update button color to show completed state
+        updateButtonColors();
+        
     } catch (error) {
         console.error('Error generating summary:', error);
         summaryDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
-    } finally {
-        getSummaryBtn.disabled = false;
-        getSummaryBtn.innerHTML = '<span class="icon">✨</span> Generate Summary';
         
-        // Update button color back to active state
+        // Reset button on error
+        getSummaryBtn.disabled = false;
+        getSummaryBtn.innerHTML = 'Generate Summary';
         updateButtonColors();
     }
 }
@@ -915,12 +921,17 @@ async function generateReferralLetter() {
         // Show copy button
         copyReferralBtn.style.display = 'inline-flex';
         
+        // Change button text to indicate completion
+        generateReferralBtn.disabled = false;
+        generateReferralBtn.innerHTML = '✓ Referral Complete';
+        
     } catch (error) {
         console.error('Error generating referral letter:', error);
         referralLetterDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
-    } finally {
+        
+        // Reset button on error
         generateReferralBtn.disabled = false;
-        generateReferralBtn.innerHTML = '<span class="icon">📄</span> Generate Referral Letter';
+        generateReferralBtn.innerHTML = 'Generate Referral Letter';
     }
 }
 
@@ -963,12 +974,17 @@ async function generatePatientSummary() {
         // Show copy button
         copyPatientSummaryBtn.style.display = 'inline-flex';
         
+        // Change button text to indicate completion
+        generatePatientSummaryBtn.disabled = false;
+        generatePatientSummaryBtn.innerHTML = '✓ Patient Summary Complete';
+        
     } catch (error) {
         console.error('Error generating patient summary:', error);
         patientSummaryDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
-    } finally {
+        
+        // Reset button on error
         generatePatientSummaryBtn.disabled = false;
-        generatePatientSummaryBtn.innerHTML = '<span class="icon">👤</span> Generate Patient Summary';
+        generatePatientSummaryBtn.innerHTML = 'Generate Patient Summary';
     }
 }
 
