@@ -80,57 +80,25 @@ Clinical Summary:
 ${transcript}`;
         } else {
             // Clinical summary prompt
-            userPrompt = `Please provide a CONCISE but COMPLETE summary of the following GP consultation transcript. Structure your response with these sections:
+            userPrompt = `Please provide a detailed summary of the following GP consultation transcript. Structure your response with these sections:
 
-PRESENTING COMPLAINTS: Brief statement (e.g., "1. Chest pain 2. Skin rash"). One line per complaint.
+PRESENTING COMPLAINTS: If the patient presents with multiple unrelated complaints, list them clearly (e.g., "1. Chest pain 2. Skin rash 3. Medication review"). If there is only one complaint, simply state it.
 
-HISTORY OF PRESENTING COMPLAINT: For each complaint, include key clinical details in 3-5 sentences:
-- Onset, duration, and progression
-- Key symptoms with relevant descriptors (severity, character, timing)
-- Aggravating/relieving factors
-- Associated symptoms
-- Previous treatments and response
-- Red flags if present
-Be factual and clinical. Use medical terminology. NO repetition of information in other sections.
+HISTORY OF PRESENTING COMPLAINT: Write detailed prose paragraphs for each presenting complaint. If there are multiple unrelated complaints, use clear subheadings (e.g., "Chest pain:", "Skin rash:", "Medication review:"). For each complaint, describe the patient's symptoms, timeline, severity, aggravating/relieving factors, associated symptoms, and any treatments tried. Include the patient's own words and descriptions where relevant.
 
-PAST MEDICAL HISTORY: List relevant conditions. Include dates if mentioned.
+PAST MEDICAL HISTORY: List relevant conditions with dates if mentioned.
 
-DRUG HISTORY: List medications with doses. If dose not mentioned in consultation, write "dose not stated".
+DRUG HISTORY: List current medications with doses.
 
-ALLERGIES: List allergies. If none mentioned, write "None documented".
+ALLERGIES: List any allergies and reactions.
 
-SOCIAL HISTORY: Include ONLY clinically relevant information:
-- Smoking (pack-years if calculable)
-- Alcohol (units/week if mentioned)
-- Living situation ONLY if affects care
-- Functional status ONLY if relevant
-OMIT: irrelevant social chat, family celebrations, hobbies unless medically relevant.
+SOCIAL HISTORY: Include occupation, smoking status (pack-years if mentioned), alcohol consumption (units per week if mentioned), recreational drug use, living situation (alone/with family, house/flat/bungalow), mobility aids (walking stick, zimmer frame, wheelchair), home adaptations (stairlift, grab rails, wet room), care arrangements (carers, frequency of visits), support network, and any other relevant social factors affecting health.
 
-EXAMINATION FINDINGS: List all findings concisely:
-- Vital signs with values
-- System examination findings
-- Test results (urine dip, ECG, etc.)
+EXAMINATION FINDINGS: Detail vital signs and examination findings for each complaint where relevant.
 
-IMPRESSION: Clear clinical assessment. 2-3 sentences maximum. Include:
-- Working diagnosis/diagnoses
-- Severity assessment if relevant
-- Any diagnostic uncertainty
+IMPRESSION: Clinical assessment and diagnosis for each complaint.
 
-MANAGEMENT PLAN: Numbered list with specific details:
-1. Prescriptions: drug name, dose, frequency, duration
-2. Investigations: specify tests and timeframes
-3. Follow-up: when and why
-4. Safety-netting: specific symptoms to watch for
-Each item should be 1-2 lines with necessary detail.
-
-BALANCE RULES:
-- Be concise but include ALL clinically relevant information
-- Include specific details (doses, durations, measurements)
-- Use medical shorthand appropriately (BP, HR, SOB, PND, etc.)
-- Remove conversational filler but keep clinical facts
-- History section should be 100-200 words (not 50, not 500)
-- Each presenting complaint needs enough detail for continuity of care
-- Management plan must be specific enough to action
+MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice. Clearly indicate which actions relate to which complaint if there are multiple issues.
 
 IMPORTANT FORMATTING RULES:
 - Use PLAIN TEXT ONLY (no Markdown formatting)
