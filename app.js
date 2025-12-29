@@ -1304,9 +1304,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize page animations
     initializeAnimations();
     
-    // Initialize parallax scroll effect
-    initializeParallax();
-    
     // Check for browser support
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         statusDiv.textContent = 'Browser not supported';
@@ -1353,33 +1350,6 @@ function initializeAnimations() {
         duration: 400,
         delay: anime.stagger(50, {start: 600}),
         easing: 'easeOutBack'
-    });
-}
-
-// Initialize Parallax Scroll Effect
-function initializeParallax() {
-    const header = document.querySelector('header');
-    const cards = document.querySelectorAll('.card');
-    
-    window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        
-        // Parallax effect on header (moves slower than scroll)
-        if (header) {
-            header.style.transform = `translateY(${scrolled * 0.5}px)`;
-            header.style.opacity = Math.max(1 - scrolled / 500, 0);
-        }
-        
-        // Parallax effect on cards (subtle movement)
-        cards.forEach((card, index) => {
-            const cardTop = card.getBoundingClientRect().top;
-            const windowHeight = window.innerHeight;
-            
-            if (cardTop < windowHeight) {
-                const offset = (windowHeight - cardTop) * 0.1;
-                card.style.transform = `translateY(${-offset}px)`;
-            }
-        });
     });
 }
 
