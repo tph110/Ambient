@@ -32,10 +32,148 @@ let sizeMonitorInterval = null;  // Monitor recording size
 let currentRecordingSize = 0;  // Track current size
 let hasShownSizeWarning = false;  // Track if warning shown
 
+// Audio visualizer
+let audioContext = null;
+let analyser = null;
+let dataArray = null;
+let visualizerStream = null;
+let visualizerAnimationId = null;
+
 // Size limits (in bytes)
 const SIZE_WARNING_THRESHOLD = 3 * 1024 * 1024;  // 3MB - show warning
 const SIZE_MAX_LIMIT = 4 * 1024 * 1024;  // 4MB - auto-stop
 const SIZE_SAFE_LIMIT = 4.2 * 1024 * 1024;  // 4.2MB - absolute max before data loss
+
+// Audio Visualizer Functions
+async function startAudioVisualizer() {
+    try {
+        const visualizerContainer = document.getElementById('audioVisualizerContainer');
+        const canvas = document.getElementById('audioVisualizer');
+        const statusDiv = document.getElementById('visualizerStatus');
+        
+        if (!canvas) return;
+        
+        // Show visualizer
+        visualizerContainer.style.display = 'block';
+        
+        // Get microphone stream for visualization
+        const constraints = {
+            audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
+        };
+        visualizerStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Create audio context and analyser
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaStreamSource(visualizerStream);
+        
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+        
+        source.connect(analyser);
+        
+        // Start drawing
+        drawVisualizer(canvas, analyser, dataArray, bufferLength, statusDiv);
+        
+    } catch (error) {
+        console.error('Error starting audio visualizer:', error);
+    }
+}
+
+function drawVisualizer(canvas, analyser, dataArray, bufferLength, statusDiv) {
+    const ctx = canvas.getContext('2d');
+    const WIDTH = canvas.width;
+    const HEIGHT = canvas.height;
+    
+    function draw() {
+        visualizerAnimationId = requestAnimationFrame(draw);
+        
+        analyser.getByteFrequencyData(dataArray);
+        
+        // Clear canvas
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        
+        // Calculate average volume
+        const average = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+        
+        // Update status
+        if (average > 10) {
+            statusDiv.textContent = '✓ Audio detected';
+            statusDiv.classList.add('active');
+        } else {
+            statusDiv.textContent = 'No audio detected';
+            statusDiv.classList.remove('active');
+        }
+        
+        // Draw bars
+        const barWidth = (WIDTH / bufferLength) * 2.5;
+        let barHeight;
+        let x = 0;
+        
+        for (let i = 0; i < bufferLength; i++) {
+            barHeight = (dataArray[i] / 255) * HEIGHT;
+            
+            // Create gradient based on height
+            const gradient = ctx.createLinearGradient(0, HEIGHT - barHeight, 0, HEIGHT);
+            
+            if (barHeight > HEIGHT * 0.7) {
+                // Red for loud
+                gradient.addColorStop(0, '#ef4444');
+                gradient.addColorStop(1, '#dc2626');
+            } else if (barHeight > HEIGHT * 0.4) {
+                // Yellow for medium
+                gradient.addColorStop(0, '#fbbf24');
+                gradient.addColorStop(1, '#f59e0b');
+            } else {
+                // Green/blue for quiet
+                gradient.addColorStop(0, '#34d399');
+                gradient.addColorStop(1, '#10b981');
+            }
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+            
+            x += barWidth + 1;
+        }
+    }
+    
+    draw();
+}
+
+function stopAudioVisualizer() {
+    // Stop animation
+    if (visualizerAnimationId) {
+        cancelAnimationFrame(visualizerAnimationId);
+        visualizerAnimationId = null;
+    }
+    
+    // Close audio context
+    if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+    }
+    
+    // Stop visualizer stream
+    if (visualizerStream) {
+        visualizerStream.getTracks().forEach(track => track.stop());
+        visualizerStream = null;
+    }
+    
+    // Hide visualizer
+    const visualizerContainer = document.getElementById('audioVisualizerContainer');
+    if (visualizerContainer) {
+        visualizerContainer.style.display = 'none';
+    }
+    
+    // Clear canvas
+    const canvas = document.getElementById('audioVisualizer');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
 
 // Setup Telephone Recording (Mix Microphone + System Audio)
 async function setupTelephoneRecording() {
@@ -363,6 +501,9 @@ async function startRecording() {
         isRecording = true;
         recordingStartTime = Date.now();
         
+        // Start audio visualizer
+        startAudioVisualizer();
+        
         // Show recording timer display
         const timerDiv = document.getElementById('recordingTimer');
         if (timerDiv) {
@@ -433,6 +574,9 @@ function stopRecording() {
             clearInterval(sizeMonitorInterval);
             sizeMonitorInterval = null;
         }
+        
+        // Stop audio visualizer
+        stopAudioVisualizer();
         
         // Hide recording timer display
         const timerDiv = document.getElementById('recordingTimer');
