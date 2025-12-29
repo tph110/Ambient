@@ -100,6 +100,15 @@ IMPRESSION: Clinical assessment and diagnosis for each complaint.
 
 MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice. Clearly indicate which actions relate to which complaint if there are multiple issues.
 
+QOF AND IIF OPPORTUNITIES: Identify any relevant Quality and Outcomes Framework (QOF) or Investment and Impact Fund (IIF) indicators that could be addressed or coded from this consultation. Include:
+- QOF indicators that have been completed (e.g., diabetes HbA1c recorded, blood pressure checks, medication reviews)
+- IIF opportunities (e.g., early cancer diagnosis codes, health inequalities, prevention activities)
+- Specific Read codes or SNOMED codes where applicable
+- Annual reviews or health checks that may be due
+- Vaccinations or screening that could be offered
+- Lifestyle interventions that qualify for IIF points
+Only include opportunities that are genuinely relevant to this consultation. If none apply, write "No specific QOF/IIF opportunities identified in this consultation."
+
 IMPORTANT FORMATTING RULES:
 - Use PLAIN TEXT ONLY (no Markdown formatting)
 - Do NOT use hashtags (#), asterisks (**), underscores (_), or other Markdown symbols
