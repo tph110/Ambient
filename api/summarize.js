@@ -80,25 +80,49 @@ Clinical Summary:
 ${transcript}`;
         } else {
             // Clinical summary prompt
-            userPrompt = `Please provide a detailed summary of the following GP consultation transcript. Structure your response with these sections:
+            userPrompt = `Please provide a CONCISE summary of the following GP consultation transcript. Structure your response with these sections:
 
-PRESENTING COMPLAINTS: If the patient presents with multiple unrelated complaints, list them clearly (e.g., "1. Chest pain 2. Skin rash 3. Medication review"). If there is only one complaint, simply state it.
+PRESENTING COMPLAINTS: Brief statement only (e.g., "1. Chest pain 2. Skin rash"). One line per complaint.
 
-HISTORY OF PRESENTING COMPLAINT: Write detailed prose paragraphs for each presenting complaint. If there are multiple unrelated complaints, use clear subheadings (e.g., "Chest pain:", "Skin rash:", "Medication review:"). For each complaint, describe the patient's symptoms, timeline, severity, aggravating/relieving factors, associated symptoms, and any treatments tried. Include the patient's own words and descriptions where relevant.
+HISTORY OF PRESENTING COMPLAINT: Write BRIEF, factual paragraphs. For each complaint:
+- Key symptoms and duration only
+- Relevant positives/negatives
+- Treatments tried
+- NO repetition, NO unnecessary detail, NO conversational filler
+- 2-4 sentences maximum per complaint
 
-PAST MEDICAL HISTORY: List relevant conditions with dates if mentioned.
+PAST MEDICAL HISTORY: List only (e.g., "1. Type 2 diabetes (2015) 2. Hypertension"). No explanations.
 
-DRUG HISTORY: List current medications with doses.
+DRUG HISTORY: List medications with doses only. No commentary.
 
-ALLERGIES: List any allergies and reactions.
+ALLERGIES: List only. If none mentioned, write "None documented".
 
-SOCIAL HISTORY: Include occupation, smoking status (pack-years if mentioned), alcohol consumption (units per week if mentioned), recreational drug use, living situation (alone/with family, house/flat/bungalow), mobility aids (walking stick, zimmer frame, wheelchair), home adaptations (stairlift, grab rails, wet room), care arrangements (carers, frequency of visits), support network, and any other relevant social factors affecting health.
+SOCIAL HISTORY: Brief bullet points or short sentences. Include ONLY if relevant to presenting complaint:
+- Smoking/alcohol if applicable
+- Living situation if relevant to care
+- Mobility/functional status if relevant
+- OMIT generic social chat and irrelevant details
 
-EXAMINATION FINDINGS: Detail vital signs and examination findings for each complaint where relevant.
+EXAMINATION FINDINGS: List vital signs and findings only. No prose.
 
-IMPRESSION: Clinical assessment and diagnosis for each complaint.
+IMPRESSION: 1-2 sentences maximum. State diagnosis/assessment only.
 
-MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice. Clearly indicate which actions relate to which complaint if there are multiple issues.
+MANAGEMENT PLAN: Numbered list. Each item should be ONE concise line:
+1. Prescriptions (drug, dose, duration)
+2. Investigations ordered
+3. Follow-up timeframe
+4. Safety-netting (one line)
+
+CRITICAL RULES FOR CONCISENESS:
+- Use medical shorthand where appropriate (BP, HR, SOB, PND, etc.)
+- NEVER repeat information already stated in other sections
+- OMIT irrelevant social conversation (birthdays, grandchildren, etc. unless medically relevant)
+- Focus ONLY on clinically relevant information
+- Use short, direct sentences
+- Remove all unnecessary adjectives and adverbs
+- NO phrases like "the patient reports", "she mentions", "she describes" - just state facts
+- Maximum 150 words for History of Presenting Complaint section
+- Management plan items should be 5-10 words each
 
 IMPORTANT FORMATTING RULES:
 - Use PLAIN TEXT ONLY (no Markdown formatting)
