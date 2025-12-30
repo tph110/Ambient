@@ -716,6 +716,13 @@ async function transcribeAudio(audioBlob) {
                     throw new Error(errorMessage);
                 }
                 
+                if (response.status === 504) {
+                    const durationMinutes = Math.floor(audioBlob.size / (12000 / 8) / 60);
+                    errorMessage = `Transcription timed out. Your recording was approximately ${durationMinutes} minutes long.\n\nPlease keep recordings under 15 minutes for reliable transcription.\n\nFor longer consultations:\n1. Stop recording every 10-15 minutes\n2. Generate summary for each segment\n3. Combine summaries manually`;
+                    console.error('504 Gateway Timeout - Recording too long:', durationMinutes, 'minutes');
+                    throw new Error(errorMessage);
+                }
+                
                 // Try to get error details
                 try {
                     const errorData = await response.json();
