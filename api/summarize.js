@@ -84,7 +84,15 @@ ${transcript}`;
 
 PRESENTING COMPLAINTS: If the patient presents with multiple unrelated complaints, list them clearly (e.g., "1. Chest pain 2. Skin rash 3. Medication review"). If there is only one complaint, simply state it.
 
-HISTORY OF PRESENTING COMPLAINT: Write detailed prose paragraphs for each presenting complaint. If there are multiple unrelated complaints, use clear subheadings (e.g., "Chest pain:", "Skin rash:", "Medication review:"). For each complaint, describe the patient's symptoms, timeline, severity, aggravating/relieving factors, associated symptoms, and any treatments tried. Include the patient's own words and descriptions where relevant.
+HISTORY OF PRESENTING COMPLAINT: Write detailed prose paragraphs for each presenting complaint in FIRST-PERSON perspective (as if you are the GP writing the notes). If there are multiple unrelated complaints, use clear subheadings (e.g., "Chest pain:", "Skin rash:", "Medication review:"). For each complaint, describe the patient's symptoms, timeline, severity, aggravating/relieving factors, associated symptoms, and any treatments tried.
+
+IMPORTANT WRITING STYLE FOR HISTORY:
+- Write in FIRST-PERSON from the GP's perspective (e.g., "I saw Mr Smith today regarding...", "The patient informed me that...", "On taking the history, I noted that...")
+- Use PROFESSIONAL MEDICAL TERMINOLOGY throughout
+- DO NOT include direct quotes from the patient (e.g., avoid "the patient said 'I feel terrible'" - instead write "the patient described feeling unwell")
+- DO NOT use colloquial or informal language (e.g., avoid "quite a time", "lots", "really bad" - use "several weeks", "frequent", "severe")
+- Maintain a formal, professional clinical tone suitable for medical records
+- Write as concise clinical documentation, not conversational narrative
 
 PAST MEDICAL HISTORY: List relevant conditions with dates if mentioned.
 
@@ -94,11 +102,11 @@ ALLERGIES: List any allergies and reactions.
 
 SOCIAL HISTORY: Include occupation, smoking status (pack-years if mentioned), alcohol consumption (units per week if mentioned), recreational drug use, living situation (alone/with family, house/flat/bungalow), mobility aids (walking stick, zimmer frame, wheelchair), home adaptations (stairlift, grab rails, wet room), care arrangements (carers, frequency of visits), support network, and any other relevant social factors affecting health.
 
-EXAMINATION FINDINGS: Detail vital signs and examination findings for each complaint where relevant.
+EXAMINATION FINDINGS: Detail vital signs and examination findings for each complaint where relevant. Write in first-person (e.g., "On examination, I found...", "I auscultated clear lung fields bilaterally").
 
-IMPRESSION: Clinical assessment and diagnosis for each complaint.
+IMPRESSION: Clinical assessment and diagnosis for each complaint. Write in first-person (e.g., "I assess this as...", "My clinical impression is...").
 
-MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice. Clearly indicate which actions relate to which complaint if there are multiple issues.
+MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice. Write in first-person (e.g., "I have prescribed...", "I have arranged...", "I advised the patient to..."). Clearly indicate which actions relate to which complaint if there are multiple issues.
 
 QOF AND IIF OPPORTUNITIES: Identify any relevant Quality and Outcomes Framework (QOF) or Investment and Impact Fund (IIF) indicators that could be addressed or coded from this consultation. Include:
 - QOF indicators that have been completed (e.g., diabetes HbA1c recorded, blood pressure checks, medication reviews)
