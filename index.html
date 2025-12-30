@@ -33,10 +33,12 @@
         </header>
 
         <main>
-            <!-- Recording Controls -->
-            <section class="controls card">
-                <!-- Microphone Selector -->
-                <div class="mic-select-container-inline">
+            <!-- Left Column: Controls and Transcript -->
+            <div class="left-column">
+                <!-- Recording Controls -->
+                <section class="controls card">
+                    <!-- Microphone Selector -->
+                    <div class="mic-select-container-inline">
                     <label for="microphoneDropdown">
                         <span class="mic-icon">🎤</span>
                         Microphone:
@@ -125,7 +127,11 @@
                     </button>
                 </div>
             </section>
+            </div>
+            <!-- End Left Column -->
 
+            <!-- Right Column: Summaries -->
+            <div class="right-column">
             <!-- Summary Section -->
             <section class="summary-section card">
                 <h2>Structured Clinical Summary</h2>
@@ -175,6 +181,8 @@
                     </button>
                 </div>
             </section>
+            </div>
+            <!-- End Right Column -->
 
             <!-- Privacy Notice -->
             <section class="privacy-notice card">
