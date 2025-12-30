@@ -21,6 +21,20 @@ body {
     overflow: hidden;
 }
 
+/* Desktop: Expand container on large screens */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1800px;
+    }
+}
+
+@media (min-width: 1900px) {
+    .container {
+        max-width: 95%;
+        max-width: 2400px;
+    }
+}
+
 header {
     background: linear-gradient(-45deg, #1e3a8a, #3b82f6, #667eea, #764ba2);
     background-size: 400% 400%;
@@ -1053,6 +1067,54 @@ header h1 {
 
 main {
     padding: 50px 40px;
+}
+
+/* Desktop: Two-column layout */
+@media (min-width: 1400px) {
+    main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        padding: 50px;
+    }
+    
+    .left-column {
+        grid-column: 1;
+    }
+    
+    .right-column {
+        grid-column: 2;
+    }
+    
+    /* Full-width sections */
+    .privacy-notice {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Ultra-wide: Three-column layout */
+@media (min-width: 2000px) {
+    main {
+        grid-template-columns: 1fr 1.2fr 1.2fr;
+        gap: 40px;
+        padding: 60px;
+    }
+    
+    .left-column {
+        grid-column: 1;
+    }
+    
+    .right-column {
+        grid-column: 2 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-content: start;
+    }
+    
+    .right-column > section {
+        margin-bottom: 0;
+    }
 }
 
 section {
