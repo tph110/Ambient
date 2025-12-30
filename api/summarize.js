@@ -117,6 +117,13 @@ QOF AND IIF OPPORTUNITIES: Identify any relevant Quality and Outcomes Framework 
 - Lifestyle interventions that qualify for IIF points
 Only include opportunities that are genuinely relevant to this consultation. If none apply, write "No specific QOF/IIF opportunities identified in this consultation."
 
+CRITICAL RULE FOR EMPTY SECTIONS:
+If NO information is available for a section (e.g., SOCIAL HISTORY, ALLERGIES, EXAMINATION FINDINGS), COMPLETELY OMIT that section including its heading. Do NOT write "None documented", "Not mentioned", "No details provided", or any placeholder text. Simply skip to the next section that has actual content.
+
+Example - if no social history mentioned:
+WRONG: "SOCIAL HISTORY: Not mentioned" or "SOCIAL HISTORY: No details provided"
+CORRECT: Skip the entire SOCIAL HISTORY section and heading completely
+
 IMPORTANT FORMATTING RULES:
 - Use PLAIN TEXT ONLY (no Markdown formatting)
 - Do NOT use hashtags (#), asterisks (**), underscores (_), or other Markdown symbols
