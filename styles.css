@@ -203,6 +203,8 @@ body {
 
 .card-body {
     padding: 20px;
+    position: relative;
+    display: block;
 }
 
 /* Special card types */
@@ -212,10 +214,14 @@ body {
 
 .control-card .card-body {
     min-height: 200px;
+    display: block;
 }
 
 .control-card .card-body > * {
     margin-bottom: 16px;
+    display: block;
+    position: relative;
+    visibility: visible;
 }
 
 .control-card .card-body > *:last-child {
@@ -654,9 +660,18 @@ body {
 }
 
 .button-group-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: block;
+    width: 100%;
+}
+
+.button-group-controls button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.button-group-controls button:last-child {
+    margin-bottom: 0;
 }
 
 /* Button icons */
