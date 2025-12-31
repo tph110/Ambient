@@ -210,6 +210,13 @@ body {
     background: linear-gradient(to bottom, #FFFFFF, #F8FAFC);
 }
 
+.control-card .card-body {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .transcript-card {
     flex: 1;
     min-height: 400px;
