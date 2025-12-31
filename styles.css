@@ -1604,12 +1604,59 @@ h3 {
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     padding: 25px;
-    min-height: 200px;
-    max-height: 450px;
+    min-height: 300px;
+    max-height: 600px;
     overflow-y: auto;
     line-height: 1.8;
     font-size: 1.05rem;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Desktop: Even larger text boxes */
+@media (min-width: 1400px) {
+    .content-box {
+        min-height: 400px;
+        max-height: 800px;
+        padding: 30px;
+        font-size: 1.1rem;
+    }
+}
+
+/* Ultra-wide: Maximum comfort */
+@media (min-width: 2000px) {
+    .content-box {
+        min-height: 500px;
+        max-height: 1000px;
+        padding: 35px;
+    }
+}
+
+/* Make transcript even taller since it can be very long */
+.transcript-section .content-box {
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    background: #fafafa;
+    min-height: 400px;
+    max-height: 700px;
+}
+
+@media (min-width: 1400px) {
+    .transcript-section .content-box {
+        min-height: 500px;
+        max-height: 900px;
+    }
+}
+
+/* Clinical summary needs to be tall for QOF sections */
+.summary-section .content-box {
+    min-height: 400px;
+    max-height: 700px;
+}
+
+@media (min-width: 1400px) {
+    .summary-section .content-box {
+        min-height: 500px;
+        max-height: 1000px;
+    }
 }
 
 /* Editable content boxes */
@@ -1691,27 +1738,29 @@ h3 {
 .transcript-box::-webkit-scrollbar,
 .summary-box::-webkit-scrollbar,
 .content-box::-webkit-scrollbar {
-    width: 8px;
+    width: 12px;
 }
 
 .transcript-box::-webkit-scrollbar-track,
 .summary-box::-webkit-scrollbar-track,
 .content-box::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: #e2e8f0;
     border-radius: 10px;
+    margin: 4px 0;
 }
 
 .transcript-box::-webkit-scrollbar-thumb,
 .summary-box::-webkit-scrollbar-thumb,
 .content-box::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #94a3b8;
     border-radius: 10px;
+    border: 2px solid #e2e8f0;
 }
 
 .transcript-box::-webkit-scrollbar-thumb:hover,
 .summary-box::-webkit-scrollbar-thumb:hover,
 .content-box::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #64748b;
 }
 
 /* Privacy Notice */
