@@ -145,7 +145,7 @@ ${transcript}`;
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
                 'HTTP-Referer': req.headers.referer || 'https://yourdomain.vercel.app',
-                'X-Title': 'AmbientDoc'
+                'X-Title': 'EchoDoc'
             },
             body: JSON.stringify({
                 model: 'deepseek/deepseek-chat',
