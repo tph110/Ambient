@@ -212,9 +212,14 @@ body {
 
 .control-card .card-body {
     min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+}
+
+.control-card .card-body > * {
+    margin-bottom: 16px;
+}
+
+.control-card .card-body > *:last-child {
+    margin-bottom: 0;
 }
 
 .transcript-card {
