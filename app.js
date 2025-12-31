@@ -268,7 +268,7 @@ function checkRecordingSize() {
         
         // Show browser notification if permitted
         if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('AmbientDoc - File Size Warning', {
+            new Notification('EchoDoc - File Size Warning', {
                 body: `Recording is ${sizeMB}MB. Please stop soon to avoid data loss.`,
                 icon: '/favicon.ico'
             });
@@ -1306,7 +1306,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('AmbientDoc initialized with Whisper API');
+    console.log('EchoDoc initialized with Whisper API');
     
     // Initialize page animations
     initializeAnimations();
