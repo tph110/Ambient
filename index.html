@@ -6,200 +6,222 @@
     <title>EchoDoc - AI Medical Scribe</title>
     <meta name="description" content="AI-powered medical scribe for UK GP consultations. Real-time transcription and structured clinical summaries.">
     
-    <!-- Google Fonts for professional readability -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="styles.css">
     
     <!-- Anime.js for smooth animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" integrity="sha512-aNMyYYxdIxIaot0Y1/PLuEu3eipGCmsEUBrUq+7aVyPGMFH8z0eTP0tkqAvv34fzN6z+201d3T8HPb1svWSKHQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- Google Fonts: Inter for UI, Merriweather for documents -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="logo-container">
-                <!-- Enhanced logo: microphone with subtle wave -->
-                <svg width="60" height="60" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="25" cy="25" r="24" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="2"/>
-                    <path d="M25 12c-4 0-7 3-7 7v8c0 4 3 7 7 7s7-3 7-7v-8c0-4-3-7-7-7zm-3 7h6v8h-6z" fill="#0ea5e9"/>
-                    <circle cx="25" cy="32" r="3" fill="#0ea5e9"/>
-                    <path d="M19 32c0 3 2 6 6 6s6-3 6-6" stroke="#0ea5e9" stroke-width="2" fill="none"/>
-                </svg>
-                <h1>EchoDoc</h1>
+    <!-- Professional Navbar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="brand">
+                <span class="brand-icon">🩺</span>
+                <h1>EchoDoc <span class="badge">AI Scribe</span></h1>
             </div>
-            <p class="subtitle">AI-Powered Medical Scribe for Healthcare Encounters</p>
-            <p class="tagline">Focus on your patient and let EchoDoc handle the notes</p>
-            <p class="disclaimer">Demonstration tool only • Not for clinical use</p>
-        </header>
+            <div class="status-indicator" id="connectionStatus">
+                <span class="status-dot"></span>
+                <span>Ready</span>
+            </div>
+        </div>
+    </nav>
 
-        <main>
-            <!-- Left Column: Controls and Transcript -->
-            <div class="left-column">
-                <!-- Recording Controls -->
-                <section class="controls card">
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        
+        <!-- LEFT PANEL: Controls & Transcript (Sticky) -->
+        <aside class="panel-left">
+            
+            <!-- Session Controls Card -->
+            <div class="card control-card">
+                <div class="card-header">
+                    <h2>Session Controls</h2>
+                    <div class="recording-badge" id="recordingBadge" style="display: none;">
+                        <span class="pulse-dot"></span>
+                        <span>Recording</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    
                     <!-- Microphone Selector -->
                     <div class="mic-select-container-inline">
-                    <label for="microphoneDropdown">
-                        <span class="mic-icon">🎤</span>
-                        Microphone:
-                    </label>
-                    <select id="microphoneDropdown" class="mic-dropdown">
-                        <option value="">Loading microphones...</option>
-                    </select>
-                </div>
-                
-                <!-- Audio Level Visualizer -->
-                <div class="audio-visualizer-container" id="audioVisualizerContainer" style="display: none;">
-                    <div class="visualizer-label">
-                        <span class="visualizer-icon">🎵</span>
-                        <span>Audio Level</span>
+                        <label for="microphoneDropdown">
+                            <span class="mic-icon">🎤</span>
+                            Microphone:
+                        </label>
+                        <select id="microphoneDropdown" class="mic-dropdown">
+                            <option value="">Loading microphones...</option>
+                        </select>
                     </div>
-                    <canvas id="audioVisualizer" width="800" height="50"></canvas>
-                </div>
-                
-                <!-- Telephone Mode Toggle -->
-                <div class="telephone-mode-toggle">
-                    <label class="toggle-label">
-                        <input type="checkbox" id="telephoneModeCheckbox" class="toggle-checkbox">
-                        <span class="toggle-slider"></span>
-                        <span class="toggle-text">📞 Telephone Consultation Mode</span>
-                    </label>
-                    <p class="toggle-description">Enable for phone calls. Share your telephony window with audio when prompted</p>
-                </div>
-                
-                <div class="status" id="status">Ready to record</div>
-                
-                <!-- Recording Timer with Visual Countdown -->
-                <div class="recording-timer" id="recordingTimer" style="display: none;">
-                    <div class="timer-info">
-                        <div class="timer-elapsed">
-                            <span class="timer-label">Elapsed:</span>
-                            <span class="timer-value" id="timerElapsed">00:00</span>
+                    
+                    <!-- Audio Level Visualizer -->
+                    <div class="audio-visualizer-container" id="audioVisualizerContainer" style="display: none;">
+                        <div class="visualizer-label">
+                            <span class="visualizer-icon">🎵</span>
+                            <span>Audio Level</span>
                         </div>
-                        <div class="timer-remaining">
-                            <span class="timer-label">Est. Time Left:</span>
-                            <span class="timer-value" id="timerRemaining">~45 min</span>
+                        <canvas id="audioVisualizer" width="800" height="50"></canvas>
+                    </div>
+                    
+                    <!-- Telephone Mode Toggle -->
+                    <div class="telephone-mode-toggle">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="telephoneModeCheckbox" class="toggle-checkbox">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-text">📞 Telephone Consultation Mode</span>
+                        </label>
+                        <p class="toggle-description">Enable for phone calls. Share your telephony window with audio when prompted</p>
+                    </div>
+                    
+                    <!-- Status Message -->
+                    <div class="status" id="status">Ready to record</div>
+                    
+                    <!-- Recording Timer with Visual Countdown -->
+                    <div class="recording-timer" id="recordingTimer" style="display: none;">
+                        <div class="timer-info">
+                            <div class="timer-elapsed">
+                                <span class="timer-label">Elapsed:</span>
+                                <span class="timer-value" id="timerElapsed">00:00</span>
+                            </div>
+                            <div class="timer-remaining">
+                                <span class="timer-label">Est. Time Left:</span>
+                                <span class="timer-value" id="timerRemaining">~45 min</span>
+                            </div>
+                            <div class="timer-size">
+                                <span class="timer-label">Size:</span>
+                                <span class="timer-value" id="timerSize">0.0 MB</span>
+                            </div>
                         </div>
-                        <div class="timer-size">
-                            <span class="timer-label">Size:</span>
-                            <span class="timer-value" id="timerSize">0.0 MB</span>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="progress-label">
+                            <span id="progressPercentage">0%</span>
+                            <span id="progressLimit">Limit: 4.0 MB</span>
                         </div>
                     </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" id="progressBar"></div>
+                    
+                    <!-- Recording Buttons -->
+                    <div class="button-group-controls">
+                        <button id="startBtn" class="btn btn-record btn-record-animated">
+                            <span class="record-icon"></span>
+                            Start Recording
+                        </button>
+                        <button id="pauseBtn" class="btn btn-pause" style="display: none;">
+                            <span class="pause-icon"></span>
+                            Pause
+                        </button>
+                        <button id="stopBtn" class="btn btn-stop">
+                            <span class="stop-icon"></span>
+                            Stop Recording
+                        </button>
                     </div>
-                    <div class="progress-label">
-                        <span id="progressPercentage">0%</span>
-                        <span id="progressLimit">Limit: 4.0 MB</span>
-                    </div>
+                    
                 </div>
-                
-                <div class="button-group">
-                    <button id="startBtn" class="btn btn-primary large btn-record-animated">
-                        <span class="record-icon"></span>
-                        <span>Start Recording</span>
-                    </button>
-                    <button id="pauseBtn" class="btn btn-warning large btn-pause-animated" disabled style="display: none;">
-                        <span class="pause-icon"></span>
-                        <span>Pause</span>
-                    </button>
-                    <button id="stopBtn" class="btn btn-danger large btn-stop-animated" disabled>
-                        <span class="stop-icon"></span>
-                        <span>Stop Recording</span>
-                    </button>
+            </div>
+            
+            <!-- Live Transcript Card -->
+            <div class="card transcript-card">
+                <div class="card-header">
+                    <h2>Live Transcript</h2>
+                    <div class="badge-live" style="display: none;" id="liveBadge">Live</div>
                 </div>
-            </section>
-
-            <!-- Transcript Section -->
-            <section class="transcript-section card">
-                <div class="section-header" onclick="toggleTranscript()">
-                    <h2>Consultation Transcript</h2>
-                    <button class="collapse-btn" id="transcriptCollapseBtn" type="button">
-                        <span class="icon">▼</span>
-                    </button>
-                </div>
-                <div id="transcriptContent" class="collapsible-content collapsed">
-                    <div id="transcript" class="content-box editable" contenteditable="true">
+                <div class="card-body">
+                    <div id="transcript" class="transcript-box" contenteditable="true">
                         <p class="placeholder">Transcription will appear here once you have finished recording</p>
                     </div>
-                    <button id="clearTranscript" class="btn btn-outline btn-slide-border" style="display: none;">
+                    <button id="clearTranscript" class="btn btn-outline btn-small" style="display: none;">
                         Clear Transcript
                     </button>
                 </div>
-            </section>
             </div>
-            <!-- End Left Column -->
-
-            <!-- Right Column: Summaries -->
-            <div class="right-column">
-            <!-- Summary Section -->
-            <section class="summary-section card">
-                <h2>Structured Clinical Summary</h2>
-                <p class="ai-disclaimer">⚠️ AI can make mistakes. Please check the text carefully before pasting into the notes</p>
-                <div id="summary" class="content-box editable" contenteditable="true">
-                    <p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>
+            
+        </aside>
+        
+        <!-- RIGHT PANEL: AI-Generated Documents (Scrollable) -->
+        <main class="panel-right">
+            
+            <!-- Generate Button -->
+            <div class="actions-bar">
+                <button id="getSummary" class="btn btn-accent" style="display: none;">
+                    ✨ Generate Clinical Documents
+                </button>
+            </div>
+            
+            <!-- Clinical Summary Card -->
+            <div class="card output-card">
+                <div class="card-header">
+                    <h3>Structured Clinical Summary</h3>
+                    <button id="copySummary" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
                 </div>
-                <div class="button-group">
-                    <button id="getSummary" class="btn btn-success btn-ai-generate" style="display: none;">
-                        Generate Summary
-                    </button>
-                    <button id="copySummary" class="btn btn-outline btn-slide-border" style="display: none;">
-                        <span class="copy-icon"></span> Copy to Clipboard
-                    </button>
+                <div class="card-body">
+                    <p class="ai-disclaimer">⚠️ AI can make mistakes. Please check the text carefully before pasting into the notes</p>
+                    <div id="summary" class="output-content" contenteditable="true">
+                        <p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>
+                    </div>
                 </div>
-            </section>
-
-            <!-- Referral Letter Section -->
-            <section class="referral-section card">
-                <h2>Referral Letter</h2>
-                <div id="referralLetter" class="content-box editable" contenteditable="true">
-                    <p class="placeholder">Generate a clinical summary first, then create a referral letter for secondary care specialists</p>
+            </div>
+            
+            <!-- Referral Letter Card -->
+            <div class="card output-card">
+                <div class="card-header">
+                    <h3>Referral Letter</h3>
+                    <button id="copyReferral" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
                 </div>
-                <div class="button-group">
-                    <button id="generateReferral" class="btn btn-success btn-ai-generate" style="display: none;">
+                <div class="card-body">
+                    <button id="generateReferral" class="btn btn-secondary btn-small" style="display: none;">
                         Generate Referral Letter
                     </button>
-                    <button id="copyReferral" class="btn btn-outline btn-slide-border" style="display: none;">
-                        <span class="copy-icon"></span> Copy to Clipboard
-                    </button>
+                    <div id="referralLetter" class="output-content document-paper" contenteditable="true">
+                        <p class="placeholder">Generate a clinical summary first, then create a referral letter for secondary care specialists</p>
+                    </div>
                 </div>
-            </section>
-
-            <!-- Patient Summary Section -->
-            <section class="patient-summary-section card">
-                <h2>Patient Summary</h2>
-                <p class="section-description">Patient-friendly summary in plain English to share with the patient</p>
-                <div id="patientSummary" class="content-box editable" contenteditable="true">
-                    <p class="placeholder">Generate a clinical summary first, then create a patient-friendly summary to share</p>
+            </div>
+            
+            <!-- Patient Summary Card -->
+            <div class="card output-card">
+                <div class="card-header">
+                    <h3>Patient Summary</h3>
+                    <button id="copyPatientSummary" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
                 </div>
-                <div class="button-group">
-                    <button id="generatePatientSummary" class="btn btn-success btn-ai-generate" style="display: none;">
+                <div class="card-body">
+                    <p class="section-description">Patient-friendly summary in plain English to share with the patient</p>
+                    <button id="generatePatientSummary" class="btn btn-secondary btn-small" style="display: none;">
                         Generate Patient Summary
                     </button>
-                    <button id="copyPatientSummary" class="btn btn-outline btn-slide-border" style="display: none;">
-                        <span class="copy-icon"></span> Copy to Clipboard
-                    </button>
+                    <div id="patientSummary" class="output-content" contenteditable="true">
+                        <p class="placeholder">Generate a clinical summary first, then create a patient-friendly summary to share</p>
+                    </div>
                 </div>
-            </section>
             </div>
-            <!-- End Right Column -->
-
+            
             <!-- Privacy Notice -->
-            <section class="privacy-notice card">
-                <h3>🔒 Privacy & Security</h3>
-                <ul class="privacy-list">
-                    <li>Audio is recorded locally in your browser and sent securely via encrypted connection to OpenAI Whisper for transcription</li>
-                    <li>Only anonymised text transcripts are processed by AI for clinical summarisation — no audio files or patient identifiers are stored</li>
-                    <li>All data transmission uses industry-standard encryption</li>
-                </ul>
-            </section>
+            <div class="card privacy-card">
+                <div class="card-header">
+                    <h3>Privacy & Data Protection</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>🔒 Data Privacy:</strong> All audio processing happens via secure API calls. No patient data is stored on our servers. Audio is transcribed and immediately discarded.</p>
+                    <p><strong>⚠️ Important:</strong> This is a demonstration tool. For production use, ensure GDPR compliance, obtain appropriate patient consent, and follow your organisation's information governance policies.</p>
+                    <p><strong>📋 Responsibility:</strong> Always verify AI-generated content before adding to patient records. The clinician remains responsible for all clinical documentation.</p>
+                </div>
+            </div>
+            
         </main>
-
-        <footer>
-            <p>EchoDoc © 2025 | Built for busy UK healthcare professionals</p>
-        </footer>
+        
     </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>EchoDoc © 2025 | Built for busy UK healthcare professionals</p>
+            <p class="footer-disclaimer">Demonstration tool only • Not for clinical use</p>
+        </div>
+    </footer>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js"></script>
 </body>
 </html>
