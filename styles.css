@@ -103,6 +103,12 @@ body {
     font-weight: 500;
 }
 
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
 .status-dot {
     width: 10px;
     height: 10px;
@@ -568,7 +574,7 @@ body {
 
 .btn-record {
     background-color: white;
-    color: #1E293B;
+    color: #EF4444;
     width: 100%;
     border: 2px solid #EF4444;
     font-weight: 600;
@@ -577,6 +583,7 @@ body {
 .btn-record:hover:not(:disabled) {
     background-color: #FEF2F2;
     box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+    color: #DC2626;
 }
 
 .btn-record:active:not(:disabled) {
@@ -601,7 +608,7 @@ body {
 
 .btn-stop {
     background-color: white;
-    color: #1E293B;
+    color: #0EA5E9;
     width: 100%;
     border: 2px solid #0EA5E9;
     font-weight: 600;
@@ -610,6 +617,7 @@ body {
 .btn-stop:hover:not(:disabled) {
     background-color: #F0F9FF;
     box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+    color: #0284C7;
 }
 
 .btn-stop:active:not(:disabled) {
@@ -898,4 +906,178 @@ body {
 
 .copy-btn.copied::after {
     content: ' ✓';
+}
+
+/* --- 22. DARK MODE TOGGLE --- */
+.dark-mode-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.dark-mode-label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.dark-mode-checkbox {
+    display: none;
+}
+
+.dark-mode-slider {
+    position: relative;
+    width: 52px;
+    height: 26px;
+    background: #CBD5E1;
+    border-radius: 13px;
+    transition: background 0.3s;
+    margin-right: 8px;
+}
+
+.dark-mode-slider::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode-checkbox:checked + .dark-mode-slider {
+    background: #1E293B;
+}
+
+.dark-mode-checkbox:checked + .dark-mode-slider::before {
+    transform: translateX(26px);
+}
+
+.dark-mode-icon {
+    font-size: 1.2rem;
+    transition: opacity 0.3s;
+}
+
+.dark-mode-checkbox:checked ~ .dark-mode-icon {
+    opacity: 1;
+}
+
+/* --- 23. DARK MODE STYLES --- */
+body.dark-mode {
+    --bg-app: #0f172a;
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border: #334155;
+    --border-light: #475569;
+}
+
+body.dark-mode .navbar {
+    background: #1e293b;
+    border-bottom-color: #334155;
+}
+
+body.dark-mode .card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+body.dark-mode .card-header {
+    background: #0f172a;
+    border-bottom-color: #334155;
+}
+
+body.dark-mode .control-card {
+    background: linear-gradient(to bottom, #1e293b, #0f172a);
+}
+
+body.dark-mode .mic-select-container-inline,
+body.dark-mode .telephone-mode-toggle {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+body.dark-mode .mic-dropdown,
+body.dark-mode .toggle-slider {
+    background: #1e293b;
+    border-color: #475569;
+    color: #f1f5f9;
+}
+
+body.dark-mode .status {
+    background: #0f172a;
+    color: #94a3b8;
+}
+
+body.dark-mode .recording-timer {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: #334155;
+}
+
+body.dark-mode .transcript-box,
+body.dark-mode .output-content {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+body.dark-mode .document-paper {
+    background: #1a1a1a;
+    border-color: #404040;
+    color: #e5e5e5;
+}
+
+body.dark-mode .ai-disclaimer {
+    background: #422006;
+    border-left-color: #F59E0B;
+    color: #FEF3C7;
+}
+
+body.dark-mode .btn-record {
+    background: #0f172a;
+    border-color: #EF4444;
+    color: #EF4444;
+}
+
+body.dark-mode .btn-record:hover:not(:disabled) {
+    background: #1e1b1b;
+}
+
+body.dark-mode .btn-stop {
+    background: #0f172a;
+    border-color: #0EA5E9;
+    color: #0EA5E9;
+}
+
+body.dark-mode .btn-stop:hover:not(:disabled) {
+    background: #1a1e26;
+}
+
+body.dark-mode .btn-secondary,
+body.dark-mode .btn-outline {
+    background: #1e293b;
+    border-color: #475569;
+    color: #f1f5f9;
+}
+
+body.dark-mode .btn-secondary:hover:not(:disabled),
+body.dark-mode .btn-outline:hover:not(:disabled) {
+    background: #334155;
+}
+
+body.dark-mode .privacy-card {
+    background: #0f172a;
+}
+
+body.dark-mode .footer {
+    background: #1e293b;
+    border-top-color: #334155;
+}
+
+body.dark-mode .placeholder {
+    color: #475569;
 }
