@@ -143,22 +143,7 @@ body {
     .panel-left {
         position: sticky;
         top: 100px;
-        max-height: calc(100vh - 120px);
-        overflow-y: auto;
-    }
-    
-    /* Hide scrollbar but keep functionality */
-    .panel-left::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    .panel-left::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    
-    .panel-left::-webkit-scrollbar-thumb {
-        background: #CBD5E1;
-        border-radius: 10px;
+        /* Removed max-height and overflow - this was causing the rendering bug */
     }
 }
 
