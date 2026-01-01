@@ -567,15 +567,16 @@ body {
 }
 
 .btn-record {
-    background-color: var(--danger);
-    color: white;
+    background-color: white;
+    color: #1E293B;
     width: 100%;
-    border: 1px solid var(--danger-hover);
+    border: 2px solid #EF4444;
+    font-weight: 600;
 }
 
 .btn-record:hover:not(:disabled) {
-    background-color: var(--danger-hover);
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+    background-color: #FEF2F2;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
 }
 
 .btn-record:active:not(:disabled) {
@@ -599,15 +600,16 @@ body {
 }
 
 .btn-stop {
-    background-color: #0EA5E9;
-    color: white;
+    background-color: white;
+    color: #1E293B;
     width: 100%;
-    border: 1px solid #0284C7;
+    border: 2px solid #0EA5E9;
+    font-weight: 600;
 }
 
 .btn-stop:hover:not(:disabled) {
-    background-color: #0284C7;
-    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+    background-color: #F0F9FF;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
 }
 
 .btn-stop:active:not(:disabled) {
