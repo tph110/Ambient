@@ -25,6 +25,13 @@
                 </div>
             </div>
             <div class="navbar-right">
+                <!-- Compact Audio Level Indicator -->
+                <div class="audio-bars" id="audioBars" style="display: none;">
+                    <div class="audio-bar" id="audioBar1"></div>
+                    <div class="audio-bar" id="audioBar2"></div>
+                    <div class="audio-bar" id="audioBar3"></div>
+                </div>
+                
                 <div class="status-indicator" id="connectionStatus">
                     <span class="status-dot"></span>
                     <span>Ready</span>
@@ -66,15 +73,6 @@
                         <select id="microphoneDropdown" class="mic-dropdown">
                             <option value="">Loading microphones...</option>
                         </select>
-                    </div>
-                    
-                    <!-- Audio Level Visualizer -->
-                    <div class="audio-visualizer-container" id="audioVisualizerContainer" style="display: none;">
-                        <div class="visualizer-label">
-                            <span class="visualizer-icon">🎵</span>
-                            <span>Audio Level</span>
-                        </div>
-                        <canvas id="audioVisualizer" width="800" height="50"></canvas>
                     </div>
                     
                     <!-- Telephone Mode Toggle -->
