@@ -296,9 +296,9 @@ body {
     gap: 10px;
     margin-bottom: 16px;
     padding: 12px;
-    background: #F0F9FF;
+    background: white;
     border-radius: 10px;
-    border: 1px solid #BAE6FD;
+    border: 1px solid #E2E8F0;
 }
 
 .mic-select-container-inline label {
@@ -307,7 +307,7 @@ body {
     gap: 6px;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #1E3A8A;
+    color: #1E293B;
     margin: 0;
     white-space: nowrap;
 }
@@ -369,9 +369,9 @@ body {
 .telephone-mode-toggle {
     margin-bottom: 16px;
     padding: 12px 16px;
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    background: white;
     border-radius: 10px;
-    border: 1px solid #93c5fd;
+    border: 1px solid #E2E8F0;
 }
 
 .toggle-label {
@@ -420,13 +420,13 @@ body {
 .toggle-text {
     font-size: 0.95rem;
     font-weight: 600;
-    color: #1e3a8a;
+    color: #1E293B;
 }
 
 .toggle-description {
     margin: 6px 0 0 60px;
     font-size: 0.8rem;
-    color: #1e40af;
+    color: #64748B;
     line-height: 1.4;
 }
 
@@ -561,32 +561,48 @@ body {
     background-color: var(--danger);
     color: white;
     width: 100%;
+    border: 1px solid var(--danger-hover);
 }
 
 .btn-record:hover:not(:disabled) {
     background-color: var(--danger-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.btn-record:active:not(:disabled) {
+    transform: scale(0.98);
 }
 
 .btn-pause {
     background-color: #F59E0B;
     color: white;
     width: 100%;
+    border: 1px solid #D97706;
 }
 
 .btn-pause:hover:not(:disabled) {
     background-color: #D97706;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.btn-pause:active:not(:disabled) {
+    transform: scale(0.98);
 }
 
 .btn-stop {
     background-color: #64748B;
     color: white;
     width: 100%;
+    border: 1px solid #475569;
 }
 
 .btn-stop:hover:not(:disabled) {
     background-color: #475569;
+    box-shadow: 0 2px 8px rgba(100, 116, 139, 0.2);
+}
+
+.btn-stop:active:not(:disabled) {
+    transform: scale(0.98);
 }
 
 .btn-accent {
@@ -659,33 +675,11 @@ body {
     margin-bottom: 0;
 }
 
-/* Button icons */
+/* Button icons - hidden for professional appearance */
 .record-icon,
 .pause-icon,
 .stop-icon {
-    width: 14px;
-    height: 14px;
-    display: inline-block;
-}
-
-.record-icon {
-    background: white;
-    border-radius: 50%;
-}
-
-.pause-icon::before,
-.pause-icon::after {
-    content: '';
-    width: 3px;
-    height: 14px;
-    background: white;
-    display: inline-block;
-    margin: 0 2px;
-}
-
-.stop-icon {
-    background: white;
-    border-radius: 2px;
+    display: none;
 }
 
 /* --- 13. TRANSCRIPT BOX --- */
