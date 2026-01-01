@@ -57,14 +57,15 @@ body {
 .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
 }
 
-.brand-icon {
-    font-size: 1.75rem;
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.brand h1 {
+.brand-text h1 {
     font-size: 1.35rem;
     margin: 0;
     font-weight: 700;
@@ -72,6 +73,14 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+}
+
+.brand-motto {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.2;
 }
 
 .badge {
@@ -574,15 +583,15 @@ body {
 }
 
 .btn-pause {
-    background-color: #F59E0B;
+    background-color: #EF4444;
     color: white;
     width: 100%;
-    border: 1px solid #D97706;
+    border: 1px solid #DC2626;
 }
 
 .btn-pause:hover:not(:disabled) {
-    background-color: #D97706;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+    background-color: #DC2626;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
 }
 
 .btn-pause:active:not(:disabled) {
@@ -590,15 +599,15 @@ body {
 }
 
 .btn-stop {
-    background-color: #64748B;
+    background-color: #0EA5E9;
     color: white;
     width: 100%;
-    border: 1px solid #475569;
+    border: 1px solid #0284C7;
 }
 
 .btn-stop:hover:not(:disabled) {
-    background-color: #475569;
-    box-shadow: 0 2px 8px rgba(100, 116, 139, 0.2);
+    background-color: #0284C7;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
 }
 
 .btn-stop:active:not(:disabled) {
