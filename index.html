@@ -24,9 +24,18 @@
                     <p class="brand-motto">Focus on your patient and let EchoDoc handle the notes</p>
                 </div>
             </div>
-            <div class="status-indicator" id="connectionStatus">
-                <span class="status-dot"></span>
-                <span>Ready</span>
+            <div class="navbar-right">
+                <div class="status-indicator" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span>Ready</span>
+                </div>
+                <div class="dark-mode-toggle">
+                    <label class="dark-mode-label">
+                        <input type="checkbox" id="darkModeCheckbox" class="dark-mode-checkbox">
+                        <span class="dark-mode-slider"></span>
+                        <span class="dark-mode-icon">🌙</span>
+                    </label>
+                </div>
             </div>
         </div>
     </nav>
@@ -224,6 +233,28 @@
         </div>
     </footer>
 
+    <script>
+        // Dark Mode Toggle
+        const darkModeCheckbox = document.getElementById('darkModeCheckbox');
+        
+        // Check for saved dark mode preference
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeCheckbox.checked = true;
+        }
+        
+        // Toggle dark mode
+        darkModeCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+    </script>
     <script src="app.js"></script>
 </body>
 </html>
