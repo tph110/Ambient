@@ -32,7 +32,7 @@ let sizeMonitorInterval = null;  // Monitor recording size
 let currentRecordingSize = 0;  // Track current size
 let hasShownSizeWarning = false;  // Track if warning shown
 
-// Audio visualizer
+// Audio bars (3-bar compact indicator)
 let audioContext = null;
 let analyser = null;
 let dataArray = null;
@@ -45,16 +45,18 @@ const SIZE_MAX_LIMIT = 4 * 1024 * 1024;  // 4MB - auto-stop
 const SIZE_SAFE_LIMIT = 4.2 * 1024 * 1024;  // 4.2MB - absolute max before data loss
 
 // Audio Visualizer Functions
-async function startAudioVisualizer() {
+// Audio Bars - Compact 3-bar indicator
+async function startAudioBars() {
     try {
-        const visualizerContainer = document.getElementById('audioVisualizerContainer');
-        const canvas = document.getElementById('audioVisualizer');
-        const statusDiv = document.getElementById('visualizerStatus');
+        const audioBars = document.getElementById('audioBars');
+        const bar1 = document.getElementById('audioBar1');
+        const bar2 = document.getElementById('audioBar2');
+        const bar3 = document.getElementById('audioBar3');
         
-        if (!canvas) return;
+        if (!audioBars || !bar1 || !bar2 || !bar3) return;
         
-        // Show visualizer
-        visualizerContainer.style.display = 'block';
+        // Show the bars
+        audioBars.style.display = 'flex';
         
         // Get microphone stream for visualization
         const constraints = {
@@ -67,70 +69,54 @@ async function startAudioVisualizer() {
         analyser = audioContext.createAnalyser();
         const source = audioContext.createMediaStreamSource(visualizerStream);
         
-        analyser.fftSize = 256;
+        analyser.fftSize = 32; // Small FFT for 3 bars
         const bufferLength = analyser.frequencyBinCount;
         dataArray = new Uint8Array(bufferLength);
         
         source.connect(analyser);
         
-        // Start drawing
-        drawVisualizer(canvas, analyser, dataArray, bufferLength);
+        // Start updating bars
+        updateAudioBars(bar1, bar2, bar3, analyser, dataArray);
         
     } catch (error) {
-        console.error('Error starting audio visualizer:', error);
+        console.error('Error starting audio bars:', error);
     }
 }
 
-function drawVisualizer(canvas, analyser, dataArray, bufferLength) {
-    const ctx = canvas.getContext('2d');
-    const WIDTH = canvas.width;
-    const HEIGHT = canvas.height;
-    
-    function draw() {
-        visualizerAnimationId = requestAnimationFrame(draw);
+function updateAudioBars(bar1, bar2, bar3, analyser, dataArray) {
+    function update() {
+        visualizerAnimationId = requestAnimationFrame(update);
         
         analyser.getByteFrequencyData(dataArray);
         
-        // Clear canvas
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        // Calculate average levels for 3 frequency ranges
+        const low = dataArray.slice(0, 5).reduce((a, b) => a + b, 0) / 5;
+        const mid = dataArray.slice(5, 10).reduce((a, b) => a + b, 0) / 5;
+        const high = dataArray.slice(10, 16).reduce((a, b) => a + b, 0) / 6;
         
-        // Draw bars
-        const barWidth = (WIDTH / bufferLength) * 2.5;
-        let barHeight;
-        let x = 0;
+        // Update bar 1 (low frequencies)
+        bar1.className = 'audio-bar';
+        if (low > 100) bar1.classList.add('active-high');
+        else if (low > 50) bar1.classList.add('active-medium');
+        else if (low > 20) bar1.classList.add('active-low');
         
-        for (let i = 0; i < bufferLength; i++) {
-            barHeight = (dataArray[i] / 255) * HEIGHT;
-            
-            // Create gradient based on height
-            const gradient = ctx.createLinearGradient(0, HEIGHT - barHeight, 0, HEIGHT);
-            
-            if (barHeight > HEIGHT * 0.7) {
-                // Red for loud
-                gradient.addColorStop(0, '#ef4444');
-                gradient.addColorStop(1, '#dc2626');
-            } else if (barHeight > HEIGHT * 0.4) {
-                // Yellow for medium
-                gradient.addColorStop(0, '#fbbf24');
-                gradient.addColorStop(1, '#f59e0b');
-            } else {
-                // Green/blue for quiet
-                gradient.addColorStop(0, '#34d399');
-                gradient.addColorStop(1, '#10b981');
-            }
-            
-            ctx.fillStyle = gradient;
-            ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
-            
-            x += barWidth + 1;
-        }
+        // Update bar 2 (mid frequencies)
+        bar2.className = 'audio-bar';
+        if (mid > 100) bar2.classList.add('active-high');
+        else if (mid > 50) bar2.classList.add('active-medium');
+        else if (mid > 20) bar2.classList.add('active-low');
+        
+        // Update bar 3 (high frequencies)
+        bar3.className = 'audio-bar';
+        if (high > 100) bar3.classList.add('active-high');
+        else if (high > 50) bar3.classList.add('active-medium');
+        else if (high > 20) bar3.classList.add('active-low');
     }
     
-    draw();
+    update();
 }
 
-function stopAudioVisualizer() {
+function stopAudioBars() {
     // Stop animation
     if (visualizerAnimationId) {
         cancelAnimationFrame(visualizerAnimationId);
@@ -149,19 +135,21 @@ function stopAudioVisualizer() {
         visualizerStream = null;
     }
     
-    // Hide visualizer
-    const visualizerContainer = document.getElementById('audioVisualizerContainer');
-    if (visualizerContainer) {
-        visualizerContainer.style.display = 'none';
+    // Hide audio bars
+    const audioBars = document.getElementById('audioBars');
+    if (audioBars) {
+        audioBars.style.display = 'none';
     }
     
-    // Clear canvas
-    const canvas = document.getElementById('audioVisualizer');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+    // Reset bars to default state
+    const bar1 = document.getElementById('audioBar1');
+    const bar2 = document.getElementById('audioBar2');
+    const bar3 = document.getElementById('audioBar3');
+    if (bar1) bar1.className = 'audio-bar';
+    if (bar2) bar2.className = 'audio-bar';
+    if (bar3) bar3.className = 'audio-bar';
 }
+
 
 // Setup Telephone Recording (Mix Microphone + System Audio)
 async function setupTelephoneRecording() {
@@ -491,8 +479,8 @@ async function startRecording() {
         isRecording = true;
         recordingStartTime = Date.now();
         
-        // Start audio visualizer
-        startAudioVisualizer();
+        // Start audio bars
+        startAudioBars();
         
         // Show recording timer display
         const timerDiv = document.getElementById('recordingTimer');
@@ -565,8 +553,8 @@ function stopRecording() {
             sizeMonitorInterval = null;
         }
         
-        // Stop audio visualizer
-        stopAudioVisualizer();
+        // Stop audio bars
+        stopAudioBars();
         
         // Hide recording timer display
         const timerDiv = document.getElementById('recordingTimer');
