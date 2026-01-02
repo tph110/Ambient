@@ -85,6 +85,16 @@
                         <p class="toggle-description">Enable for phone calls. Share your telephony window with audio when prompted</p>
                     </div>
                     
+                    <!-- Anonymization Toggle -->
+                    <div class="telephone-mode-toggle anonymize-toggle">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="anonymizeCheckbox" class="toggle-checkbox" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-text">🔒 Anonymize Before AI Processing</span>
+                        </label>
+                        <p class="toggle-description">Strip patient names and addresses before sending to AI (recommended for privacy)</p>
+                    </div>
+                    
                     <!-- Status Message -->
                     <div class="status" id="status">Ready to record</div>
                     
@@ -167,7 +177,7 @@
                     <button id="copySummary" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
                 </div>
                 <div class="card-body">
-                    <p class="ai-disclaimer">Please check the text carefully before pasting into the notes</p>
+                    <p class="ai-disclaimer">⚠️ Always verify patient name and check content before pasting into notes</p>
                     <div id="summary" class="output-content" contenteditable="true">
                         <p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>
                     </div>
