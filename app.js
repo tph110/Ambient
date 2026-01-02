@@ -44,6 +44,111 @@ const SIZE_WARNING_THRESHOLD = 3 * 1024 * 1024;  // 3MB - show warning
 const SIZE_MAX_LIMIT = 4 * 1024 * 1024;  // 4MB - auto-stop
 const SIZE_SAFE_LIMIT = 4.2 * 1024 * 1024;  // 4.2MB - absolute max before data loss
 
+// ==========================================
+// ANONYMIZATION FUNCTION
+// ==========================================
+
+/**
+ * Anonymize transcript by replacing names and addresses with placeholders
+ * Uses regex patterns to detect common UK name and address formats
+ */
+function anonymizeTranscript(text) {
+    let anonymized = text;
+    
+    // Track what was redacted for user awareness
+    const redactions = [];
+    
+    // 1. Common greeting patterns that reveal names
+    // "Hi [Name]", "Hello [Name]", "Good morning [Name]"
+    const greetingPattern = /\b(Hi|Hello|Good morning|Good afternoon|Good evening|Hey)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+    anonymized = anonymized.replace(greetingPattern, (match, greeting, name) => {
+        if (name.length > 2 && !['Doctor', 'Dr', 'Nurse', 'The'].includes(name.split(' ')[0])) {
+            redactions.push(`Name: ${name}`);
+            return `${greeting} [PATIENT NAME]`;
+        }
+        return match;
+    });
+    
+    // 2. "My name is [Name]" or "[Name] speaking"
+    const nameIntroPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+speaking\b/g;
+    anonymized = anonymized.replace(nameIntroPattern, (match, name) => {
+        if (name.length > 2) {
+            redactions.push(`Name: ${name}`);
+            return '[PATIENT NAME] speaking';
+        }
+        return match;
+    });
+    
+    // 3. "I'm Dr [Name]" or "it's Dr [Name]" - preserve doctor titles but anonymize
+    const doctorPattern = /\b(Dr|Doctor)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+    anonymized = anonymized.replace(doctorPattern, (match, title, name) => {
+        if (name.length > 2) {
+            redactions.push(`Doctor name: ${name}`);
+            return `${title} [CLINICIAN NAME]`;
+        }
+        return match;
+    });
+    
+    // 4. UK Addresses - postcode patterns
+    // Full UK postcodes: "OX1 1AB", "SW1A 1AA", etc.
+    const postcodePattern = /\b([A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2})\b/g;
+    anonymized = anonymized.replace(postcodePattern, (match) => {
+        redactions.push(`Postcode: ${match}`);
+        return '[POSTCODE]';
+    });
+    
+    // 5. Street addresses - common UK patterns
+    // "123 High Street", "45 Park Road", "10 Downing Street"
+    const streetPattern = /\b(\d+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:Street|Road|Lane|Avenue|Drive|Close|Way|Gardens|Court|Place|Square|Terrace|Hill|Green|Park))\b/g;
+    anonymized = anonymized.replace(streetPattern, (match) => {
+        redactions.push(`Address: ${match}`);
+        return '[STREET ADDRESS]';
+    });
+    
+    // 6. Phone numbers - UK patterns
+    // "07123456789", "020 1234 5678", "+44 7123 456789"
+    const phonePattern = /\b(?:\+44\s?|0)(?:\d\s?){9,10}\b/g;
+    anonymized = anonymized.replace(phonePattern, (match) => {
+        redactions.push(`Phone: ${match}`);
+        return '[PHONE NUMBER]';
+    });
+    
+    // 7. Email addresses
+    const emailPattern = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+    anonymized = anonymized.replace(emailPattern, (match) => {
+        redactions.push(`Email: ${match}`);
+        return '[EMAIL ADDRESS]';
+    });
+    
+    // 8. NHS number pattern (10 digits, often space-separated: "123 456 7890")
+    const nhsNumberPattern = /\b\d{3}\s?\d{3}\s?\d{4}\b/g;
+    anonymized = anonymized.replace(nhsNumberPattern, (match) => {
+        redactions.push(`NHS Number: ${match}`);
+        return '[NHS NUMBER]';
+    });
+    
+    // 9. Date of birth patterns - various formats
+    // "01/01/1990", "1st January 1990", "Jan 1, 1990"
+    const dobPattern = /\b(?:\d{1,2}\/\d{1,2}\/\d{2,4}|\d{1,2}(?:st|nd|rd|th)?\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})\b/gi;
+    anonymized = anonymized.replace(dobPattern, (match) => {
+        redactions.push(`DOB: ${match}`);
+        return '[DATE OF BIRTH]';
+    });
+    
+    // Log what was anonymized (for debugging/transparency)
+    if (redactions.length > 0) {
+        console.log('🔒 Anonymization applied:', redactions.length, 'items redacted');
+        console.log('Redacted items:', redactions);
+    } else {
+        console.log('🔒 No personally identifiable information detected');
+    }
+    
+    return anonymized;
+}
+
+// Continue with existing Audio Visualizer Functions...
+// [Rest of the file remains the same]
+
 // Audio Visualizer Functions
 // Audio Bars - Compact 3-bar indicator
 async function startAudioBars() {
@@ -804,6 +909,21 @@ async function generateSummary() {
     updateButtonColors();
 
     try {
+        // Check if anonymization is enabled
+        const anonymizeCheckbox = document.getElementById('anonymizeCheckbox');
+        const shouldAnonymize = anonymizeCheckbox.checked;
+        
+        // Prepare transcript (anonymize if enabled)
+        let transcriptToSend = finalTranscript;
+        if (shouldAnonymize) {
+            console.log('🔒 Anonymizing transcript before sending to AI...');
+            transcriptToSend = anonymizeTranscript(finalTranscript);
+            console.log('Original length:', finalTranscript.length, 'chars');
+            console.log('Anonymized length:', transcriptToSend.length, 'chars');
+        } else {
+            console.log('⚠️ Anonymization disabled - sending raw transcript to AI');
+        }
+        
         // Call our secure API endpoint
         const response = await fetch('/api/summarize', {
             method: 'POST',
@@ -811,7 +931,7 @@ async function generateSummary() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                transcript: finalTranscript
+                transcript: transcriptToSend
             })
         });
 
