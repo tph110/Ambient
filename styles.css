@@ -1097,3 +1097,34 @@ body.dark-mode .footer {
 body.dark-mode .placeholder {
     color: #475569;
 }
+
+/* Add to your existing styles.css */
+
+/* Highlight anonymization toggle for importance */
+.anonymize-toggle {
+    border: 2px solid #10B981 !important;
+    background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%) !important;
+}
+
+.anonymize-toggle .toggle-text {
+    color: #065F46;
+    font-weight: 700;
+}
+
+.anonymize-toggle .toggle-description {
+    color: #047857;
+}
+
+/* Dark mode support for anonymize toggle */
+body.dark-mode .anonymize-toggle {
+    border: 2px solid #10B981 !important;
+    background: linear-gradient(135deg, #064E3B 0%, #065F46 100%) !important;
+}
+
+body.dark-mode .anonymize-toggle .toggle-text {
+    color: #6EE7B7;
+}
+
+body.dark-mode .anonymize-toggle .toggle-description {
+    color: #A7F3D0;
+}
