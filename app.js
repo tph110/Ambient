@@ -58,12 +58,18 @@ function anonymizeTranscript(text) {
     // Track what was redacted for user awareness
     const redactions = [];
     
+    // Store detected names to replace ALL occurrences (not just first)
+    const detectedNames = new Set();
+    
     // 1. Common greeting patterns that reveal names
     // "Hi [Name]", "Hello [Name]", "Good morning [Name]"
-    const greetingPattern = /\b(Hi|Hello|Good morning|Good afternoon|Good evening|Hey)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+    const greetingPattern = /\b(Hi|Hello|Good morning|Good afternoon|Good evening|Hey|Morning|Evening)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/gi;
     anonymized = anonymized.replace(greetingPattern, (match, greeting, name) => {
-        if (name.length > 2 && !['Doctor', 'Dr', 'Nurse', 'The'].includes(name.split(' ')[0])) {
-            redactions.push(`Name: ${name}`);
+        const firstName = name.split(' ')[0];
+        if (name.length > 2 && !['Doctor', 'Dr', 'Nurse', 'The', 'There', 'This', 'That'].includes(firstName)) {
+            detectedNames.add(name);
+            detectedNames.add(firstName); // Also track first name alone
+            redactions.push(`Name from greeting: ${name}`);
             return `${greeting} [PATIENT NAME]`;
         }
         return match;
@@ -73,23 +79,45 @@ function anonymizeTranscript(text) {
     const nameIntroPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+speaking\b/g;
     anonymized = anonymized.replace(nameIntroPattern, (match, name) => {
         if (name.length > 2) {
-            redactions.push(`Name: ${name}`);
+            detectedNames.add(name);
+            const firstName = name.split(' ')[0];
+            detectedNames.add(firstName);
+            redactions.push(`Name from intro: ${name}`);
             return '[PATIENT NAME] speaking';
         }
         return match;
     });
     
     // 3. "I'm Dr [Name]" or "it's Dr [Name]" - preserve doctor titles but anonymize
-    const doctorPattern = /\b(Dr|Doctor)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+    const doctorPattern = /\b(Dr\.?|Doctor)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
     anonymized = anonymized.replace(doctorPattern, (match, title, name) => {
         if (name.length > 2) {
+            detectedNames.add(name);
+            const firstName = name.split(' ')[0];
+            detectedNames.add(firstName);
             redactions.push(`Doctor name: ${name}`);
             return `${title} [CLINICIAN NAME]`;
         }
         return match;
     });
     
-    // 4. UK Addresses - postcode patterns
+    // 4. AGGRESSIVE: Now replace ALL occurrences of detected names throughout transcript
+    // This catches "I consulted Jim", "Jim told me", etc.
+    detectedNames.forEach(name => {
+        if (name.length > 2) {
+            // Create pattern that matches the name as a whole word
+            const namePattern = new RegExp(`\\b${name}\\b`, 'gi');
+            
+            // Count how many times this name appears (for logging)
+            const matches = anonymized.match(namePattern);
+            if (matches && matches.length > 0) {
+                redactions.push(`Replaced "${name}" ${matches.length} time(s) throughout transcript`);
+                anonymized = anonymized.replace(namePattern, '[PATIENT NAME]');
+            }
+        }
+    });
+    
+    // 5. UK Addresses - postcode patterns
     // Full UK postcodes: "OX1 1AB", "SW1A 1AA", etc.
     const postcodePattern = /\b([A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2})\b/g;
     anonymized = anonymized.replace(postcodePattern, (match) => {
@@ -97,7 +125,7 @@ function anonymizeTranscript(text) {
         return '[POSTCODE]';
     });
     
-    // 5. Street addresses - common UK patterns
+    // 6. Street addresses - common UK patterns
     // "123 High Street", "45 Park Road", "10 Downing Street"
     const streetPattern = /\b(\d+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:Street|Road|Lane|Avenue|Drive|Close|Way|Gardens|Court|Place|Square|Terrace|Hill|Green|Park))\b/g;
     anonymized = anonymized.replace(streetPattern, (match) => {
@@ -105,7 +133,7 @@ function anonymizeTranscript(text) {
         return '[STREET ADDRESS]';
     });
     
-    // 6. Phone numbers - UK patterns
+    // 7. Phone numbers - UK patterns
     // "07123456789", "020 1234 5678", "+44 7123 456789"
     const phonePattern = /\b(?:\+44\s?|0)(?:\d\s?){9,10}\b/g;
     anonymized = anonymized.replace(phonePattern, (match) => {
@@ -113,21 +141,21 @@ function anonymizeTranscript(text) {
         return '[PHONE NUMBER]';
     });
     
-    // 7. Email addresses
+    // 8. Email addresses
     const emailPattern = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
     anonymized = anonymized.replace(emailPattern, (match) => {
         redactions.push(`Email: ${match}`);
         return '[EMAIL ADDRESS]';
     });
     
-    // 8. NHS number pattern (10 digits, often space-separated: "123 456 7890")
+    // 9. NHS number pattern (10 digits, often space-separated: "123 456 7890")
     const nhsNumberPattern = /\b\d{3}\s?\d{3}\s?\d{4}\b/g;
     anonymized = anonymized.replace(nhsNumberPattern, (match) => {
         redactions.push(`NHS Number: ${match}`);
         return '[NHS NUMBER]';
     });
     
-    // 9. Date of birth patterns - various formats
+    // 10. Date of birth patterns - various formats
     // "01/01/1990", "1st January 1990", "Jan 1, 1990"
     const dobPattern = /\b(?:\d{1,2}\/\d{1,2}\/\d{2,4}|\d{1,2}(?:st|nd|rd|th)?\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})\b/gi;
     anonymized = anonymized.replace(dobPattern, (match) => {
@@ -137,8 +165,9 @@ function anonymizeTranscript(text) {
     
     // Log what was anonymized (for debugging/transparency)
     if (redactions.length > 0) {
-        console.log('🔒 Anonymization applied:', redactions.length, 'items redacted');
-        console.log('Redacted items:', redactions);
+        console.log('🔒 Anonymization applied:', redactions.length, 'redactions');
+        console.log('Detected names:', Array.from(detectedNames));
+        console.log('Redaction details:', redactions);
     } else {
         console.log('🔒 No personally identifiable information detected');
     }
