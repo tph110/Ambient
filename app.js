@@ -743,7 +743,7 @@ async function startRecording() {
             easing: 'easeOutElastic(1, .5)'
         });
         
-        console.log('Recording started with Whisper API');
+        console.log('Recording started with Azure Speech API');
         
     } catch (error) {
         console.error('Error starting recording:', error);
@@ -852,7 +852,120 @@ function pauseRecording() {
     }
 }
 
-// Transcribe Audio using Whisper API
+// ==========================================
+// WAV CONVERSION FUNCTIONS FOR AZURE SPEECH
+// ==========================================
+
+/**
+ * Convert WebM audio to WAV format for Azure Speech Services
+ * Azure requires: 16kHz, 16-bit, mono WAV
+ */
+async function convertToWav(webmBlob) {
+    return new Promise((resolve, reject) => {
+        console.log('Converting WebM to WAV format...');
+        console.log('Input size:', webmBlob.size, 'bytes');
+        
+        // Create audio context with 16kHz sample rate (Azure requirement)
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)({
+            sampleRate: 16000  // Azure requires 16kHz
+        });
+        
+        // Read WebM blob
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(webmBlob);
+        
+        reader.onload = async () => {
+            try {
+                // Decode WebM audio
+                const audioBuffer = await audioContext.decodeAudioData(reader.result);
+                
+                console.log('Audio decoded:');
+                console.log('- Sample rate:', audioBuffer.sampleRate, 'Hz');
+                console.log('- Channels:', audioBuffer.numberOfChannels);
+                console.log('- Duration:', audioBuffer.duration.toFixed(2), 'seconds');
+                
+                // Convert to mono if stereo (Azure prefers mono)
+                const channelData = audioBuffer.numberOfChannels > 1
+                    ? audioBuffer.getChannelData(0)  // Take left channel only
+                    : audioBuffer.getChannelData(0);
+                
+                console.log('Converting to mono, channel data length:', channelData.length);
+                
+                // Create WAV file
+                const wavData = encodeWav(channelData, audioBuffer.sampleRate);
+                const wavBlob = new Blob([wavData], { type: 'audio/wav' });
+                
+                console.log('✓ Converted to WAV:', wavBlob.size, 'bytes');
+                console.log('Compression ratio:', (webmBlob.size / wavBlob.size).toFixed(2) + 'x');
+                
+                resolve(wavBlob);
+                
+            } catch (error) {
+                console.error('Audio conversion error:', error);
+                reject(new Error('Failed to convert audio to WAV format: ' + error.message));
+            }
+        };
+        
+        reader.onerror = () => {
+            console.error('FileReader error');
+            reject(new Error('Failed to read audio blob'));
+        };
+    });
+}
+
+/**
+ * Encode PCM data as WAV file
+ * Creates proper WAV header and data structure
+ */
+function encodeWav(samples, sampleRate) {
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+    
+    // WAV file header (44 bytes)
+    
+    // "RIFF" chunk descriptor
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + samples.length * 2, true);  // File size - 8
+    writeString(view, 8, 'WAVE');
+    
+    // "fmt " sub-chunk
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);   // Subchunk size (16 for PCM)
+    view.setUint16(20, 1, true);    // Audio format (1 = PCM)
+    view.setUint16(22, 1, true);    // Number of channels (1 = mono)
+    view.setUint32(24, sampleRate, true);  // Sample rate
+    view.setUint32(28, sampleRate * 2, true);  // Byte rate (SampleRate * NumChannels * BitsPerSample/8)
+    view.setUint16(32, 2, true);    // Block align (NumChannels * BitsPerSample/8)
+    view.setUint16(34, 16, true);   // Bits per sample
+    
+    // "data" sub-chunk
+    writeString(view, 36, 'data');
+    view.setUint32(40, samples.length * 2, true);  // Subchunk size
+    
+    // Write PCM samples (convert float32 to int16)
+    let offset = 44;
+    for (let i = 0; i < samples.length; i++) {
+        // Clamp to [-1, 1] range
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        // Convert to 16-bit integer
+        const val = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        view.setInt16(offset, val, true);  // Little-endian
+        offset += 2;
+    }
+    
+    return buffer;
+}
+
+/**
+ * Write string to DataView
+ */
+function writeString(view, offset, string) {
+    for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+    }
+}
+
+// Transcribe Audio using Azure Speech API (formerly Whisper API)
 async function transcribeAudio(audioBlob) {
     try {
         // Final safety check before uploading
@@ -894,18 +1007,32 @@ async function transcribeAudio(audioBlob) {
         statusDiv.textContent = '⏳ Transcribing with AI...';
         transcriptDiv.innerHTML = '<p class="placeholder">Transcribing your consultation...</p>';
         
-        console.log('Audio blob size:', audioBlob.size, 'bytes');
-        console.log('Audio blob type:', audioBlob.type);
+        console.log('Original audio blob size:', audioBlob.size, 'bytes');
+        console.log('Original audio blob type:', audioBlob.type);
         
-        // Convert blob to base64
+        // Convert WebM to WAV format (Azure Speech requires WAV)
+        console.log('Step 1: Converting to WAV format for Azure Speech...');
+        let wavBlob;
+        try {
+            wavBlob = await convertToWav(audioBlob);
+            console.log('✓ WAV conversion successful');
+        } catch (conversionError) {
+            console.error('WAV conversion failed:', conversionError);
+            throw new Error('Failed to convert audio format: ' + conversionError.message);
+        }
+        
+        // Convert WAV blob to base64
+        console.log('Step 2: Converting WAV to base64...');
         const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
+        reader.readAsDataURL(wavBlob);
         
         reader.onloadend = async () => {
             const base64Audio = reader.result.split(',')[1];
-            console.log('Base64 audio length:', base64Audio.length);
+            console.log('Base64 audio length:', base64Audio.length, 'characters');
+            console.log('Estimated size:', (base64Audio.length * 0.75 / 1024).toFixed(2), 'KB');
             
-            // Call our Whisper API endpoint
+            // Call our Azure Speech API endpoint
+            console.log('Step 3: Sending to Azure Speech API...');
             const response = await fetch('/api/transcribe', {
                 method: 'POST',
                 headers: {
