@@ -1128,3 +1128,150 @@ body.dark-mode .anonymize-toggle .toggle-text {
 body.dark-mode .anonymize-toggle .toggle-description {
     color: #A7F3D0;
 }
+/* ==========================================
+   DARK MODE TEXT COLOR UPDATES
+   Add these to your existing styles.css
+   ========================================== */
+
+/* Dark mode: Make all text grey except titles/headings */
+body.dark-mode {
+    /* Base colors already defined, but ensure text is grey */
+    --text-primary: #94a3b8;     /* Grey for body text in dark mode */
+    --text-secondary: #64748b;   /* Darker grey for secondary text */
+}
+
+/* Dark mode: All paragraph text should be grey */
+body.dark-mode p {
+    color: #94a3b8 !important;
+}
+
+/* Dark mode: Labels and descriptions */
+body.dark-mode label,
+body.dark-mode .toggle-description,
+body.dark-mode .timer-label,
+body.dark-mode .section-description,
+body.dark-mode .footer-content,
+body.dark-mode .brand-motto {
+    color: #94a3b8 !important;
+}
+
+/* Dark mode: Buttons text */
+body.dark-mode .btn {
+    /* Button text colors are controlled by individual button styles */
+    /* Only override if needed */
+}
+
+/* Dark mode: Keep headings/titles white for contrast */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode .brand-text h1,
+body.dark-mode .card-header h2,
+body.dark-mode .card-header h3 {
+    color: #f1f5f9 !important; /* Keep titles white/bright */
+}
+
+/* Dark mode: Toggle text should be grey */
+body.dark-mode .toggle-text {
+    color: #94a3b8 !important;
+}
+
+/* Dark mode: Status messages */
+body.dark-mode .status {
+    color: #94a3b8 !important;
+}
+
+/* Dark mode: Timer values - keep slightly brighter for visibility */
+body.dark-mode .timer-value {
+    color: #cbd5e1 !important; /* Slightly brighter grey for numbers */
+}
+
+/* Dark mode: Placeholder text */
+body.dark-mode .placeholder {
+    color: #64748b !important; /* Darker grey for placeholders */
+}
+
+/* Dark mode: AI disclaimer */
+body.dark-mode .ai-disclaimer {
+    background: #422006 !important;
+    border-left-color: #F59E0B !important;
+    color: #fde68a !important; /* Amber text for warnings */
+}
+
+/* Dark mode: Privacy card text */
+body.dark-mode .privacy-card p,
+body.dark-mode .privacy-card strong {
+    color: #94a3b8 !important;
+}
+
+/* Dark mode: Badge text */
+body.dark-mode .badge {
+    background: #1e293b !important;
+    color: #94a3b8 !important;
+}
+
+/* Dark mode: Recording badge */
+body.dark-mode .recording-badge {
+    background-color: #7f1d1d !important;
+    color: #fca5a5 !important;
+    border-color: #991b1b !important;
+}
+
+/* Dark mode: Status indicator */
+body.dark-mode .status-indicator {
+    color: #94a3b8 !important;
+}
+
+/* Dark mode: Dropdown text */
+body.dark-mode .mic-dropdown,
+body.dark-mode .mic-dropdown option {
+    color: #cbd5e1 !important;
+}
+
+/* Dark mode: Progress label */
+body.dark-mode .progress-label {
+    color: #94a3b8 !important;
+}
+
+/* Dark mode: Editable content boxes - text should be readable grey */
+body.dark-mode .transcript-box,
+body.dark-mode .output-content,
+body.dark-mode .document-paper {
+    color: #cbd5e1 !important; /* Slightly brighter for readability */
+}
+
+/* Dark mode: Footer disclaimer */
+body.dark-mode .footer-disclaimer {
+    color: #64748b !important;
+}
+
+/* EXCEPTION: Keep mic icon (emoji) normal */
+body.dark-mode .mic-icon {
+    /* Emojis don't need color override */
+}
+
+/* EXCEPTION: Keep button icons/text with their specific button colors */
+body.dark-mode .btn-record {
+    color: #EF4444 !important; /* Red text for record button */
+}
+
+body.dark-mode .btn-pause {
+    color: white !important; /* White text for pause button */
+}
+
+body.dark-mode .btn-stop {
+    color: #0EA5E9 !important; /* Blue text for stop button */
+}
+
+body.dark-mode .btn-accent {
+    color: white !important; /* White text for accent button */
+}
+
+/* Dark mode: Link color if any */
+body.dark-mode a {
+    color: #60a5fa !important; /* Light blue for links */
+}
+
+body.dark-mode a:hover {
+    color: #93c5fd !important; /* Lighter blue on hover */
+}
