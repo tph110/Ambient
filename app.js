@@ -175,6 +175,96 @@ function anonymizeTranscript(text) {
     return anonymized;
 }
 
+// ==========================================
+// HALLUCINATION DETECTION FUNCTION
+// ==========================================
+
+/**
+ * Detect if Whisper API has hallucinated (stuck in repetitive loop)
+ * This happens when audio quality is poor or recording is mostly silence
+ */
+function detectHallucination(transcript) {
+    // Split into sentences
+    const sentences = transcript.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
+    
+    // Need at least 5 sentences to detect pattern
+    if (sentences.length < 5) {
+        return { isHallucination: false };
+    }
+    
+    // Count occurrences of each sentence
+    const sentenceCounts = {};
+    let maxCount = 0;
+    let mostRepeatedSentence = '';
+    
+    sentences.forEach(sentence => {
+        // Normalize for comparison (lowercase, remove extra spaces)
+        const normalized = sentence.toLowerCase().replace(/\s+/g, ' ');
+        sentenceCounts[normalized] = (sentenceCounts[normalized] || 0) + 1;
+        
+        if (sentenceCounts[normalized] > maxCount) {
+            maxCount = sentenceCounts[normalized];
+            mostRepeatedSentence = sentence;
+        }
+    });
+    
+    // Calculate uniqueness ratio
+    const uniqueSentences = Object.keys(sentenceCounts).length;
+    const totalSentences = sentences.length;
+    const uniquenessRatio = uniqueSentences / totalSentences;
+    
+    // Detection thresholds:
+    // 1. More than 5 sentences total
+    // 2. Less than 30% are unique (70%+ repetition)
+    // 3. OR one sentence repeated 10+ times
+    const isHallucination = (
+        totalSentences >= 5 && 
+        (uniquenessRatio < 0.3 || maxCount >= 10)
+    );
+    
+    if (isHallucination) {
+        console.error('🚨 HALLUCINATION DETECTED:', {
+            totalSentences,
+            uniqueSentences,
+            uniquenessRatio: (uniquenessRatio * 100).toFixed(1) + '%',
+            mostRepeatedSentence,
+            repetitionCount: maxCount
+        });
+        
+        return {
+            isHallucination: true,
+            message: `⚠️ Transcription Error Detected\n\n` +
+                    `The same phrase was repeated ${maxCount} times:\n` +
+                    `"${mostRepeatedSentence.substring(0, 100)}${mostRepeatedSentence.length > 100 ? '...' : ''}"\n\n` +
+                    `This usually indicates:\n` +
+                    `• Recording was mostly silence or background noise\n` +
+                    `• Microphone was muted or very quiet\n` +
+                    `• Audio quality was too poor for transcription\n\n` +
+                    `Please try again:\n` +
+                    `1. Speak clearly and continuously\n` +
+                    `2. Check microphone is working\n` +
+                    `3. Avoid long pauses\n` +
+                    `4. Keep recording under 10 minutes`,
+            stats: {
+                totalSentences,
+                uniqueSentences,
+                uniquenessRatio,
+                mostRepeatedSentence,
+                repetitionCount: maxCount
+            }
+        };
+    }
+    
+    // Log success for debugging
+    console.log('✅ Transcription quality check passed:', {
+        totalSentences,
+        uniqueSentences,
+        uniquenessRatio: (uniquenessRatio * 100).toFixed(1) + '%'
+    });
+    
+    return { isHallucination: false };
+}
+
 // Continue with existing Audio Visualizer Functions...
 // [Rest of the file remains the same]
 
@@ -867,7 +957,49 @@ async function transcribeAudio(audioBlob) {
                 throw new Error('Received empty transcript from API');
             }
             
-            // Display transcript
+            // Check for hallucination (repetitive loops)
+            const hallucinationCheck = detectHallucination(finalTranscript);
+            
+            if (hallucinationCheck.isHallucination) {
+                // Show detailed error to user
+                alert(hallucinationCheck.message);
+                
+                // Display transcript with warning overlay
+                transcriptDiv.innerHTML = `
+                    <div style="background: #FEF2F2; border: 2px solid #DC2626; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+                        <strong style="color: #991B1B;">⚠️ Transcription Quality Issue Detected</strong>
+                        <p style="color: #7F1D1D; margin: 8px 0 0 0; font-size: 0.9rem;">
+                            The same phrase was repeated ${hallucinationCheck.stats.repetitionCount} times. 
+                            This usually means the audio quality was poor or the recording was mostly silence.
+                            Please record again with clear, continuous speech.
+                        </p>
+                    </div>
+                    <p style="opacity: 0.5;">${finalTranscript}</p>
+                `;
+                
+                // Update status to show error
+                statusDiv.textContent = '⚠️ Transcription quality issue - please re-record';
+                statusDiv.style.backgroundColor = '#FEF2F2';
+                statusDiv.style.color = '#991B1B';
+                
+                // Enable re-record button
+                startBtn.disabled = false;
+                startBtn.style.display = 'inline-flex';
+                pauseBtn.style.display = 'none';
+                pauseBtn.disabled = true;
+                stopBtn.disabled = true;
+                
+                // DO NOT show "Generate Summary" button for hallucinated transcripts
+                clearTranscriptBtn.style.display = 'inline-block';
+                getSummaryBtn.style.display = 'none';
+                
+                updateButtonColors();
+                
+                console.log('Transcription halted due to hallucination detection');
+                return; // Stop here - don't proceed normally
+            }
+            
+            // Transcription passed quality check - display normally
             transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
             
             // Update UI
