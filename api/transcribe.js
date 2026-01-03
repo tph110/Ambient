@@ -20,14 +20,21 @@ export default async function handler(req, res) {
 
         if (!speechKey || !speechRegion) {
             console.error('Azure Speech credentials not configured');
-            return res.status(500).json({ error: 'Azure Speech not configured' });
+            console.error('AZURE_SPEECH_KEY present:', !!speechKey);
+            console.error('AZURE_SPEECH_REGION present:', !!speechRegion);
+            return res.status(500).json({ 
+                error: 'Azure Speech not configured. Please add AZURE_SPEECH_KEY and AZURE_SPEECH_REGION to Vercel environment variables.' 
+            });
         }
 
+        console.log('Azure Speech credentials found');
+        console.log('Region:', speechRegion);
         console.log('Converting base64 to audio buffer...');
         
         // Convert base64 to Buffer
         const audioBuffer = Buffer.from(audioBlob, 'base64');
         console.log('Audio buffer size:', audioBuffer.length, 'bytes');
+        console.log('Audio buffer size (MB):', (audioBuffer.length / 1024 / 1024).toFixed(2));
 
         // Azure Speech API endpoint
         const endpoint = `https://${speechRegion}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1`;
@@ -54,17 +61,19 @@ export default async function handler(req, res) {
         });
 
         console.log('Azure response status:', response.status);
+        console.log('Azure response headers:', Object.fromEntries(response.headers));
 
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Azure Speech API error:', errorText);
+            console.error('Status code:', response.status);
             return res.status(response.status).json({ 
-                error: `Azure Speech error: ${errorText}` 
+                error: `Azure Speech error (${response.status}): ${errorText}` 
             });
         }
 
         const data = await response.json();
-        console.log('Azure response:', JSON.stringify(data, null, 2));
+        console.log('Azure response data:', JSON.stringify(data, null, 2));
 
         // Extract transcript from Azure response
         let transcript = '';
@@ -72,6 +81,8 @@ export default async function handler(req, res) {
         if (data.RecognitionStatus === 'Success') {
             // Use the best result
             transcript = data.DisplayText || data.NBest?.[0]?.Display || '';
+            console.log('Recognition successful');
+            console.log('Transcript length:', transcript.length, 'characters');
         } else {
             console.error('Recognition failed:', data.RecognitionStatus);
             return res.status(400).json({ 
@@ -80,18 +91,21 @@ export default async function handler(req, res) {
         }
 
         if (!transcript || transcript.trim() === '') {
+            console.warn('Empty transcript received');
             return res.status(400).json({ 
-                error: 'No speech detected in audio' 
+                error: 'No speech detected in audio. Please ensure microphone is working and speak clearly.' 
             });
         }
 
-        console.log('Transcript extracted:', transcript.substring(0, 100) + '...');
+        console.log('Transcript preview:', transcript.substring(0, 100) + '...');
+        console.log('✓ Transcription successful');
 
         // Return transcript in same format as Whisper
         return res.status(200).json({ transcript });
 
     } catch (error) {
         console.error('Transcription error:', error);
+        console.error('Error stack:', error.stack);
         return res.status(500).json({ 
             error: error.message || 'Transcription failed' 
         });
