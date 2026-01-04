@@ -45,6 +45,7 @@ YOUR TASK:
 5. Format the letter professionally with appropriate structure
 6. Correct any obvious transcription errors or grammatical mistakes
 7. Maintain medical terminology exactly as dictated
+8. Extract key information to populate structured sections (for referral letters)
 
 FORMATTING RULES:
 - "full stop" or "period" → Add a period (.)
@@ -60,17 +61,23 @@ FORMATTING RULES:
 - "delete that" / "scratch that" → Remove the previous sentence
 - "yours sincerely" / "yours faithfully" / "kind regards" → Format as sign-off
 
+EXTRACTING STRUCTURED INFORMATION (for referral letters):
+- **Reason for referral**: Identify the PRIMARY condition or problem being referred (e.g., "Nasal polyps", "Chest pain", "Suspected DVT")
+- **Background**: Extract relevant past medical history, current medications, risk scores, allergies mentioned in the dictation
+- Keep these sections concise - bullet points or brief sentences
+
 ${letterInstructions}
 
 IMPORTANT:
 - Output ONLY the formatted letter text
 - Use British English spelling (e.g., "summarise" not "summarize", "centre" not "center")
 - Do NOT include any preamble, explanation, or meta-commentary
-- Do NOT wrap the letter in markdown code blocks
+- Do NOT wrap the letter in markdown code blocks or use markdown formatting
 - Maintain professional medical tone
 - Preserve all medical terminology and abbreviations exactly as dictated
 - Add appropriate spacing between sections
-- Use proper letter structure with clear paragraphs`;
+- Use proper letter structure with clear paragraphs
+- For patient details, use plain text format: "Name:", "DoB:", "NHS Number:", "Address:" (NOT bold, NOT "Re:")`;
 
         const userPrompt = `Please format this dictated letter transcript into a professional letter:
 
@@ -166,21 +173,38 @@ function getLetterInstructions(letterType) {
 
 STRUCTURE:
 1. Date (today's date in UK format: DD Month YYYY)
-2. Recipient details (if provided)
+2. Recipient department/name and address (if provided)
 3. "Dear Dr [Name]" or "Dear Colleague"
-4. Re: Patient details (if mentioned)
-5. Opening line: "Thank you for seeing this patient..."
-6. Presenting complaint
-7. Relevant history
-8. Examination findings (if mentioned)
-9. Investigations (if mentioned)
-10. Current management
-11. Reason for referral / Question being asked
-12. Closing: "Thank you for your help with this patient's care"
-13. Sign-off: "Yours sincerely" (if named) or "Yours faithfully" (if Dear Colleague)
-14. [Doctor's name and credentials to be added]
+4. Patient details section (NOT bold, NOT using "Re:"):
+   Name: [Full name with title]
+   DoB: DD/MM/YYYY
+   NHS Number: [if mentioned, otherwise omit this line]
+   Address: [if mentioned, otherwise omit this line]
+5. Blank line
+6. **Reason for referral:** [Extract the main condition/problem from the dictation]
+7. Blank line
+8. **Background:** [Extract relevant past medical history, current medications, relevant social history]
+9. Blank line
+10. Clinical narrative (main body):
+    - Presenting complaint and history
+    - Examination findings (if mentioned)
+    - Investigations (if mentioned)
+    - Current management
+11. Blank line
+12. Question/request: What you're asking the specialist to do
+13. Closing: "Thank you for your help with this patient's care"
+14. Sign-off: "Yours sincerely" (if named recipient) or "Yours faithfully" (if Dear Colleague)
+15. [Doctor's name and credentials to be added]
 
-Include NHS number, date of birth if mentioned.`;
+IMPORTANT FORMATTING RULES:
+- Patient details: Use "Name:", "DoB:", "NHS Number:", "Address:" (NOT bold, plain text with colons)
+- DoB format: DD/MM/YYYY (e.g., 07/02/1943)
+- "Reason for referral:" should be on its own line, in bold
+- "Background:" should be on its own line, in bold
+- Extract reason for referral from the clinical content (e.g., if discussing nasal polyps, reason = "Nasal polyps")
+- Extract background from medical history mentioned (e.g., "Atrial fibrillation on apixaban, CHA₂DS₂-VASc score 3")
+- Keep each section concise
+- Use proper paragraph spacing`;
 
         case 'sick-note':
             return `LETTER TYPE: Sick Note / Fit Note
