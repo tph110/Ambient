@@ -49,8 +49,22 @@
     }
 }
 
-/* Panels scroll naturally */
-.panel-left,
+/* Left Panel - Sticky on Desktop */
+.panel-left {
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .panel-left {
+        position: sticky;
+        top: 100px; /* Below navbar */
+        max-height: calc(100vh - 120px); /* Full viewport minus navbar and padding */
+        overflow-y: auto; /* Allow scrolling within panel if content is long */
+        align-self: start;
+    }
+}
+
+/* Right Panel - Scrolls naturally */
 .panel-right {
     width: 100%;
 }
