@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letter Dictation - EchoDoc</title>
+    <meta name="description" content="Voice dictation for writing letters with automatic formatting">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dictation-styles.css">
+    
+    <!-- Anime.js for smooth animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" integrity="sha512-aNMyYYxdIxIaot0Y1/PLuEu3eipGCmsEUBrUq+7aVyPGMFH8z0eTP0tkqAvv34fzN6z+201d3T8HPb1svWSKHQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- Google Fonts: Inter for UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Professional Navbar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="brand">
+                <div class="brand-text">
+                    <h1>EchoDoc <span class="badge">Letter Dictation</span></h1>
+                    <p class="brand-motto">Dictate letters naturally - AI handles the formatting</p>
+                </div>
+            </div>
+            <div class="navbar-right">
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">Clinical Scribe</a>
+                    <a href="dictation.html" class="nav-link active">Letter Dictation</a>
+                </div>
+                
+                <div class="status-indicator" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span>Ready</span>
+                </div>
+                
+                <div class="dark-mode-toggle">
+                    <label class="dark-mode-label">
+                        <input type="checkbox" id="darkModeCheckbox" class="dark-mode-checkbox">
+                        <span class="dark-mode-slider"></span>
+                        <span class="dark-mode-icon">🌙</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="dictation-container">
+        
+        <!-- LEFT PANEL: Recording Controls -->
+        <aside class="panel-left">
+            
+            <!-- Recording Controls Card -->
+            <div class="card control-card">
+                <div class="card-header">
+                    <h2>Dictation Controls</h2>
+                    <div class="recording-badge" id="recordingBadge" style="display: none;">
+                        <span class="pulse-dot"></span>
+                        <span>Recording</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Microphone Selector -->
+                    <div class="mic-select-container-inline">
+                        <label for="microphoneDropdown">
+                            <span class="mic-icon">🎤</span>
+                            Microphone:
+                        </label>
+                        <select id="microphoneDropdown" class="mic-dropdown">
+                            <option value="">Loading microphones...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Letter Type Selector -->
+                    <div class="letter-type-selector">
+                        <label for="letterType">Letter Type:</label>
+                        <select id="letterType" class="letter-type-dropdown">
+                            <option value="general">General Letter</option>
+                            <option value="referral">Referral Letter</option>
+                            <option value="sick-note">Sick Note</option>
+                            <option value="to-whom">To Whom It May Concern</option>
+                            <option value="patient">Letter to Patient</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Status Message -->
+                    <div class="status" id="status">Ready to dictate</div>
+                    
+                    <!-- Recording Buttons -->
+                    <div class="button-group-controls">
+                        <button id="startBtn" class="btn btn-record">
+                            <span class="record-icon"></span>
+                            Start Dictating
+                        </button>
+                        <button id="pauseBtn" class="btn btn-pause" style="display: none;">
+                            <span class="pause-icon"></span>
+                            Pause
+                        </button>
+                        <button id="stopBtn" class="btn btn-stop">
+                            <span class="stop-icon"></span>
+                            Finish
+                        </button>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- Voice Commands Card -->
+            <div class="card commands-card">
+                <div class="card-header">
+                    <h2>Voice Commands</h2>
+                </div>
+                <div class="card-body">
+                    <div class="commands-list">
+                        <div class="command-item">
+                            <span class="command-say">"New paragraph"</span>
+                            <span class="command-result">→ Start new paragraph</span>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-say">"Full stop"</span>
+                            <span class="command-result">→ Add period (.)</span>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-say">"Comma"</span>
+                            <span class="command-result">→ Add comma (,)</span>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-say">"New line"</span>
+                            <span class="command-result">→ Line break</span>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-say">"Delete that"</span>
+                            <span class="command-result">→ Remove last sentence</span>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-say">"Yours sincerely"</span>
+                            <span class="command-result">→ Add sign-off</span>
+                        </div>
+                    </div>
+                    <p class="commands-note">Speak naturally - AI will format automatically</p>
+                </div>
+            </div>
+            
+        </aside>
+        
+        <!-- RIGHT PANEL: Transcript & Letter Output -->
+        <main class="panel-right">
+            
+            <!-- Raw Transcript Card -->
+            <div class="card transcript-card">
+                <div class="card-header">
+                    <h2>Raw Transcription</h2>
+                    <button id="clearTranscript" class="btn-icon" title="Clear" style="display: none;">🗑️</button>
+                </div>
+                <div class="card-body">
+                    <div id="transcript" class="transcript-box" contenteditable="true">
+                        <p class="placeholder">Your dictation will appear here as raw text...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Generate Button -->
+            <div class="actions-bar">
+                <button id="formatLetter" class="btn btn-accent" style="display: none;">
+                    ✨ Format as Letter
+                </button>
+            </div>
+            
+            <!-- Formatted Letter Card -->
+            <div class="card letter-card">
+                <div class="card-header">
+                    <h3>Formatted Letter</h3>
+                    <div class="letter-actions">
+                        <button id="copyLetter" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
+                        <button id="downloadLetter" class="btn-icon download-btn" title="Download as Word" style="display: none;">💾</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="ai-disclaimer">AI can make mistakes. Check all content is correct before using</p>
+                    <div id="formattedLetter" class="letter-content" contenteditable="true">
+                        <p class="placeholder">Formatted letter will appear here...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tips Card -->
+            <div class="card tips-card">
+                <div class="card-header">
+                    <h3>Dictation Tips</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="tips-list">
+                        <li><strong>Speak clearly:</strong> Use your normal speaking voice</li>
+                        <li><strong>Use commands:</strong> Say "full stop", "comma", "new paragraph" for punctuation</li>
+                        <li><strong>Be natural:</strong> Don't worry about perfect grammar - AI will clean it up</li>
+                        <li><strong>Pause briefly:</strong> After commands to ensure they're captured</li>
+                        <li><strong>Edit after:</strong> You can edit both the transcript and final letter</li>
+                    </ul>
+                </div>
+            </div>
+            
+        </main>
+        
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>EchoDoc © 2025 | Letter Dictation Tool</p>
+            <p class="footer-disclaimer">AI-powered formatting • Always review before sending</p>
+        </div>
+    </footer>
+
+    <script>
+        // Dark Mode Toggle
+        const darkModeCheckbox = document.getElementById('darkModeCheckbox');
+        
+        // Check for saved dark mode preference
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeCheckbox.checked = true;
+        }
+        
+        // Toggle dark mode
+        darkModeCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+    </script>
+    <script src="dictation.js"></script>
+</body>
+</html>
