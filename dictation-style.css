@@ -27,8 +27,6 @@
         grid-column: 1 !important;
         position: sticky !important;
         top: 100px !important;
-        max-height: calc(100vh - 120px) !important;
-        overflow-y: auto !important;
         align-self: start !important;
     }
     
