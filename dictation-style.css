@@ -49,6 +49,12 @@
     }
 }
 
+/* Panels scroll naturally */
+.panel-left,
+.panel-right {
+    width: 100%;
+}
+
 /* Letter Type Selector */
 .letter-type-selector {
     margin-bottom: 16px;
