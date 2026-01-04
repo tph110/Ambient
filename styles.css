@@ -1275,3 +1275,108 @@ body.dark-mode a {
 body.dark-mode a:hover {
     color: #93c5fd !important; /* Lighter blue on hover */
 }
+/* ==========================================
+   PROFESSIONAL NAVIGATION BUTTONS
+   Copy ALL of this and paste at the END of your styles.css file
+   ========================================== */
+
+/* Navigation container */
+.nav-links {
+    display: flex;
+    gap: 8px;
+    margin-right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+/* Navigation button base */
+.nav-link {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* Icon styling */
+.nav-link-icon {
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+
+/* Hover state */
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.9);
+    color: #1e293b;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Active state - current page */
+.nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.nav-link.active .nav-link-icon {
+    opacity: 1;
+}
+
+/* Active state hover */
+.nav-link.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+/* Dark mode adjustments */
+body.dark-mode .nav-links {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+body.dark-mode .nav-link {
+    color: #94a3b8;
+}
+
+body.dark-mode .nav-link:hover {
+    background: rgba(51, 65, 85, 0.9);
+    color: #f1f5f9;
+}
+
+body.dark-mode .nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Responsive: Stack on small screens */
+@media (max-width: 768px) {
+    .nav-links {
+        gap: 4px;
+        padding: 4px;
+    }
+    
+    .nav-link {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .nav-link-text {
+        display: none; /* Hide text on mobile, show only icons */
+    }
+    
+    .nav-link-icon {
+        font-size: 1.2rem;
+        margin: 0;
+    }
+}
