@@ -2,27 +2,34 @@
 // OpenRouter AI endpoint for formatting dictated letters
 
 export default async function handler(req, res) {
+    console.log('=== Format Letter API Called ===');
+    console.log('Method:', req.method);
+    
     if (req.method !== 'POST') {
+        console.log('Error: Method not allowed');
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
         const { transcript, letterType } = req.body;
+        console.log('Request body received');
+        console.log('Letter type:', letterType);
+        console.log('Transcript length:', transcript?.length || 0);
 
         if (!transcript || transcript.trim() === '') {
+            console.log('Error: No transcript provided');
             return res.status(400).json({ error: 'Transcript is required' });
         }
 
         const apiKey = process.env.OPENROUTER_API_KEY;
         
         if (!apiKey) {
-            console.error('OpenRouter API key not configured');
-            return res.status(500).json({ error: 'OpenRouter not configured' });
+            console.error('Error: OpenRouter API key not configured');
+            return res.status(500).json({ error: 'OpenRouter API key not configured. Please add OPENROUTER_API_KEY to Vercel environment variables.' });
         }
 
-        console.log('Formatting letter...');
-        console.log('Letter type:', letterType);
-        console.log('Transcript length:', transcript.length);
+        console.log('OpenRouter API key found');
+        console.log('Formatting letter type:', letterType);
 
         // Build letter-specific instructions
         const letterInstructions = getLetterInstructions(letterType);
@@ -70,6 +77,7 @@ IMPORTANT:
 ${transcript}`;
 
         console.log('Calling OpenRouter API...');
+        console.log('Using model: deepseek/deepseek-chat');
 
         // Call OpenRouter API
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -77,7 +85,7 @@ ${transcript}`;
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://echodoc.vercel.app',
+                'HTTP-Referer': 'https://ambientdoc.vercel.app',
                 'X-Title': 'EchoDoc Letter Dictation'
             },
             body: JSON.stringify({
@@ -98,17 +106,34 @@ ${transcript}`;
         });
 
         console.log('OpenRouter response status:', response.status);
+        console.log('OpenRouter response headers:', {
+            'content-type': response.headers.get('content-type'),
+            'x-ratelimit-remaining': response.headers.get('x-ratelimit-remaining')
+        });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('OpenRouter error:', errorText);
+            let errorText;
+            try {
+                const errorData = await response.json();
+                errorText = JSON.stringify(errorData);
+                console.error('OpenRouter JSON error:', errorData);
+            } catch (e) {
+                errorText = await response.text();
+                console.error('OpenRouter text error:', errorText);
+            }
             return res.status(response.status).json({ 
-                error: `AI formatting failed: ${errorText}` 
+                error: `AI formatting failed (${response.status}): ${errorText.substring(0, 200)}` 
             });
         }
 
         const data = await response.json();
-        console.log('OpenRouter response received');
+        console.log('OpenRouter response received successfully');
+        console.log('Response structure:', {
+            hasChoices: !!data.choices,
+            choicesLength: data.choices?.length,
+            hasMessage: !!data.choices?.[0]?.message,
+            hasContent: !!data.choices?.[0]?.message?.content
+        });
 
         // Extract formatted letter
         const letter = data.choices?.[0]?.message?.content;
