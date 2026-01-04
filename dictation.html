@@ -9,6 +9,111 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="dictation-styles.css">
     
+    <!-- GRID LAYOUT FIX + PROFESSIONAL DROPDOWN STYLES -->
+    <style>
+/* Force two-column layout on desktop */
+@media screen and (min-width: 1024px) {
+    .dictation-container {
+        display: grid !important;
+        grid-template-columns: 380px 1fr !important;
+        gap: 32px !important;
+    }
+    aside.panel-left { 
+        grid-column: 1 !important; 
+        position: sticky !important; 
+        top: 100px !important;
+        max-height: calc(100vh - 120px) !important;
+        overflow-y: auto !important;
+    }
+    main.panel-right { 
+        grid-column: 2 !important; 
+    }
+}
+
+/* Professional Letter Type Selector */
+.letter-type-selector-pro {
+    margin-bottom: 20px;
+}
+
+.letter-type-selector-pro label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.select-wrapper {
+    position: relative;
+    display: block;
+}
+
+.letter-type-dropdown-pro {
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #1e293b;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    font-family: inherit;
+}
+
+.letter-type-dropdown-pro:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.letter-type-dropdown-pro:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #64748b;
+    font-size: 0.7rem;
+}
+
+body.dark-mode .letter-type-selector-pro label {
+    color: #94a3b8;
+}
+
+body.dark-mode .letter-type-dropdown-pro {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+body.dark-mode .letter-type-dropdown-pro:hover {
+    background: #0f172a;
+    border-color: #475569;
+}
+
+body.dark-mode .letter-type-dropdown-pro:focus {
+    border-color: #667eea;
+    background: #1e293b;
+}
+
+body.dark-mode .select-arrow {
+    color: #94a3b8;
+}
+    </style>
+    
     <!-- Anime.js for smooth animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" integrity="sha512-aNMyYYxdIxIaot0Y1/PLuEu3eipGCmsEUBrUq+7aVyPGMFH8z0eTP0tkqAvv34fzN6z+201d3T8HPb1svWSKHQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
