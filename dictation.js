@@ -224,19 +224,24 @@ async function transcribeAudio(audioBlob) {
 
 // Format Letter using AI
 async function formatLetter() {
-    if (!finalTranscript.trim()) {
+    console.log('Format Letter clicked');
+    console.log('Final transcript:', finalTranscript);
+    
+    if (!finalTranscript || !finalTranscript.trim()) {
         alert('No transcript available to format');
         return;
     }
     
     formatLetterBtn.disabled = true;
-    formatLetterBtn.innerHTML = '<span class="loading-spinner"></span> Formatting...';
-    formattedLetterDiv.innerHTML = '<p style="color: #667eea;">Formatting letter...</p>';
+    formatLetterBtn.textContent = 'Formatting...';
+    formattedLetterDiv.innerHTML = '<p style="color: #667eea;">Formatting letter with AI...</p>';
     
     try {
         const letterType = letterTypeSelect.value;
+        console.log('Letter type:', letterType);
         
         // Call formatting API
+        console.log('Calling /api/format-letter...');
         const response = await fetch('/api/format-letter', {
             method: 'POST',
             headers: {
@@ -248,13 +253,30 @@ async function formatLetter() {
             })
         });
         
+        console.log('Format API response status:', response.status);
+        
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Formatting failed');
+            let errorMessage = 'Formatting failed';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+                console.error('Format API error:', errorData);
+            } catch (e) {
+                const errorText = await response.text();
+                errorMessage = errorText || errorMessage;
+                console.error('Format API error (text):', errorText);
+            }
+            throw new Error(errorMessage);
         }
         
         const data = await response.json();
+        console.log('Format API response:', data);
+        
         formattedLetter = data.letter;
+        
+        if (!formattedLetter || formattedLetter.trim() === '') {
+            throw new Error('AI returned empty letter');
+        }
         
         // Display formatted letter
         formattedLetterDiv.innerHTML = `<div>${formattedLetter.replace(/\n/g, '<br>')}</div>`;
@@ -264,7 +286,7 @@ async function formatLetter() {
         downloadLetterBtn.style.display = 'inline-flex';
         
         formatLetterBtn.disabled = false;
-        formatLetterBtn.innerHTML = '✓ Letter Formatted';
+        formatLetterBtn.textContent = '✓ Letter Formatted';
         
         console.log('Letter formatted successfully');
         
@@ -272,7 +294,14 @@ async function formatLetter() {
         console.error('Formatting error:', error);
         formattedLetterDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
         formatLetterBtn.disabled = false;
-        formatLetterBtn.innerHTML = 'Format as Letter';
+        formatLetterBtn.textContent = '✨ Format as Letter';
+        
+        // Show detailed error in console
+        console.error('Full error details:', {
+            message: error.message,
+            stack: error.stack,
+            transcript: finalTranscript.substring(0, 100) + '...'
+        });
     }
 }
 
