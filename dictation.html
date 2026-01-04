@@ -8,6 +8,18 @@
     
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="dictation-styles.css">
+
+    <style>
+    @media screen and (min-width: 1024px) {
+    .dictation-container {
+        display: grid !important;
+        grid-template-columns: 380px 1fr !important;
+        gap: 32px !important;
+    }
+    aside.panel-left { grid-column: 1 !important; position: sticky !important; top: 100px !important; }
+    main.panel-right { grid-column: 2 !important; }
+}
+</style>
     
     <!-- Anime.js for smooth animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" integrity="sha512-aNMyYYxdIxIaot0Y1/PLuEu3eipGCmsEUBrUq+7aVyPGMFH8z0eTP0tkqAvv34fzN6z+201d3T8HPb1svWSKHQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
