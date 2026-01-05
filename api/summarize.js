@@ -1,142 +1,141 @@
-// This is a serverless function for Vercel to securely handle API requests
-// Place this in /api/summarize.js in your project
+// File: /api/summarize.js
+// OpenRouter AI endpoint for generating clinical summaries
 
 export default async function handler(req, res) {
-    // Only allow POST requests
+    console.log('=== Summarize API Called ===');
+    console.log('Method:', req.method);
+    
     if (req.method !== 'POST') {
+        console.log('Error: Method not allowed');
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        const { transcript, isReferral, isPatientSummary } = req.body;
+        const { transcript, type } = req.body;
+        console.log('Request body received');
+        console.log('Summary type:', type || 'clinical');
+        console.log('Transcript length:', transcript?.length || 0);
 
-        if (!transcript) {
+        if (!transcript || transcript.trim() === '') {
+            console.log('Error: No transcript provided');
             return res.status(400).json({ error: 'Transcript is required' });
         }
 
-        // Get API key from environment variable
         const apiKey = process.env.OPENROUTER_API_KEY;
-
-        if (!apiKey) {
-            return res.status(500).json({ error: 'API key not configured' });
-        }
-
-        // Choose prompt based on whether this is a referral letter, patient summary, or clinical summary
-        let userPrompt;
         
-        if (isPatientSummary) {
-            // Patient-friendly summary prompt
-            userPrompt = `Please create a patient-friendly summary based on this clinical summary. This will be given to the patient to take home.
-
-Requirements:
-- Use simple, everyday language (avoid medical jargon)
-- Explain medical terms in plain English when they must be used
-- Write in short, clear sentences
-- Use a warm, reassuring tone
-- Organise information in a way that's easy for patients to understand
-- Include:
-  * What we discussed today
-  * What we found during the examination
-  * What we think is causing your symptoms (diagnosis in simple terms)
-  * What you need to do next (medications, lifestyle changes, follow-up)
-  * When to seek urgent help (if relevant)
-- Write in second person ("you", "your") to speak directly to the patient
-- Keep it concise but complete
-- Use British English spelling
-
-IMPORTANT FORMATTING RULES:
-- Use PLAIN TEXT ONLY (no Markdown formatting)
-- Do NOT use hashtags (#), asterisks (**), underscores (_), or other Markdown symbols
-- Use simple section headings followed by colons (e.g., "What we discussed today:")
-- Write in clear prose paragraphs
-- Do NOT include any preamble like "Here's your summary:"
-- Start directly with the patient summary content
-
-Clinical Summary:
-
-${transcript}`;
-        } else if (isReferral) {
-            // Referral letter prompt
-            userPrompt = `Please write a referral letter from a GP to a secondary care specialist based on this clinical summary. 
-
-Requirements:
-- Write in professional medical letter format
-- Use British English spelling and terminology throughout (e.g., "favour" not "favor", "organised" not "organized")
-- Use prose paragraphs, avoid bullet points
-- Include relevant clinical history, examination findings, and reason for referral
-- Be concise but comprehensive
-- Use appropriate medical terminology
-- Body of the letter only (no "Dear Dr..." greeting or signature block needed)
-
-IMPORTANT FORMATTING RULES:
-- Use PLAIN TEXT ONLY (no Markdown formatting)
-- Do NOT use hashtags (#), asterisks (**), underscores (_), or other Markdown symbols
-- Write in prose paragraphs with proper punctuation
-- Do NOT include any preamble like "Here's the referral letter:"
-- Start directly with the body of the referral letter
-
-Clinical Summary:
-
-${transcript}`;
-        } else {
-            // Clinical summary prompt
-            userPrompt = `Please provide a detailed summary of the following GP consultation transcript. Structure your response with these sections:
-
-PRESENTING COMPLAINTS: If the patient presents with multiple unrelated complaints, list them clearly (e.g., "1. Chest pain 2. Skin rash 3. Medication review"). If there is only one complaint, simply state it.
-
-HISTORY OF PRESENTING COMPLAINT: Write detailed prose paragraphs for each presenting complaint in FIRST-PERSON perspective (as if you are the GP writing the notes). If there are multiple unrelated complaints, use clear subheadings (e.g., "Chest pain:", "Skin rash:", "Medication review:"). For each complaint, describe the patient's symptoms, timeline, severity, aggravating/relieving factors, associated symptoms, and any treatments tried.
-
-IMPORTANT WRITING STYLE FOR HISTORY:
-- Write in FIRST-PERSON from the GP's perspective (e.g., "I saw Mr Smith today regarding...", "The patient informed me that...", "On taking the history, I noted that...")
-- Use PROFESSIONAL MEDICAL TERMINOLOGY throughout
-- DO NOT include direct quotes from the patient (e.g., avoid "the patient said 'I feel terrible'" - instead write "the patient described feeling unwell")
-- DO NOT use colloquial or informal language (e.g., avoid "quite a time", "lots", "really bad" - use "several weeks", "frequent", "severe")
-- Maintain a formal, professional clinical tone suitable for medical records
-- Write as concise clinical documentation, not conversational narrative
-
-PAST MEDICAL HISTORY: List relevant conditions with dates if mentioned.
-
-DRUG HISTORY: List current medications with doses.
-
-ALLERGIES: List any allergies and reactions.
-
-SOCIAL HISTORY: Include occupation, smoking status (pack-years if mentioned), alcohol consumption (units per week if mentioned), recreational drug use, living situation (alone/with family, house/flat/bungalow), mobility aids (walking stick, zimmer frame, wheelchair), home adaptations (stairlift, grab rails, wet room), care arrangements (carers, frequency of visits), support network, and any other relevant social factors affecting health.
-
-EXAMINATION FINDINGS: Detail vital signs and examination findings for each complaint where relevant. Write in first-person (e.g., "On examination, I found...", "I auscultated clear lung fields bilaterally").
-
-IMPRESSION: Clinical assessment and diagnosis for each complaint. Write in first-person (e.g., "I assess this as...", "My clinical impression is...").
-
-MANAGEMENT PLAN: Numbered list of actions including prescriptions, follow-up arrangements, and safety-netting advice. Write in first-person (e.g., "I have prescribed...", "I have arranged...", "I advised the patient to..."). Clearly indicate which actions relate to which complaint if there are multiple issues.
-
-QOF AND IIF OPPORTUNITIES: Identify any relevant Quality and Outcomes Framework (QOF) or Investment and Impact Fund (IIF) indicators that could be addressed or coded from this consultation. Include:
-- QOF indicators that have been completed (e.g., diabetes HbA1c recorded, blood pressure checks, medication reviews)
-- IIF opportunities (e.g., early cancer diagnosis codes, health inequalities, prevention activities)
-- Specific Read codes or SNOMED codes where applicable
-- Annual reviews or health checks that may be due
-- Vaccinations or screening that could be offered
-- Lifestyle interventions that qualify for IIF points
-Only include opportunities that are genuinely relevant to this consultation. If none apply, write "No specific QOF/IIF opportunities identified in this consultation."
-
-CRITICAL RULE FOR EMPTY SECTIONS:
-If NO information is available for a section (e.g., SOCIAL HISTORY, ALLERGIES, EXAMINATION FINDINGS), COMPLETELY OMIT that section including its heading. Do NOT write "None documented", "Not mentioned", "No details provided", or any placeholder text. Simply skip to the next section that has actual content.
-
-Example - if no social history mentioned:
-WRONG: "SOCIAL HISTORY: Not mentioned" or "SOCIAL HISTORY: No details provided"
-CORRECT: Skip the entire SOCIAL HISTORY section and heading completely
-
-IMPORTANT FORMATTING RULES:
-- Use PLAIN TEXT ONLY (no Markdown formatting)
-- Do NOT use hashtags (#), asterisks (**), underscores (_), or other Markdown symbols
-- Use CAPITAL LETTERS for section headings (e.g., "PRESENTING COMPLAINTS")
-- Use simple numbered lists where appropriate (e.g., "1. ", "2. ")
-- Use colons (:) for subheadings
-- Do NOT include any preamble like "Here's the summary:" or "Let me know if you'd like modifications"
-- Start directly with "PRESENTING COMPLAINTS" as the first line
-
-Transcript:
-
-${transcript}`;
+        if (!apiKey) {
+            console.error('Error: OpenRouter API key not configured');
+            return res.status(500).json({ error: 'OpenRouter API key not configured. Please add OPENROUTER_API_KEY to Vercel environment variables.' });
         }
+
+        console.log('OpenRouter API key found');
+
+        // Determine which type of summary to generate
+        let systemPrompt;
+        let userPrompt;
+
+        if (type === 'referral') {
+            // Referral Letter
+            systemPrompt = `You are an expert UK GP creating a referral letter to secondary care.
+
+Extract key information from the consultation transcript and format it as a professional referral letter.
+
+STRUCTURE:
+1. Date: [Today's date in UK format]
+2. Recipient: Dear Dr [Specialist Name] or Dear Colleague
+3. Patient Details (plain text format):
+   Name: [Title and full name]
+   DoB: DD/MM/YYYY
+   NHS Number: [if mentioned]
+   Address: [if mentioned]
+4. Blank line
+5. Reason for referral: [Main presenting complaint/diagnosis]
+6. Blank line
+7. Background: [Relevant medical history, medications, allergies]
+8. Blank line
+9. Clinical details: [Detailed history, examination findings, investigations]
+10. Blank line
+11. Request: [What you're asking the specialist to do]
+12. Closing: "Thank you for seeing this patient"
+13. Yours sincerely / faithfully
+14. [GP name and practice details]
+
+Use British English spelling and medical terminology appropriate for UK secondary care.`;
+
+            userPrompt = `Create a referral letter from this consultation:\n\n${transcript}`;
+
+        } else if (type === 'patient') {
+            // Patient Summary
+            systemPrompt = `You are a UK GP creating a patient-friendly summary.
+
+Convert the medical consultation into clear, simple language that a patient can understand.
+
+GUIDELINES:
+- Use plain English, avoid medical jargon
+- Explain any medical terms you must use
+- Be warm and reassuring in tone
+- Use short paragraphs
+- Include what was discussed, what was found, and what the plan is
+- Format as a letter: "Dear [Patient Name]"
+
+STRUCTURE:
+1. Greeting
+2. What we discussed today
+3. What I found on examination (if relevant)
+4. The diagnosis or working diagnosis
+5. The treatment plan
+6. What happens next
+7. When to seek help / red flags
+8. Closing with invitation to contact if questions`;
+
+            userPrompt = `Create a patient-friendly summary from this consultation:\n\n${transcript}`;
+
+        } else {
+            // Clinical Summary (default)
+            systemPrompt = `You are an expert UK GP creating structured clinical documentation for the medical record.
+
+Convert the consultation transcript into a professional clinical summary suitable for the patient's medical notes.
+
+IMPORTANT FORMATTING RULES:
+- Use Title Case for section headings (e.g., "History of Presenting Complaint" NOT "HISTORY OF PRESENTING COMPLAINT")
+- Use British English spelling throughout
+- Be concise but comprehensive
+- Include relevant clinical details
+- Use appropriate medical terminology
+- Format for direct copy-paste into EMIS/SystmOne
+
+REQUIRED SECTIONS (in this order):
+1. Presenting Complaint
+2. History of Presenting Complaint
+3. Past Medical History
+4. Medications
+5. Allergies
+6. Social History (if relevant)
+7. Examination Findings (if documented)
+8. Assessment
+9. Plan
+
+SECTION FORMATTING:
+- Each section heading should be in Title Case and bold
+- Use bullet points for lists within sections
+- If a section wasn't covered in the consultation, write "Not documented" or omit the section
+- Keep each section concise - aim for 2-4 sentences or bullet points per section
+
+DO NOT INCLUDE:
+- QOF outcomes section
+- Coding suggestions
+- Read codes
+- Quality improvement metrics
+- Administrative notes
+
+OUTPUT FORMAT:
+Return ONLY the formatted clinical summary. Do not include any preamble, explanation, or meta-commentary.`;
+
+            userPrompt = `Create a structured clinical summary from this GP consultation transcript:\n\n${transcript}`;
+        }
+
+        console.log('Calling OpenRouter API...');
+        console.log('Using model: deepseek/deepseek-chat');
 
         // Call OpenRouter API
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -144,53 +143,76 @@ ${transcript}`;
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
-                'HTTP-Referer': req.headers.referer || 'https://yourdomain.vercel.app',
-                'X-Title': 'EchoDoc'
+                'HTTP-Referer': 'https://ambientdoc.vercel.app',
+                'X-Title': 'EchoDoc Clinical Scribe'
             },
             body: JSON.stringify({
                 model: 'deepseek/deepseek-chat',
                 messages: [
                     {
+                        role: 'system',
+                        content: systemPrompt
+                    },
+                    {
                         role: 'user',
                         content: userPrompt
                     }
                 ],
-                max_tokens: 4000
+                temperature: 0.3,
+                max_tokens: 2000
             })
         });
 
+        console.log('OpenRouter response status:', response.status);
+
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || 'API request failed');
+            let errorText;
+            try {
+                const errorData = await response.json();
+                errorText = JSON.stringify(errorData);
+                console.error('OpenRouter JSON error:', errorData);
+            } catch (e) {
+                errorText = await response.text();
+                console.error('OpenRouter text error:', errorText);
+            }
+            return res.status(response.status).json({ 
+                error: `AI summary failed (${response.status}): ${errorText.substring(0, 200)}` 
+            });
         }
 
         const data = await response.json();
-        let summary = data.choices[0].message.content;
-        
-        // Clean up any Markdown formatting that slipped through
-        summary = summary
-            // Remove Markdown headers (### Header)
-            .replace(/^#{1,6}\s+/gm, '')
-            // Remove bold (**text** or __text__)
-            .replace(/\*\*(.+?)\*\*/g, '$1')
-            .replace(/__(.+?)__/g, '$1')
-            // Remove italic (*text* or _text_)
-            .replace(/\*(.+?)\*/g, '$1')
-            .replace(/_(.+?)_/g, '$1')
-            // Remove horizontal rules (---, ___, ***)
-            .replace(/^[\-_\*]{3,}$/gm, '')
-            // Remove any preambles
-            .replace(/^Here'?s? (the|a) .+?:?\s*/i, '')
-            .replace(/^Let me know if .+$/mi, '')
-            // Clean up extra blank lines (more than 2 consecutive)
-            .replace(/\n{3,}/g, '\n\n')
-            // Trim whitespace
-            .trim();
+        console.log('OpenRouter response received successfully');
 
-        return res.status(200).json({ summary });
+        // Extract summary
+        const summary = data.choices?.[0]?.message?.content;
+
+        if (!summary || summary.trim() === '') {
+            console.error('Empty summary received from AI');
+            return res.status(500).json({ 
+                error: 'AI returned empty response' 
+            });
+        }
+
+        console.log('Summary generated successfully');
+        console.log('Summary length:', summary.length, 'characters');
+
+        return res.status(200).json({ 
+            summary,
+            type: type || 'clinical'
+        });
 
     } catch (error) {
-        console.error('Error:', error);
-        return res.status(500).json({ error: error.message });
+        console.error('Summary generation error:', error);
+        return res.status(500).json({ 
+            error: error.message || 'Failed to generate summary' 
+        });
     }
 }
+
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '10mb',
+        },
+    },
+};
