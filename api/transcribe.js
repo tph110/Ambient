@@ -36,9 +36,11 @@ export default async function handler(req, res) {
         console.log('Audio buffer size:', (audioBuffer.length / 1024 / 1024).toFixed(2), 'MB');
 
         // Determine content type based on format
-        const contentType = format === 'ogg' 
-            ? 'audio/ogg; codecs=opus'  // OGG Opus format
-            : 'audio/wav; codec=audio/pcm; samplerate=16000';  // WAV format (fallback)
+        const contentType = format === 'webm'
+            ? 'audio/webm; codecs=opus'  // WebM with Opus codec (Azure supports this!)
+            : format === 'ogg'
+            ? 'audio/ogg; codecs=opus'   // OGG Opus
+            : 'audio/wav; codec=audio/pcm; samplerate=16000';  // WAV (fallback)
         
         console.log('Using content type:', contentType);
 
