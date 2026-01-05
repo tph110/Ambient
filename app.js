@@ -45,83 +45,6 @@ const SIZE_MAX_LIMIT = 4 * 1024 * 1024;  // 4MB - auto-stop
 const SIZE_SAFE_LIMIT = 4.2 * 1024 * 1024;  // 4.2MB - absolute max before data loss
 
 // ==========================================
-// FFMPEG.WASM FOR AUDIO CONVERSION
-// ==========================================
-
-// FFmpeg for proper WebM → OGG Opus conversion
-let ffmpeg = null;
-let ffmpegLoaded = false;
-
-/**
- * Initialize FFmpeg.wasm for audio conversion
- * This loads the FFmpeg WASM library for converting WebM to OGG Opus
- */
-async function loadFFmpeg() {
-    if (ffmpegLoaded) return;
-    
-    try {
-        console.log('Loading FFmpeg.wasm for audio conversion...');
-        
-        // Check if FFmpeg is available
-        if (typeof FFmpegWASM === 'undefined') {
-            throw new Error('FFmpeg.wasm library not loaded. Please check script tags in HTML.');
-        }
-        
-        const { FFmpeg } = FFmpegWASM;
-        ffmpeg = new FFmpeg();
-        
-        // Set up logging for debugging
-        ffmpeg.on('log', ({ message }) => {
-            console.log('FFmpeg:', message);
-        });
-        
-        // Load FFmpeg core
-        await ffmpeg.load({
-            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
-            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm',
-        });
-        
-        ffmpegLoaded = true;
-        console.log('✓ FFmpeg.wasm loaded successfully');
-        
-        // Update status to show FFmpeg is ready
-        if (statusDiv) {
-            statusDiv.textContent = '✓ Audio conversion ready';
-            setTimeout(() => {
-                statusDiv.textContent = 'Ready to record';
-            }, 2000);
-        }
-        
-    } catch (error) {
-        console.error('Failed to load FFmpeg:', error);
-        ffmpegLoaded = false;
-        
-        // Show error to user
-        if (statusDiv) {
-            statusDiv.textContent = '⚠️ Audio conversion library failed to load';
-            statusDiv.style.backgroundColor = '#fef2f2';
-            statusDiv.style.color = '#991b1b';
-        }
-        
-        throw new Error('Audio conversion library failed to load: ' + error.message);
-    }
-}
-
-// Initialize FFmpeg when page loads
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        loadFFmpeg().catch(err => {
-            console.error('FFmpeg initialization failed:', err);
-        });
-    });
-} else {
-    // DOM already loaded
-    loadFFmpeg().catch(err => {
-        console.error('FFmpeg initialization failed:', err);
-    });
-}
-
-// ==========================================
 // ANONYMIZATION FUNCTION
 // ==========================================
 
@@ -933,76 +856,7 @@ function pauseRecording() {
 // OGG OPUS CONVERSION FOR AZURE SPEECH
 // ==========================================
 
-/**
- * Convert WebM to OGG Opus format using FFmpeg.wasm
- * This creates a proper OGG container that Azure Speech can decode
- * Uses FFmpeg to convert container format while keeping Opus codec (no re-encoding)
- */
-async function convertToOggOpus(webmBlob) {
-    try {
-        console.log('Converting WebM to OGG Opus with FFmpeg...');
-        console.log('Input size:', webmBlob.size, 'bytes =', (webmBlob.size / 1024).toFixed(2), 'KB');
-        
-        // Make sure FFmpeg is loaded
-        if (!ffmpegLoaded) {
-            console.log('FFmpeg not loaded yet, loading now...');
-            statusDiv.textContent = 'Loading audio converter...';
-            await loadFFmpeg();
-        }
-        
-        // Access FFmpegUtil from global scope
-        if (typeof FFmpegUtil === 'undefined') {
-            throw new Error('FFmpeg utilities not available');
-        }
-        
-        const { fetchFile } = FFmpegUtil;
-        
-        // Write input file to FFmpeg virtual filesystem
-        console.log('Writing WebM to FFmpeg filesystem...');
-        await ffmpeg.writeFile('input.webm', await fetchFile(webmBlob));
-        
-        // Convert: WebM (Opus) → OGG (Opus)
-        // -c:a copy means: copy the audio codec (don't re-encode)
-        // This just changes the container format, keeps Opus audio
-        console.log('Running FFmpeg conversion...');
-        statusDiv.textContent = 'Converting audio format...';
-        
-        await ffmpeg.exec([
-            '-i', 'input.webm',      // Input: WebM file
-            '-c:a', 'copy',           // Copy audio codec (no re-encoding)
-            '-f', 'ogg',              // Output format: OGG
-            'output.ogg'              // Output filename
-        ]);
-        
-        // Read the output file
-        console.log('Reading converted OGG file...');
-        const data = await ffmpeg.readFile('output.ogg');
-        
-        // Create blob from output
-        const oggBlob = new Blob([data.buffer], { type: 'audio/ogg; codecs=opus' });
-        
-        // Clean up virtual filesystem
-        await ffmpeg.deleteFile('input.webm');
-        await ffmpeg.deleteFile('output.ogg');
-        
-        console.log('✓ Converted to OGG Opus:', oggBlob.size, 'bytes =', (oggBlob.size / 1024).toFixed(2), 'KB');
-        console.log('✓ Proper OGG container created!');
-        
-        // Calculate overhead
-        const overhead = oggBlob.size - webmBlob.size;
-        const overheadPercent = ((overhead / webmBlob.size) * 100).toFixed(1);
-        console.log('Container overhead:', overhead, 'bytes (' + overheadPercent + '%)');
-        
-        return oggBlob;
-        
-    } catch (error) {
-        console.error('FFmpeg conversion error:', error);
-        statusDiv.textContent = 'Audio conversion failed';
-        throw new Error('Failed to convert audio format: ' + error.message);
-    }
-}
-
-// Transcribe Audio using Azure Speech API (formerly Whisper API)
+// Transcribe Audio using OpenAI Whisper API
 async function transcribeAudio(audioBlob) {
     try {
         // Final safety check before uploading
@@ -1044,41 +898,30 @@ async function transcribeAudio(audioBlob) {
         statusDiv.textContent = '⏳ Transcribing with AI...';
         transcriptDiv.innerHTML = '<p class="placeholder">Transcribing your consultation...</p>';
         
-        console.log('Original audio blob size:', audioBlob.size, 'bytes');
+        console.log('Original audio blob size:', audioBlob.size, 'bytes =', (audioBlob.size / 1024).toFixed(2), 'KB');
         console.log('Original audio blob type:', audioBlob.type);
         
-        // Convert WebM to OGG Opus format (Azure Speech requires proper OGG container)
-        console.log('Step 1: Converting to OGG Opus format for Azure Speech...');
-        let oggBlob;
-        try {
-            oggBlob = await convertToOggOpus(audioBlob);
-            console.log('✓ OGG Opus conversion successful');
-        } catch (conversionError) {
-            console.error('OGG conversion failed:', conversionError);
-            statusDiv.textContent = 'Audio conversion failed';
-            throw new Error('Failed to convert audio format: ' + conversionError.message);
-        }
+        // OpenAI Whisper accepts WebM directly - no conversion needed!
+        console.log('Sending WebM directly to OpenAI Whisper...');
         
-        // Convert OGG blob to base64
-        console.log('Step 2: Converting OGG to base64...');
+        // Convert WebM blob to base64
         const reader = new FileReader();
-        reader.readAsDataURL(oggBlob);
+        reader.readAsDataURL(audioBlob);
         
         reader.onloadend = async () => {
             const base64Audio = reader.result.split(',')[1];
             console.log('Base64 audio length:', base64Audio.length, 'characters');
             console.log('Estimated size:', (base64Audio.length * 0.75 / 1024).toFixed(2), 'KB');
             
-            // Call our Azure Speech API endpoint
-            console.log('Step 3: Sending to Azure Speech API...');
+            // Call our Whisper API endpoint
+            console.log('Sending to OpenAI Whisper API...');
             const response = await fetch('/api/transcribe', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    audioBlob: base64Audio,
-                    format: 'ogg'  // Sending proper OGG Opus file
+                    audioBlob: base64Audio
                 })
             });
             
@@ -1118,7 +961,8 @@ async function transcribeAudio(audioBlob) {
             const data = await response.json();
             console.log('Transcription response:', data);
             
-            finalTranscript = data.transcript;
+            // OpenAI Whisper returns 'text' field
+            finalTranscript = data.text;
             
             if (!finalTranscript || finalTranscript.trim() === '') {
                 throw new Error('Received empty transcript from API');
