@@ -161,17 +161,17 @@ async function transcribeAudio(audioBlob) {
         statusDiv.textContent = '⏳ Transcribing dictation...';
         transcriptDiv.innerHTML = '<p class="placeholder">Transcribing...</p>';
         
-        console.log('Converting to WAV...');
-        const wavBlob = await convertToWav(audioBlob);
+        console.log('Sending WebM directly to OpenAI Whisper...');
+        console.log('Audio blob size:', audioBlob.size, 'bytes =', (audioBlob.size / 1024).toFixed(2), 'KB');
         
-        // Convert WAV to base64
+        // Convert WebM to base64 (Whisper accepts WebM directly - no conversion needed!)
         const reader = new FileReader();
-        reader.readAsDataURL(wavBlob);
+        reader.readAsDataURL(audioBlob);
         
         reader.onloadend = async () => {
             const base64Audio = reader.result.split(',')[1];
             
-            // Call transcription API
+            // Call Whisper transcription API
             const response = await fetch('/api/transcribe', {
                 method: 'POST',
                 headers: {
@@ -188,7 +188,8 @@ async function transcribeAudio(audioBlob) {
             }
             
             const data = await response.json();
-            finalTranscript = data.transcript;
+            // Whisper returns 'text' field, not 'transcript'
+            finalTranscript = data.text;
             
             if (!finalTranscript || finalTranscript.trim() === '') {
                 throw new Error('Empty transcript received');
@@ -375,66 +376,6 @@ function clearTranscript() {
     downloadLetterBtn.style.display = 'none';
     
     statusDiv.textContent = 'Ready to dictate';
-}
-
-// WAV Conversion Functions (copied from main app)
-async function convertToWav(webmBlob) {
-    return new Promise((resolve, reject) => {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)({
-            sampleRate: 16000
-        });
-        
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(webmBlob);
-        
-        reader.onload = async () => {
-            try {
-                const audioBuffer = await audioContext.decodeAudioData(reader.result);
-                const channelData = audioBuffer.getChannelData(0);
-                const wavData = encodeWav(channelData, audioBuffer.sampleRate);
-                const wavBlob = new Blob([wavData], { type: 'audio/wav' });
-                resolve(wavBlob);
-            } catch (error) {
-                reject(error);
-            }
-        };
-        
-        reader.onerror = () => reject(new Error('Failed to read audio'));
-    });
-}
-
-function encodeWav(samples, sampleRate) {
-    const buffer = new ArrayBuffer(44 + samples.length * 2);
-    const view = new DataView(buffer);
-    
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + samples.length * 2, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, samples.length * 2, true);
-    
-    let offset = 44;
-    for (let i = 0; i < samples.length; i++) {
-        const s = Math.max(-1, Math.min(1, samples[i]));
-        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-        offset += 2;
-    }
-    
-    return buffer;
-}
-
-function writeString(view, offset, string) {
-    for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-    }
 }
 
 // Populate Microphone Dropdown
