@@ -1,5 +1,7 @@
 // File: /api/transcribe.js
-// OpenAI Whisper API endpoint - accepts WebM directly, no conversion needed!
+// OpenAI Whisper API endpoint - Properly working version
+
+const FormData = require('form-data');
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -30,25 +32,22 @@ export default async function handler(req, res) {
         const audioBuffer = Buffer.from(audioBlob, 'base64');
         console.log('Audio buffer size:', audioBuffer.length, 'bytes =', (audioBuffer.length / 1024).toFixed(2), 'KB');
 
-        // Create form data for OpenAI Whisper
-        const FormData = require('form-data');
+        // Create form data with proper buffer handling
         const form = new FormData();
         
-        // Add audio file (Whisper accepts webm directly!)
+        // Append audio file with all required options
         form.append('file', audioBuffer, {
             filename: 'audio.webm',
-            contentType: 'audio/webm'
+            contentType: 'audio/webm',
+            knownLength: audioBuffer.length
         });
         
-        // Add model parameter
+        // Add required model parameter
         form.append('model', 'whisper-1');
-        
-        // Add language (optional - remove for auto-detection)
-        form.append('language', 'en');
         
         console.log('Sending to OpenAI Whisper API...');
 
-        // Call OpenAI Whisper API
+        // Make request with properly constructed form
         const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
             method: 'POST',
             headers: {
@@ -62,17 +61,29 @@ export default async function handler(req, res) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Whisper API error:', response.status, errorText);
+            console.error('Whisper API error:', response.status);
+            console.error('Error response:', errorText);
+            
+            // Try to parse error details
+            let errorDetails = errorText;
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorDetails = errorJson.error?.message || errorJson.error || errorText;
+            } catch (e) {
+                // Keep as text if not JSON
+            }
+            
             return res.status(response.status).json({ 
                 error: 'Whisper transcription failed',
-                details: errorText
+                details: errorDetails
             });
         }
 
         const result = await response.json();
-        console.log('Transcription successful, length:', result.text?.length || 0, 'characters');
+        console.log('Transcription successful!');
+        console.log('Text length:', result.text?.length || 0, 'characters');
 
-        // Return transcript in consistent format
+        // Return transcript
         return res.status(200).json({
             text: result.text || '',
             success: true
@@ -80,6 +91,7 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Transcription error:', error);
+        console.error('Error details:', error.message);
         return res.status(500).json({ 
             error: 'Transcription failed',
             details: error.message 
