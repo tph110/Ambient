@@ -935,21 +935,16 @@ async function transcribeAudio(audioBlob) {
         console.log('Original audio blob size:', audioBlob.size, 'bytes');
         console.log('Original audio blob type:', audioBlob.type);
         
-        // Convert WebM to OGG Opus format (Azure Speech accepts OGG Opus)
-        console.log('Step 1: Converting to OGG Opus format for Azure Speech...');
-        let oggBlob;
-        try {
-            oggBlob = await convertToOggOpus(audioBlob);
-            console.log('✓ OGG Opus conversion successful');
-        } catch (conversionError) {
-            console.error('OGG conversion failed:', conversionError);
-            throw new Error('Failed to convert audio format: ' + conversionError.message);
-        }
+        // Azure Speech accepts WebM (Opus codec) directly - no conversion needed!
+        console.log('Step 1: Preparing WebM audio for Azure Speech...');
+        const audioToSend = audioBlob;  // Send WebM directly
+        console.log('✓ Audio ready - WebM format (Opus codec)');
+        console.log('✓ File size:', audioBlob.size, 'bytes =', (audioBlob.size / 1024).toFixed(2), 'KB');
         
-        // Convert OGG blob to base64
-        console.log('Step 2: Converting OGG to base64...');
+        // Convert WebM blob to base64
+        console.log('Step 2: Converting WebM to base64...');
         const reader = new FileReader();
-        reader.readAsDataURL(oggBlob);
+        reader.readAsDataURL(audioToSend);
         
         reader.onloadend = async () => {
             const base64Audio = reader.result.split(',')[1];
@@ -965,7 +960,7 @@ async function transcribeAudio(audioBlob) {
                 },
                 body: JSON.stringify({
                     audioBlob: base64Audio,
-                    format: 'ogg'  // Tell API we're sending OGG Opus
+                    format: 'webm'  // Tell API we're sending WebM (Opus codec)
                 })
             });
             
@@ -977,9 +972,8 @@ async function transcribeAudio(audioBlob) {
                 // Handle specific error codes
                 if (response.status === 413) {
                     const audioSizeMB = (audioBlob.size / 1024 / 1024).toFixed(2);
-                    const oggSizeMB = (oggBlob.size / 1024 / 1024).toFixed(2);
-                    errorMessage = `Recording too large to transcribe.\n\nOriginal audio: ${audioSizeMB} MB\nAfter OGG conversion: ${oggSizeMB} MB\n\nPlease keep recordings under 15 minutes.`;
-                    console.error('413 Payload Too Large - Audio size:', audioBlob.size, 'bytes, OGG size:', oggBlob.size, 'bytes');
+                    errorMessage = `Recording too large to transcribe.\n\nAudio size: ${audioSizeMB} MB\n\nPlease keep recordings under 15 minutes.`;
+                    console.error('413 Payload Too Large - Audio size:', audioBlob.size, 'bytes');
                     throw new Error(errorMessage);
                 }
                 
