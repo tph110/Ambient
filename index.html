@@ -273,15 +273,7 @@
         });
     </script>
     
-    <!-- ========================================== -->
-    <!-- FFmpeg.wasm for proper OGG audio conversion -->
-    <!-- MUST load BEFORE app.js -->
-    <!-- Using jsdelivr CDN for CORS compatibility with Vercel -->
-    <!-- ========================================== -->
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
-    
-    <!-- App.js - Main application script (loads AFTER FFmpeg) -->
+    <!-- App.js - Simple, no FFmpeg needed for Whisper -->
     <script src="app.js"></script>
 </body>
 </html>
