@@ -1,7 +1,8 @@
 // File: /api/transcribe.js
-// OpenAI Whisper API endpoint - Properly working version
+// OpenAI Whisper API endpoint - Using node-fetch for proper FormData handling
 
 const FormData = require('form-data');
+const fetch = require('node-fetch');
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -32,14 +33,13 @@ export default async function handler(req, res) {
         const audioBuffer = Buffer.from(audioBlob, 'base64');
         console.log('Audio buffer size:', audioBuffer.length, 'bytes =', (audioBuffer.length / 1024).toFixed(2), 'KB');
 
-        // Create form data with proper buffer handling
+        // Create form data
         const form = new FormData();
         
-        // Append audio file with all required options
+        // Append audio file with proper options
         form.append('file', audioBuffer, {
             filename: 'audio.webm',
-            contentType: 'audio/webm',
-            knownLength: audioBuffer.length
+            contentType: 'audio/webm'
         });
         
         // Add required model parameter
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
         
         console.log('Sending to OpenAI Whisper API...');
 
-        // Make request with properly constructed form
+        // Use node-fetch (v2) which handles FormData correctly
         const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
             method: 'POST',
             headers: {
