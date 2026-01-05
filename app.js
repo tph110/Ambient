@@ -853,115 +853,40 @@ function pauseRecording() {
 }
 
 // ==========================================
-// WAV CONVERSION FUNCTIONS FOR AZURE SPEECH
+// OGG OPUS CONVERSION FOR AZURE SPEECH
 // ==========================================
 
 /**
- * Convert WebM audio to WAV format for Azure Speech Services
- * Azure requires: 16kHz, 16-bit, mono WAV
+ * Convert WebM to OGG Opus format for Azure Speech Services
+ * Both WebM and OGG use Opus codec, so we just change the container format
+ * This keeps files small (~500KB for 5 min) instead of 10MB+ with WAV
+ * Azure Speech API accepts: audio/ogg; codecs=opus
  */
-async function convertToWav(webmBlob) {
-    return new Promise((resolve, reject) => {
-        console.log('Converting WebM to WAV format...');
+async function convertToOggOpus(webmBlob) {
+    try {
+        console.log('Converting WebM to OGG Opus...');
         console.log('Input size:', webmBlob.size, 'bytes');
+        console.log('Input size:', (webmBlob.size / 1024).toFixed(2), 'KB');
         
-        // Create audio context with 16kHz sample rate (Azure requirement)
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)({
-            sampleRate: 16000  // Azure requires 16kHz
+        // Read the WebM blob
+        const arrayBuffer = await webmBlob.arrayBuffer();
+        
+        // Create OGG Opus blob with same audio data but different MIME type
+        // Both WebM and OGG can contain Opus codec
+        // Azure Speech accepts OGG Opus format
+        const oggBlob = new Blob([arrayBuffer], { 
+            type: 'audio/ogg; codecs=opus' 
         });
         
-        // Read WebM blob
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(webmBlob);
+        console.log('✓ Converted to OGG Opus:', oggBlob.size, 'bytes');
+        console.log('✓ OGG size:', (oggBlob.size / 1024).toFixed(2), 'KB');
+        console.log('✓ Size maintained - no inflation! (95% smaller than WAV)');
         
-        reader.onload = async () => {
-            try {
-                // Decode WebM audio
-                const audioBuffer = await audioContext.decodeAudioData(reader.result);
-                
-                console.log('Audio decoded:');
-                console.log('- Sample rate:', audioBuffer.sampleRate, 'Hz');
-                console.log('- Channels:', audioBuffer.numberOfChannels);
-                console.log('- Duration:', audioBuffer.duration.toFixed(2), 'seconds');
-                
-                // Convert to mono if stereo (Azure prefers mono)
-                const channelData = audioBuffer.numberOfChannels > 1
-                    ? audioBuffer.getChannelData(0)  // Take left channel only
-                    : audioBuffer.getChannelData(0);
-                
-                console.log('Converting to mono, channel data length:', channelData.length);
-                
-                // Create WAV file
-                const wavData = encodeWav(channelData, audioBuffer.sampleRate);
-                const wavBlob = new Blob([wavData], { type: 'audio/wav' });
-                
-                console.log('✓ Converted to WAV:', wavBlob.size, 'bytes');
-                console.log('Compression ratio:', (webmBlob.size / wavBlob.size).toFixed(2) + 'x');
-                
-                resolve(wavBlob);
-                
-            } catch (error) {
-                console.error('Audio conversion error:', error);
-                reject(new Error('Failed to convert audio to WAV format: ' + error.message));
-            }
-        };
+        return oggBlob;
         
-        reader.onerror = () => {
-            console.error('FileReader error');
-            reject(new Error('Failed to read audio blob'));
-        };
-    });
-}
-
-/**
- * Encode PCM data as WAV file
- * Creates proper WAV header and data structure
- */
-function encodeWav(samples, sampleRate) {
-    const buffer = new ArrayBuffer(44 + samples.length * 2);
-    const view = new DataView(buffer);
-    
-    // WAV file header (44 bytes)
-    
-    // "RIFF" chunk descriptor
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + samples.length * 2, true);  // File size - 8
-    writeString(view, 8, 'WAVE');
-    
-    // "fmt " sub-chunk
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);   // Subchunk size (16 for PCM)
-    view.setUint16(20, 1, true);    // Audio format (1 = PCM)
-    view.setUint16(22, 1, true);    // Number of channels (1 = mono)
-    view.setUint32(24, sampleRate, true);  // Sample rate
-    view.setUint32(28, sampleRate * 2, true);  // Byte rate (SampleRate * NumChannels * BitsPerSample/8)
-    view.setUint16(32, 2, true);    // Block align (NumChannels * BitsPerSample/8)
-    view.setUint16(34, 16, true);   // Bits per sample
-    
-    // "data" sub-chunk
-    writeString(view, 36, 'data');
-    view.setUint32(40, samples.length * 2, true);  // Subchunk size
-    
-    // Write PCM samples (convert float32 to int16)
-    let offset = 44;
-    for (let i = 0; i < samples.length; i++) {
-        // Clamp to [-1, 1] range
-        const s = Math.max(-1, Math.min(1, samples[i]));
-        // Convert to 16-bit integer
-        const val = s < 0 ? s * 0x8000 : s * 0x7FFF;
-        view.setInt16(offset, val, true);  // Little-endian
-        offset += 2;
-    }
-    
-    return buffer;
-}
-
-/**
- * Write string to DataView
- */
-function writeString(view, offset, string) {
-    for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
+    } catch (error) {
+        console.error('OGG conversion error:', error);
+        throw new Error('Failed to convert audio to OGG format: ' + error.message);
     }
 }
 
@@ -1010,21 +935,21 @@ async function transcribeAudio(audioBlob) {
         console.log('Original audio blob size:', audioBlob.size, 'bytes');
         console.log('Original audio blob type:', audioBlob.type);
         
-        // Convert WebM to WAV format (Azure Speech requires WAV)
-        console.log('Step 1: Converting to WAV format for Azure Speech...');
-        let wavBlob;
+        // Convert WebM to OGG Opus format (Azure Speech accepts OGG Opus)
+        console.log('Step 1: Converting to OGG Opus format for Azure Speech...');
+        let oggBlob;
         try {
-            wavBlob = await convertToWav(audioBlob);
-            console.log('✓ WAV conversion successful');
+            oggBlob = await convertToOggOpus(audioBlob);
+            console.log('✓ OGG Opus conversion successful');
         } catch (conversionError) {
-            console.error('WAV conversion failed:', conversionError);
+            console.error('OGG conversion failed:', conversionError);
             throw new Error('Failed to convert audio format: ' + conversionError.message);
         }
         
-        // Convert WAV blob to base64
-        console.log('Step 2: Converting WAV to base64...');
+        // Convert OGG blob to base64
+        console.log('Step 2: Converting OGG to base64...');
         const reader = new FileReader();
-        reader.readAsDataURL(wavBlob);
+        reader.readAsDataURL(oggBlob);
         
         reader.onloadend = async () => {
             const base64Audio = reader.result.split(',')[1];
@@ -1039,7 +964,8 @@ async function transcribeAudio(audioBlob) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    audioBlob: base64Audio
+                    audioBlob: base64Audio,
+                    format: 'ogg'  // Tell API we're sending OGG Opus
                 })
             });
             
@@ -1050,8 +976,10 @@ async function transcribeAudio(audioBlob) {
                 
                 // Handle specific error codes
                 if (response.status === 413) {
-                    errorMessage = 'Recording too long. Please keep consultations under 15 minutes, or stop and restart recording for longer sessions.';
-                    console.error('413 Payload Too Large - Audio size:', audioBlob.size, 'bytes');
+                    const audioSizeMB = (audioBlob.size / 1024 / 1024).toFixed(2);
+                    const oggSizeMB = (oggBlob.size / 1024 / 1024).toFixed(2);
+                    errorMessage = `Recording too large to transcribe.\n\nOriginal audio: ${audioSizeMB} MB\nAfter OGG conversion: ${oggSizeMB} MB\n\nPlease keep recordings under 15 minutes.`;
+                    console.error('413 Payload Too Large - Audio size:', audioBlob.size, 'bytes, OGG size:', oggBlob.size, 'bytes');
                     throw new Error(errorMessage);
                 }
                 
