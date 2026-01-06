@@ -121,7 +121,36 @@ SECTION FORMATTING:
 - DO NOT use ** or any markdown formatting
 - Use bullet points (with hyphens) for lists within sections
 - If a section wasn't covered in the consultation, write "Not documented" or omit the section
-- Keep each section concise - aim for 2-4 sentences or bullet points per section
+
+SPECIFIC SECTION GUIDANCE:
+
+**Presenting Complaint:**
+- Keep this brief (1-2 lines)
+- Just the main symptom/problem
+- Example: "3-day history of productive cough and fever"
+
+**History of Presenting Complaint:**
+- THIS SECTION SHOULD BE DETAILED AND COMPREHENSIVE
+- Include ALL relevant details from the consultation
+- Capture the full narrative of how the complaint developed
+- Include timeline (when it started, how it progressed)
+- Include character of symptoms (sharp/dull pain, colour of sputum, etc.)
+- Include severity and frequency
+- Include aggravating and relieving factors
+- Include what the patient has tried already
+- Include associated symptoms
+- Include impact on daily activities/work/sleep
+- Use 5-10 bullet points or 2-4 full paragraphs
+- Be thorough - this is the most important clinical section
+
+**Other sections:**
+- Past Medical History: List conditions (2-4 bullet points)
+- Medications: List with doses if mentioned
+- Allergies: List with reactions
+- Social History: Relevant details (smoking, alcohol, occupation, living situation)
+- Examination Findings: What was examined and found
+- Assessment: Clinical impression/diagnosis
+- Plan: What was decided (investigations, treatment, follow-up)
 
 DO NOT INCLUDE:
 - QOF outcomes section
@@ -137,13 +166,22 @@ Use plain text format suitable for direct copy-paste into medical records system
 
 EXAMPLE FORMAT:
 Presenting Complaint:
-- [Details here]
+- 3-day history of productive cough and fever
 
 History of Presenting Complaint:
-- [Details here]
+- Symptoms began 3 days ago with rhinorrhoea and sore throat
+- Progressed to productive cough with green sputum within 24 hours
+- Cough worse at night, affecting sleep quality
+- Fever documented up to 38.5°C, particularly in evenings
+- Reports mild shortness of breath on exertion (climbing stairs)
+- No chest pain, no haemoptysis
+- Tried paracetamol and increased fluids with minimal improvement
+- Unable to attend work for past 2 days due to fatigue and cough
+- No recent travel, no sick contacts identified
 
 Past Medical History:
-- [Details here]`;
+- Asthma (well-controlled)
+- Hypertension`;
 
             userPrompt = `Create a structured clinical summary from this GP consultation transcript:\n\n${transcript}`;
         }
