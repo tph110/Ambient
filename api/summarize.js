@@ -98,6 +98,7 @@ Convert the consultation transcript into a professional clinical summary suitabl
 
 IMPORTANT FORMATTING RULES:
 - Use Title Case for section headings (e.g., "History of Presenting Complaint" NOT "HISTORY OF PRESENTING COMPLAINT")
+- DO NOT use markdown bold (**) for section headings - use plain text
 - Use British English spelling throughout
 - Be concise but comprehensive
 - Include relevant clinical details
@@ -116,8 +117,9 @@ REQUIRED SECTIONS (in this order):
 9. Plan
 
 SECTION FORMATTING:
-- Each section heading should be in Title Case and bold
-- Use bullet points for lists within sections
+- Each section heading should be in Title Case, plain text, with a colon (e.g., "Presenting Complaint:")
+- DO NOT use ** or any markdown formatting
+- Use bullet points (with hyphens) for lists within sections
 - If a section wasn't covered in the consultation, write "Not documented" or omit the section
 - Keep each section concise - aim for 2-4 sentences or bullet points per section
 
@@ -127,9 +129,21 @@ DO NOT INCLUDE:
 - Read codes
 - Quality improvement metrics
 - Administrative notes
+- Markdown formatting (**bold**, *italic*, etc.)
 
 OUTPUT FORMAT:
-Return ONLY the formatted clinical summary. Do not include any preamble, explanation, or meta-commentary.`;
+Return ONLY the formatted clinical summary. Do not include any preamble, explanation, or meta-commentary.
+Use plain text format suitable for direct copy-paste into medical records systems.
+
+EXAMPLE FORMAT:
+Presenting Complaint:
+- [Details here]
+
+History of Presenting Complaint:
+- [Details here]
+
+Past Medical History:
+- [Details here]`;
 
             userPrompt = `Create a structured clinical summary from this GP consultation transcript:\n\n${transcript}`;
         }
