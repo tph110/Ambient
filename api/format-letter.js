@@ -252,6 +252,39 @@ STRUCTURE:
 
 Use simple, clear language. Explain medical terms.`;
 
+        case 'free-text':
+            return `LETTER TYPE: Free Text (No Formatting)
+
+INSTRUCTIONS:
+DO NOT format this as a letter. DO NOT add any structure, dates, greetings, or sign-offs.
+
+Your task is simply to:
+1. Clean up the dictated text by removing dictation commands
+2. Add proper punctuation where indicated by voice commands
+3. Organize into clear paragraphs
+4. Fix any obvious transcription errors
+5. Improve grammar and readability
+
+VOICE COMMANDS TO PROCESS:
+- "full stop" or "period" → Add a period (.)
+- "comma" → Add a comma (,)
+- "new paragraph" → Start a new paragraph
+- "new line" → Add a line break
+- "colon" → Add a colon (:)
+- "question mark" → Add a question mark (?)
+- "delete that" / "scratch that" → Remove the previous sentence
+
+DO NOT ADD:
+- Dates
+- Greetings (Dear X)
+- Sign-offs (Yours sincerely, etc.)
+- Letter structure
+- Headings or sections
+- Any formatting beyond basic paragraphs
+
+OUTPUT:
+Return the cleaned-up text with proper punctuation and paragraph breaks, but NO letter formatting whatsoever.`;
+
         case 'general':
         default:
             return `LETTER TYPE: General Correspondence
