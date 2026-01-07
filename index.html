@@ -22,11 +22,22 @@
             color: #64748b !important;
         }
         
-        /* Fix alignment - remove space from actions-bar when button is hidden */
+        /* AGGRESSIVE FIX: Completely remove actions-bar from layout flow */
         .actions-bar {
+            display: none !important;
             margin: 0 !important;
             padding: 0 !important;
+            height: 0 !important;
             min-height: 0 !important;
+            max-height: 0 !important;
+            overflow: hidden !important;
+        }
+        
+        /* When button is visible, show the actions-bar */
+        .actions-bar:has(button:not([style*="display: none"])) {
+            display: block !important;
+            margin-bottom: 24px !important;
+            height: auto !important;
         }
         
         /* Ensure panels align at the top */
@@ -37,6 +48,12 @@
         .panel-left,
         .panel-right {
             align-self: flex-start !important;
+        }
+        
+        /* Ensure first card in right panel has no top margin */
+        .panel-right > .card:first-of-type,
+        .panel-right > .output-card:first-of-type {
+            margin-top: 0 !important;
         }
     </style>
     
