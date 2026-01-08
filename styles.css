@@ -414,11 +414,17 @@ button:disabled, .btn:disabled {
 .btn-secondary {
     background: var(--surface-hover);
     border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+.btn-secondary:hover {
+    background: var(--border-color);
 }
 
 .btn-outline {
     background: transparent;
     border: 1px solid var(--border-color);
+    color: var(--text-main);
 }
 
 .btn-outline:hover {
@@ -437,11 +443,29 @@ button:disabled, .btn:disabled {
     border-radius: var(--radius-md);
 }
 
-/* Button Group */
+/* Button Group - Add spacing to push down from status bar */
 .button-group-controls {
     display: flex;
     gap: var(--spacing-sm);
     flex-wrap: wrap;
+    margin-top: var(--spacing-lg);
+}
+
+/* Ensure button text is always visible in dark mode */
+body.dark-mode button,
+body.dark-mode .btn,
+body.dark-mode .btn-secondary,
+body.dark-mode .btn-outline {
+    color: var(--text-main);
+}
+
+body.dark-mode .btn-accent,
+body.dark-mode .btn-record {
+    color: white;
+}
+
+body.dark-mode .btn-record.recording {
+    color: var(--recording-color);
 }
 
 /* ================================================================
@@ -550,6 +574,7 @@ select {
     background: var(--surface-hover);
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
 }
 
 .status.recording {
