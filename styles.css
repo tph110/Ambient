@@ -1,817 +1,1382 @@
-/* ================================================================
-   ECHODOC - PROFESSIONAL HEALTHTECH STYLES
-   Maintains two-panel dashboard layout with modern visual design
-   ================================================================ */
+/* ==========================================
+  ECHODOC - PROFESSIONAL MEDICAL DASHBOARD
+  Hybrid Design: Modern UI + Full Features
+  ========================================== */
 
-/* IMPORT PROFESSIONAL FONT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-/* ================================================================
-   CSS VARIABLES - Design System
-   ================================================================ */
+/* --- 1. CSS VARIABLES & RESET --- */
 :root {
-    /* Primary Colors - Medical Blue (NHS-inspired) */
-    --primary-color: #0284c7;
-    --primary-hover: #0369a1;
-    --primary-light: #e0f2fe;
-    
-    /* Backgrounds */
-    --bg-color: #f1f5f9;           /* Light slate grey - reduces eye strain */
-    --surface-color: #ffffff;       /* Pure white for cards */
-    --surface-hover: #f8fafc;       /* Subtle hover state */
-    
-    /* Text Colors */
-    --text-main: #1e293b;           /* Dark slate - easier to read than pure black */
-    --text-secondary: #64748b;      /* Medium slate */
-    --text-tertiary: #94a3b8;       /* Light slate */
-    
-    /* Borders & Dividers */
-    --border-color: #e2e8f0;
-    --border-hover: #cbd5e1;
-    
-    /* Shadows - Subtle depth */
-    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    
-    /* Border Radius */
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
-    
-    /* Spacing */
-    --spacing-xs: 8px;
-    --spacing-sm: 12px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-    
-    /* Status Colors */
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --error-color: #ef4444;
-    --info-color: #3b82f6;
-    
-    /* Recording Red */
-    --recording-color: #ef4444;
-    --recording-bg: #fee2e2;
-    --recording-border: #fecaca;
+--bg-app: #F1F5F9;        /* Slate 100 */
+--bg-card: #FFFFFF;
+--text-primary: #1E293B;   /* Slate 800 */
+--text-secondary: #64748B; /* Slate 500 */
+--accent-blue: #0EA5E9;    /* Sky 500 */
+--accent-hover: #0284C7;   /* Sky 600 */
+--danger: #EF4444;         /* Red 500 */
+--danger-hover: #DC2626;   /* Red 600 */
+--border: #E2E8F0;         /* Slate 200 */
+--border-light: #F1F5F9;   /* Slate 100 */
+--success: #10B981;        /* Green 500 */
+--warning: #F59E0B;        /* Amber 500 */
 }
 
-/* ================================================================
-   DARK MODE VARIABLES
-   ================================================================ */
-body.dark-mode {
-    --bg-color: #0f172a;
-    --surface-color: #1e293b;
-    --surface-hover: #334155;
-    
-    --text-main: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-tertiary: #94a3b8;
-    
-    --border-color: #334155;
-    --border-hover: #475569;
-    
-    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3);
-}
-
-/* ================================================================
-   BASE STYLES
-   ================================================================ */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+box-sizing: border-box;
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    line-height: 1.6;
-    font-size: 15px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+background-color: var(--bg-app);
+color: var(--text-primary);
+margin: 0;
+padding: 0;
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+line-height: 1.6;
 }
 
-/* ================================================================
-   TYPOGRAPHY
-   ================================================================ */
-h1 {
-    font-size: 1.875rem;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    color: var(--text-main);
-}
-
-h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: -0.025em;
-    color: var(--text-main);
-}
-
-h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--text-main);
-}
-
-p {
-    color: var(--text-secondary);
-    line-height: 1.7;
-}
-
-/* ================================================================
-   NAVBAR - Professional Medical App Header
-   ================================================================ */
+/* --- 2. PROFESSIONAL NAVBAR --- */
 .navbar {
-    background: var(--surface-color);
-    border-bottom: 1px solid var(--border-color);
-    padding: 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: var(--shadow-sm);
+background: white;
+border-bottom: 1px solid var(--border);
+padding: 0.875rem 1.5rem;
+position: sticky;
+top: 0;
+z-index: 100;
+box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .nav-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: var(--spacing-md) var(--spacing-xl);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+max-width: 1800px;
+margin: 0 auto;
+display: flex;
+justify-content: space-between;
+align-items: center;
 }
 
-.brand h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin: 0;
+.brand {
+display: flex;
+align-items: center;
+}
+
+.brand-text {
+display: flex;
+flex-direction: column;
+gap: 2px;
+}
+
+.brand-text h1 {
+font-size: 1.35rem;
+margin: 0;
+font-weight: 700;
+color: var(--text-primary);
+display: inline-flex;
+align-items: center;
+gap: 10px;
 }
 
 .brand-motto {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-top: 2px;
+font-size: 0.8rem;
+color: var(--text-secondary);
+margin: 0;
+font-weight: 400;
+line-height: 1.2;
 }
 
 .badge {
-    background: var(--primary-light);
-    color: var(--primary-color);
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-left: 8px;
-}
-
-.navbar-right {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-lg);
-}
-
-.nav-links {
-    display: flex;
-    gap: var(--spacing-sm);
-}
-
-.nav-link {
-    padding: 8px 16px;
-    border-radius: var(--radius-md);
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.9375rem;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-}
-
-.nav-link:hover {
-    background: var(--surface-hover);
-    color: var(--text-main);
-}
-
-.nav-link.active {
-    background: var(--primary-light);
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+background: #E0F2FE;
+color: #0369A1;
+font-size: 0.7rem;
+padding: 3px 10px;
+border-radius: 6px;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+font-weight: 600;
 }
 
 .status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: var(--surface-hover);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+display: flex;
+align-items: center;
+gap: 8px;
+font-size: 0.875rem;
+color: var(--text-secondary);
+font-weight: 500;
+}
+
+.navbar-right {
+display: flex;
+align-items: center;
+gap: 20px;
 }
 
 .status-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--success-color);
-    border-radius: 50%;
-    animation: pulse-dot 2s infinite;
+width: 10px;
+height: 10px;
+background-color: var(--success);
+border-radius: 50%;
+display: inline-block;
 }
 
-@keyframes pulse-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-/* ================================================================
-   DASHBOARD LAYOUT - Two Panel Grid
-   ================================================================ */
+/* --- 3. DASHBOARD GRID LAYOUT --- */
 .dashboard-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: var(--spacing-xl);
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    gap: var(--spacing-xl);
-    align-items: flex-start;
+display: grid;
+grid-template-columns: 1fr;
+gap: 24px;
+padding: 24px;
+max-width: 1800px;
+margin: 0 auto;
+width: 100%;
+flex: 1;
 }
 
+/* Desktop: Two-column layout */
+@media (min-width: 1024px) {
+.dashboard-container {
+grid-template-columns: 420px 1fr;
+gap: 28px;
+align-items: start;
+}
+}
+
+/* Ultra-wide: Larger sidebar */
+@media (min-width: 1600px) {
+.dashboard-container {
+grid-template-columns: 480px 1fr;
+gap: 32px;
+}
+}
+
+/* --- 4. PANELS --- */
 .panel-left {
-    position: sticky;
-    top: calc(80px + var(--spacing-md));
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
+display: flex;
+flex-direction: column;
+gap: 20px;
+}
+
+/* Sticky sidebar on desktop */
+@media (min-width: 1024px) {
+.panel-left {
+position: sticky;
+top: 100px;
+/* Removed max-height and overflow - this was causing the rendering bug */
+}
 }
 
 .panel-right {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
+display: flex;
+flex-direction: column;
+gap: 20px;
 }
 
-/* ================================================================
-   CARDS - Clean, Professional Surface Design
-   ================================================================ */
+/* --- 5. CARD SYSTEM --- */
 .card {
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+background: var(--bg-card);
+border: 1px solid var(--border);
+border-radius: 12px;
+box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+overflow: hidden;
+transition: box-shadow 0.2s ease;
 }
 
 .card:hover {
-    box-shadow: var(--shadow-md);
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .card-header {
-    padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--surface-hover);
+padding: 14px 20px;
+border-bottom: 1px solid var(--border-light);
+background: #F8FAFC;
+display: flex;
+justify-content: space-between;
+align-items: center;
 }
 
 .card-header h2,
 .card-header h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--text-main);
+font-size: 0.8rem;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+color: var(--text-secondary);
+margin: 0;
+font-weight: 700;
 }
 
 .card-body {
-    padding: var(--spacing-lg);
+padding: 20px;
+position: relative;
+display: block;
 }
 
-/* ================================================================
-   BUTTONS - Modern, Trustworthy Design
-   ================================================================ */
-button, .btn {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    padding: 10px 20px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-    background: var(--surface-color);
-    color: var(--text-main);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    box-shadow: var(--shadow-xs);
-    text-decoration: none;
+/* Special card types */
+.control-card {
+background: linear-gradient(to bottom, #FFFFFF, #F8FAFC);
 }
 
-button:hover, .btn:hover {
-    background: var(--surface-hover);
-    border-color: var(--border-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+.control-card .card-body {
+min-height: 200px;
+display: block;
 }
 
-button:active, .btn:active {
-    transform: translateY(0);
+.control-card .card-body > * {
+margin-bottom: 16px;
+display: block;
+position: relative;
+visibility: visible;
 }
 
-button:disabled, .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
+.control-card .card-body > *:last-child {
+margin-bottom: 0;
 }
 
-/* Primary Action Button - NHS Medical Blue */
-.btn-accent,
-.btn-record {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    font-weight: 600;
-    box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3);
+.transcript-card {
+flex: 1;
+min-height: 400px;
 }
 
-.btn-accent:hover,
-.btn-record:hover {
-    background: var(--primary-hover);
-    box-shadow: 0 6px 10px -1px rgba(2, 132, 199, 0.4);
+@media (min-width: 1024px) {
+.transcript-card {
+min-height: 500px;
+}
 }
 
-/* Recording State - Pulsing Red */
-.btn-record.recording,
-.recording-badge {
-    background: var(--recording-bg);
-    color: var(--recording-color);
-    border: 1px solid var(--recording-border);
-    animation: pulse-recording 2s infinite;
-}
-
-@keyframes pulse-recording {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-/* Button Variations */
-.btn-secondary {
-    background: var(--surface-hover);
-    border-color: var(--border-color);
-}
-
-.btn-outline {
-    background: transparent;
-    border: 1px solid var(--border-color);
-}
-
-.btn-outline:hover {
-    background: var(--surface-hover);
-}
-
-.btn-small {
-    padding: 6px 14px;
-    font-size: 0.875rem;
-}
-
-.btn-icon {
-    padding: 8px;
-    width: 36px;
-    height: 36px;
-    border-radius: var(--radius-md);
-}
-
-/* Button Group */
-.button-group-controls {
-    display: flex;
-    gap: var(--spacing-sm);
-    flex-wrap: wrap;
-}
-
-/* ================================================================
-   FORMS & INPUTS - Clean Medical Interface
-   ================================================================ */
-input[type="text"],
-input[type="email"],
-select,
-textarea {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9375rem;
-    padding: 10px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: var(--surface-color);
-    color: var(--text-main);
-    transition: all 0.2s ease;
-    width: 100%;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
-    background: white;
-}
-
-select {
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 36px;
-}
-
-/* Microphone Dropdown */
-.mic-select-container-inline {
-    margin-bottom: var(--spacing-md);
-}
-
-.mic-select-container-inline label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
-}
-
-.mic-dropdown {
-    width: 100%;
-}
-
-/* ================================================================
-   TRANSCRIPT & EDITOR AREAS - Paper-like Surface
-   ================================================================ */
-.transcript-box,
-.output-content,
-#transcript,
-#summary,
-#formattedLetter {
-    min-height: 200px;
-    padding: var(--spacing-lg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: #fafafa;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9375rem;
-    line-height: 1.7;
-    color: var(--text-main);
-    transition: all 0.2s ease;
-}
-
-.transcript-box:focus,
-.output-content:focus {
-    background: white;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
-    outline: none;
-}
-
-.placeholder {
-    color: var(--text-tertiary);
-    font-style: italic;
-}
-
-/* Document Paper Style */
-.document-paper,
-.letter-content {
-    background: white;
-    padding: 2rem;
-    box-shadow: var(--shadow-sm);
-}
-
-/* ================================================================
-   STATUS & FEEDBACK ELEMENTS
-   ================================================================ */
-.status {
-    padding: var(--spacing-sm);
-    border-radius: var(--radius-md);
-    font-size: 0.9375rem;
-    font-weight: 500;
-    text-align: center;
-    background: var(--surface-hover);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-}
-
-.status.recording {
-    background: var(--recording-bg);
-    color: var(--recording-color);
-    border-color: var(--recording-border);
-}
-
-/* Recording Timer */
-.recording-timer {
-    margin-top: var(--spacing-md);
-    padding: var(--spacing-md);
-    background: var(--surface-hover);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-}
-
-.timer-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: var(--spacing-sm);
-    font-size: 0.875rem;
-}
-
-.timer-label {
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.timer-value {
-    color: var(--text-main);
-    font-weight: 600;
-}
-
-.progress-bar-container {
-    width: 100%;
-    height: 6px;
-    background: var(--border-color);
-    border-radius: 3px;
-    overflow: hidden;
-    margin: var(--spacing-sm) 0;
-}
-
-.progress-bar {
-    height: 100%;
-    background: var(--primary-color);
-    transition: width 0.3s ease;
-    border-radius: 3px;
-}
-
-/* ================================================================
-   ACTIONS BAR
-   ================================================================ */
-.actions-bar {
-    display: flex;
-    justify-content: center;
-    margin-bottom: var(--spacing-lg);
-}
-
-/* ================================================================
-   FOOTER
-   ================================================================ */
-.footer {
-    background: var(--surface-color);
-    border-top: 1px solid var(--border-color);
-    padding: var(--spacing-xl);
-    margin-top: var(--spacing-xl);
-    text-align: center;
-}
-
-.footer-content p {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    margin: 4px 0;
-}
-
-.footer-disclaimer {
-    font-size: 0.8125rem;
-    color: var(--text-tertiary);
-}
-
-/* ================================================================
-   PRIVACY & DISCLAIMER
-   ================================================================ */
-.ai-disclaimer {
-    background: transparent;
-    color: var(--text-tertiary);
-    font-size: 0.875rem;
-    padding: var(--spacing-sm) 0;
-    border: none;
-    margin-bottom: var(--spacing-sm);
+.output-card {
+margin-bottom: 0;
 }
 
 .privacy-card {
-    background: var(--surface-hover);
+background: #F8FAFC;
+font-size: 0.875rem;
 }
 
-/* ================================================================
-   RESPONSIVE DESIGN
-   ================================================================ */
-@media (max-width: 1024px) {
-    .dashboard-container {
-        grid-template-columns: 1fr;
-        padding: var(--spacing-lg);
-    }
-    
-    .panel-left {
-        position: static;
-    }
-    
-    .nav-content {
-        padding: var(--spacing-md);
-    }
+.privacy-card p {
+margin: 0 0 12px 0;
 }
 
-@media (max-width: 640px) {
-    .navbar-right {
-        gap: var(--spacing-sm);
-    }
-    
-    .nav-links {
-        flex-direction: column;
-        gap: 4px;
-    }
-    
-    .dashboard-container {
-        padding: var(--spacing-md);
-        gap: var(--spacing-md);
-    }
-    
-    .card-header,
-    .card-body {
-        padding: var(--spacing-md);
-    }
-    
-    h1 {
-        font-size: 1.5rem;
-    }
-    
-    h2 {
-        font-size: 1.25rem;
-    }
+.privacy-card p:last-child {
+margin-bottom: 0;
 }
 
-/* ================================================================
-   UTILITY CLASSES
-   ================================================================ */
-.text-primary {
-    color: var(--primary-color);
-}
-
-.text-secondary {
-    color: var(--text-secondary);
-}
-
-.text-success {
-    color: var(--success-color);
-}
-
-.text-error {
-    color: var(--error-color);
-}
-
-.mt-sm { margin-top: var(--spacing-sm); }
-.mt-md { margin-top: var(--spacing-md); }
-.mt-lg { margin-top: var(--spacing-lg); }
-
-.mb-sm { margin-bottom: var(--spacing-sm); }
-.mb-md { margin-bottom: var(--spacing-md); }
-.mb-lg { margin-bottom: var(--spacing-lg); }
-
-/* ================================================================
-   ANIMATIONS & TRANSITIONS
-   ================================================================ */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fade-in {
-    animation: fadeIn 0.3s ease;
-}
-
-/* Smooth transitions for theme switching */
-* {
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-/* ================================================================
-   ECHODOC - QUICK START IMPROVEMENTS
-   Add these to your existing styles.css for instant upgrade
-   (Just the essentials - minimal changes for maximum impact)
-   ================================================================ */
-
-/* STEP 1: PROFESSIONAL FONT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-/* STEP 2: BETTER BACKGROUND */
-body {
-    background-color: #f1f5f9 !important;
-}
-
-/* STEP 3: CARD SHADOWS & BORDERS */
-.card {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-}
-
-.card:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* STEP 4: PROFESSIONAL BUTTONS */
-button, .btn {
-    border-radius: 8px !important;
-    font-weight: 500 !important;
-    transition: all 0.2s ease !important;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-}
-
-button:hover, .btn:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* STEP 5: MEDICAL BLUE PRIMARY ACTIONS */
-.btn-accent,
-.btn-record,
-button.primary {
-    background-color: #0284c7 !important;
-    border: none !important;
-    color: white !important;
-    box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3) !important;
-}
-
-.btn-accent:hover,
-.btn-record:hover,
-button.primary:hover {
-    background-color: #0369a1 !important;
-    box-shadow: 0 6px 10px -1px rgba(2, 132, 199, 0.4) !important;
-}
-
-/* STEP 6: BETTER INPUT FOCUS */
-input:focus,
-select:focus,
-textarea:focus {
-    border-color: #0284c7 !important;
-    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1) !important;
-    outline: none !important;
-}
-
-/* STEP 7: SMOOTH NAVBAR */
-.navbar {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-}
-
-/* STEP 8: RECORDING PULSE ANIMATION */
-.btn-record.recording,
+/* --- 6. RECORDING BADGE (Subtle Indicator) --- */
 .recording-badge {
-    background-color: #fee2e2 !important;
-    color: #ef4444 !important;
-    border: 1px solid #fecaca !important;
-    animation: pulse-recording 2s infinite !important;
+display: inline-flex;
+align-items: center;
+gap: 7px;
+padding: 5px 14px;
+background-color: #FEF2F2;
+color: var(--danger);
+border-radius: 9999px;
+font-size: 0.75rem;
+font-weight: 700;
+border: 1px solid #FECACA;
+text-transform: uppercase;
+letter-spacing: 0.05em;
 }
 
-@keyframes pulse-recording {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+.pulse-dot {
+width: 8px;
+height: 8px;
+background-color: var(--danger);
+border-radius: 50%;
+animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* STEP 9: BETTER TEXT COLORS */
-h1, h2, h3 {
-    color: #1e293b !important;
-    font-weight: 600 !important;
-    letter-spacing: -0.025em !important;
+@keyframes pulse {
+0%, 100% {
+opacity: 1;
+}
+50% {
+opacity: 0.5;
+}
 }
 
-p {
-    color: #64748b !important;
+.badge-live {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+padding: 4px 12px;
+background-color: #DCFCE7;
+color: #16A34A;
+border-radius: 9999px;
+font-size: 0.7rem;
+font-weight: 700;
+border: 1px solid #86EFAC;
+text-transform: uppercase;
+letter-spacing: 0.05em;
 }
 
-/* STEP 10: SOFT BORDERS */
-.card,
-input,
-select,
-textarea,
-button {
-    border-color: #e2e8f0 !important;
+/* --- 7. MICROPHONE & CONTROLS --- */
+.mic-select-container-inline {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 16px;
+padding: 12px;
+background: white;
+border-radius: 10px;
+border: 1px solid #E2E8F0;
 }
 
-/* ================================================================
-   DONE! These 10 steps give you 80% of the professional look
-   ================================================================ */
+.mic-select-container-inline label {
+display: flex;
+align-items: center;
+gap: 6px;
+font-size: 0.9rem;
+font-weight: 600;
+color: #1E293B;
+margin: 0;
+white-space: nowrap;
+}
 
-button, .btn, .card, input, select, textarea {
-    transition: all 0.2s ease;
+.mic-icon {
+font-size: 1.1rem;
+}
+
+.mic-dropdown {
+flex: 1;
+padding: 8px 12px;
+border: 1px solid #CBD5E1;
+border-radius: 6px;
+font-size: 0.9rem;
+font-family: inherit;
+background: white;
+cursor: pointer;
+}
+
+.mic-dropdown:focus {
+outline: none;
+border-color: var(--accent-blue);
+box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* --- 8. COMPACT AUDIO LEVEL INDICATOR (3 BARS) --- */
+.audio-bars {
+display: flex;
+align-items: flex-end;
+gap: 3px;
+height: 20px;
+margin-right: 12px;
+}
+
+.audio-bar {
+width: 4px;
+background: #10B981;
+border-radius: 2px;
+transition: height 0.1s ease;
+}
+
+#audioBar1 {
+height: 6px;
+}
+
+#audioBar2 {
+height: 10px;
+}
+
+#audioBar3 {
+height: 14px;
+}
+
+.audio-bar.active-low {
+height: 8px;
+background: #10B981;
+}
+
+.audio-bar.active-medium {
+height: 14px;
+background: #F59E0B;
+}
+
+.audio-bar.active-high {
+height: 20px;
+background: #EF4444;
+}
+
+/* Dark mode audio bars */
+body.dark-mode .audio-bar {
+background: #10B981;
+}
+
+body.dark-mode .audio-bar.active-medium {
+background: #FBBF24;
+}
+
+body.dark-mode .audio-bar.active-high {
+background: #F87171;
+}
+
+/* --- 9. TELEPHONE MODE TOGGLE --- */
+.telephone-mode-toggle {
+margin-bottom: 16px;
+padding: 12px 16px;
+background: white;
+border-radius: 10px;
+border: 1px solid #E2E8F0;
+}
+
+.toggle-label {
+display: flex;
+align-items: center;
+gap: 12px;
+cursor: pointer;
+user-select: none;
+}
+
+.toggle-checkbox {
+display: none;
+}
+
+.toggle-slider {
+position: relative;
+width: 48px;
+height: 24px;
+background: #CBD5E1;
+border-radius: 12px;
+transition: background 0.3s;
+flex-shrink: 0;
+}
+
+.toggle-slider::before {
+content: '';
+position: absolute;
+width: 18px;
+height: 18px;
+background: white;
+border-radius: 50%;
+top: 3px;
+left: 3px;
+transition: transform 0.3s;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-checkbox:checked + .toggle-slider {
+background: #3b82f6;
+}
+
+.toggle-checkbox:checked + .toggle-slider::before {
+transform: translateX(24px);
+}
+
+.toggle-text {
+font-size: 0.95rem;
+font-weight: 600;
+color: #1E293B;
+}
+
+.toggle-description {
+margin: 6px 0 0 60px;
+font-size: 0.8rem;
+color: #64748B;
+line-height: 1.4;
+}
+
+/* --- 10. STATUS MESSAGE --- */
+.status {
+padding: 12px 16px;
+background: #F1F5F9;
+border-radius: 8px;
+text-align: center;
+font-weight: 600;
+font-size: 0.9rem;
+color: var(--text-secondary);
+margin-bottom: 16px;
+transition: all 0.3s ease;
+}
+
+.status.recording {
+background: #FEE2E2;
+color: #991B1B;
+}
+
+.status.warning {
+background: #FEF3C7;
+color: #92400E;
+animation: pulse-warning 2s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+0%, 100% {
+opacity: 1;
+}
+50% {
+opacity: 0.8;
+}
+}
+
+/* --- 11. RECORDING TIMER --- */
+.recording-timer {
+background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+border-radius: 10px;
+padding: 16px;
+margin-bottom: 16px;
+border: 1px solid #BFDBFE;
+}
+
+.timer-info {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 12px;
+margin-bottom: 12px;
+}
+
+.timer-elapsed,
+.timer-remaining,
+.timer-size {
+text-align: center;
+}
+
+.timer-label {
+display: block;
+font-size: 0.7rem;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+color: #64748B;
+font-weight: 600;
+margin-bottom: 4px;
+}
+
+.timer-value {
+display: block;
+font-size: 1.1rem;
+font-weight: 700;
+color: #1E293B;
+font-variant-numeric: tabular-nums;
+}
+
+.progress-bar-container {
+width: 100%;
+height: 8px;
+background: #E2E8F0;
+border-radius: 4px;
+overflow: hidden;
+margin-bottom: 8px;
+}
+
+.progress-bar {
+height: 100%;
+background: linear-gradient(90deg, #3B82F6, #2563EB);
+border-radius: 4px;
+transition: width 0.3s ease, background 0.3s ease;
+}
+
+.progress-bar.warning {
+background: linear-gradient(90deg, #F59E0B, #D97706);
+}
+
+.progress-bar.danger {
+background: linear-gradient(90deg, #EF4444, #DC2626);
+}
+
+.progress-label {
+display: flex;
+justify-content: space-between;
+font-size: 0.75rem;
+color: #64748B;
+font-weight: 600;
+}
+
+/* --- 12. BUTTONS --- */
+.btn {
+border: none;
+padding: 11px 20px;
+border-radius: 8px;
+font-weight: 600;
+cursor: pointer;
+font-family: inherit;
+font-size: 0.95rem;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+transition: all 0.2s ease;
+text-decoration: none;
+}
+
+.btn:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+}
+
+.btn-record {
+background-color: white;
+color: #EF4444;
+width: 100%;
+border: 2px solid #EF4444;
+font-weight: 600;
+}
+
+.btn-record:hover:not(:disabled) {
+background-color: #FEF2F2;
+box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+color: #DC2626;
+}
+
+.btn-record:active:not(:disabled) {
+transform: scale(0.98);
+}
+
+.btn-pause {
+background-color: #EF4444;
+color: white;
+width: 100%;
+border: 1px solid #DC2626;
+}
+
+.btn-pause:hover:not(:disabled) {
+background-color: #DC2626;
+box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.btn-pause:active:not(:disabled) {
+transform: scale(0.98);
+}
+
+.btn-stop {
+background-color: white;
+color: #0EA5E9;
+width: 100%;
+border: 2px solid #0EA5E9;
+font-weight: 600;
+}
+
+.btn-stop:hover:not(:disabled) {
+background-color: #F0F9FF;
+box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+color: #0284C7;
+}
+
+.btn-stop:active:not(:disabled) {
+transform: scale(0.98);
+}
+
+.btn-accent {
+background-color: var(--accent-blue);
+color: white;
+width: 100%;
+font-size: 1.05rem;
+padding: 14px 24px;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-accent:hover:not(:disabled) {
+background-color: var(--accent-hover);
+transform: translateY(-1px);
+box-shadow: 0 6px 12px -1px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+background-color: white;
+border: 1px solid var(--border);
+color: var(--text-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+background-color: #F8FAFC;
+border-color: #CBD5E1;
+}
+
+.btn-outline {
+background-color: white;
+border: 1px solid var(--border);
+color: var(--text-primary);
+}
+
+.btn-outline:hover:not(:disabled) {
+background-color: #F8FAFC;
+}
+
+.btn-small {
+padding: 8px 16px;
+font-size: 0.875rem;
+}
+
+.btn-icon {
+background: transparent;
+border: none;
+font-size: 1.25rem;
+cursor: pointer;
+padding: 6px 10px;
+border-radius: 6px;
+transition: background 0.2s ease;
+}
+
+.btn-icon:hover {
+background: #F1F5F9;
+}
+
+.button-group-controls {
+display: block;
+width: 100%;
+}
+
+.button-group-controls button {
+display: block;
+width: 100%;
+margin-bottom: 10px;
+}
+
+.button-group-controls button:last-child {
+margin-bottom: 0;
+}
+
+/* Button icons - hidden for professional appearance */
+.record-icon,
+.pause-icon,
+.stop-icon {
+display: none;
+}
+
+/* --- 13. TRANSCRIPT BOX --- */
+.transcript-box {
+background: white;
+border: 2px solid var(--border);
+border-radius: 10px;
+padding: 20px;
+min-height: 300px;
+max-height: 500px;
+overflow-y: auto;
+font-size: 1rem;
+line-height: 1.7;
+color: #334155;
+font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+}
+
+@media (min-width: 1024px) {
+.transcript-box {
+min-height: 400px;
+max-height: 600px;
+}
+}
+
+.transcript-box:focus {
+outline: none;
+border-color: var(--accent-blue);
+box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* --- 14. OUTPUT CONTENT (AI Documents) --- */
+.output-content {
+background: white;
+border: 2px solid var(--border);
+border-radius: 10px;
+padding: 25px;
+min-height: 200px;
+max-height: 800px;
+overflow-y: auto;
+font-size: 1.05rem;
+line-height: 1.8;
+color: var(--text-primary);
+}
+
+@media (min-width: 1024px) {
+.output-content {
+min-height: 300px;
+max-height: 1000px;
+}
+}
+
+.output-content:focus {
+outline: none;
+border-color: var(--accent-blue);
+box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* Referral Letter: Professional "Paper" Look */
+.document-paper {
+font-family: 'Merriweather', Georgia, serif;
+background-color: #FFFCF5;
+color: #1a1a1a;
+border: 1px solid #E5E5E5;
+line-height: 1.9;
+font-size: 1rem;
+}
+
+/* --- 15. PLACEHOLDERS --- */
+.placeholder {
+color: #94A3B8;
+font-style: italic;
+}
+
+.ai-disclaimer {
+background: #FEF3C7;
+border-left: 4px solid #F59E0B;
+padding: 10px 14px;
+margin: 0 0 16px 0;
+font-size: 0.875rem;
+color: #92400E;
+border-radius: 6px;
+}
+
+.section-description {
+color: var(--text-secondary);
+font-size: 0.9rem;
+margin: 0 0 12px 0;
+}
+
+/* --- 16. ACTIONS BAR --- */
+.actions-bar {
+margin-bottom: 20px;
+}
+
+/* --- 17. SCROLLBARS --- */
+.transcript-box::-webkit-scrollbar,
+.output-content::-webkit-scrollbar {
+width: 12px;
+}
+
+.transcript-box::-webkit-scrollbar-track,
+.output-content::-webkit-scrollbar-track {
+background: #E2E8F0;
+border-radius: 10px;
+}
+
+.transcript-box::-webkit-scrollbar-thumb,
+.output-content::-webkit-scrollbar-thumb {
+background: #94A3B8;
+border-radius: 10px;
+border: 2px solid #E2E8F0;
+}
+
+.transcript-box::-webkit-scrollbar-thumb:hover,
+.output-content::-webkit-scrollbar-thumb:hover {
+background: #64748B;
+}
+
+/* --- 18. FOOTER --- */
+.footer {
+background: white;
+border-top: 1px solid var(--border);
+padding: 24px;
+margin-top: 40px;
+}
+
+.footer-content {
+max-width: 1800px;
+margin: 0 auto;
+text-align: center;
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.footer-content p {
+margin: 4px 0;
+}
+
+.footer-disclaimer {
+font-size: 0.8rem;
+color: #94A3B8;
+}
+
+/* --- 19. MOBILE RESPONSIVE --- */
+@media (max-width: 1023px) {
+.navbar {
+padding: 0.75rem 1rem;
+}
+
+.brand h1 {
+font-size: 1.15rem;
+}
+
+.brand-icon {
+font-size: 1.5rem;
+}
+
+.dashboard-container {
+padding: 16px;
+gap: 16px;
+}
+
+.card-body {
+padding: 16px;
+}
+
+.timer-info {
+grid-template-columns: 1fr;
+gap: 8px;
+}
+
+.timer-value {
+font-size: 1.3rem;
+}
+}
+
+/* --- 20. ANIMATIONS --- */
+@keyframes fadeIn {
+from {
+opacity: 0;
+transform: translateY(10px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+.card {
+animation: fadeIn 0.3s ease-out;
+}
+
+/* --- 21. COPY BUTTON FEEDBACK --- */
+.copy-btn.copied {
+background: #DCFCE7;
+}
+
+.copy-btn.copied::after {
+content: ' ✓';
+}
+
+/* --- 22. DARK MODE TOGGLE --- */
+.dark-mode-toggle {
+display: flex;
+align-items: center;
+}
+
+.dark-mode-label {
+position: relative;
+display: flex;
+align-items: center;
+cursor: pointer;
+user-select: none;
+}
+
+.dark-mode-checkbox {
+display: none;
+}
+
+.dark-mode-slider {
+position: relative;
+width: 52px;
+height: 26px;
+background: #CBD5E1;
+border-radius: 13px;
+transition: background 0.3s;
+margin-right: 8px;
+}
+
+.dark-mode-slider::before {
+content: '';
+position: absolute;
+width: 20px;
+height: 20px;
+background: white;
+border-radius: 50%;
+top: 3px;
+left: 3px;
+transition: transform 0.3s;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode-checkbox:checked + .dark-mode-slider {
+background: #1E293B;
+}
+
+.dark-mode-checkbox:checked + .dark-mode-slider::before {
+transform: translateX(26px);
+}
+
+.dark-mode-icon {
+font-size: 1.2rem;
+transition: opacity 0.3s;
+}
+
+.dark-mode-checkbox:checked ~ .dark-mode-icon {
+opacity: 1;
+}
+
+/* --- 23. DARK MODE STYLES --- */
+body.dark-mode {
+--bg-app: #0f172a;
+--bg-card: #1e293b;
+--text-primary: #f1f5f9;
+--text-secondary: #94a3b8;
+--border: #334155;
+--border-light: #475569;
+}
+
+body.dark-mode .navbar {
+background: #1e293b;
+border-bottom-color: #334155;
+}
+
+body.dark-mode .card {
+background: #1e293b;
+border-color: #334155;
+}
+
+body.dark-mode .card-header {
+background: #0f172a;
+border-bottom-color: #334155;
+}
+
+body.dark-mode .control-card {
+background: linear-gradient(to bottom, #1e293b, #0f172a);
+}
+
+body.dark-mode .mic-select-container-inline,
+body.dark-mode .telephone-mode-toggle {
+background: #0f172a;
+border-color: #334155;
+}
+
+body.dark-mode .mic-dropdown,
+body.dark-mode .toggle-slider {
+background: #1e293b;
+border-color: #475569;
+color: #f1f5f9;
+}
+
+body.dark-mode .status {
+background: #0f172a;
+color: #94a3b8;
+}
+
+body.dark-mode .recording-timer {
+background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+border-color: #334155;
+}
+
+body.dark-mode .transcript-box,
+body.dark-mode .output-content {
+background: #0f172a;
+border-color: #334155;
+color: #e2e8f0;
+}
+
+body.dark-mode .document-paper {
+background: #1a1a1a;
+border-color: #404040;
+color: #e5e5e5;
+}
+
+body.dark-mode .ai-disclaimer {
+background: #422006;
+border-left-color: #F59E0B;
+color: #FEF3C7;
+}
+
+body.dark-mode .btn-record {
+background: #0f172a;
+border-color: #EF4444;
+color: #EF4444;
+}
+
+body.dark-mode .btn-record:hover:not(:disabled) {
+background: #1e1b1b;
+}
+
+body.dark-mode .btn-stop {
+background: #0f172a;
+border-color: #0EA5E9;
+color: #0EA5E9;
+}
+
+body.dark-mode .btn-stop:hover:not(:disabled) {
+background: #1a1e26;
+}
+
+body.dark-mode .btn-secondary,
+body.dark-mode .btn-outline {
+background: #1e293b;
+border-color: #475569;
+color: #f1f5f9;
+}
+
+body.dark-mode .btn-secondary:hover:not(:disabled),
+body.dark-mode .btn-outline:hover:not(:disabled) {
+background: #334155;
+}
+
+body.dark-mode .privacy-card {
+background: #0f172a;
+}
+
+body.dark-mode .footer {
+background: #1e293b;
+border-top-color: #334155;
+}
+
+body.dark-mode .placeholder {
+color: #475569;
+}
+
+/* Add to your existing styles.css */
+
+/* Highlight anonymization toggle for importance */
+.anonymize-toggle {
+border: 2px solid #10B981 !important;
+background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%) !important;
+}
+
+.anonymize-toggle .toggle-text {
+color: #065F46;
+font-weight: 700;
+}
+
+.anonymize-toggle .toggle-description {
+color: #047857;
+}
+
+/* Dark mode support for anonymize toggle */
+body.dark-mode .anonymize-toggle {
+border: 2px solid #10B981 !important;
+background: linear-gradient(135deg, #064E3B 0%, #065F46 100%) !important;
+}
+
+body.dark-mode .anonymize-toggle .toggle-text {
+color: #6EE7B7;
+}
+
+body.dark-mode .anonymize-toggle .toggle-description {
+color: #A7F3D0;
+}
+/* ==========================================
+  DARK MODE TEXT COLOR UPDATES
+  Add these to your existing styles.css
+  ========================================== */
+
+/* Dark mode: Make all text grey except titles/headings */
+body.dark-mode {
+/* Base colors already defined, but ensure text is grey */
+--text-primary: #94a3b8;     /* Grey for body text in dark mode */
+--text-secondary: #64748b;   /* Darker grey for secondary text */
+}
+
+/* Dark mode: All paragraph text should be grey */
+body.dark-mode p {
+color: #94a3b8 !important;
+}
+
+/* Dark mode: Labels and descriptions */
+body.dark-mode label,
+body.dark-mode .toggle-description,
+body.dark-mode .timer-label,
+body.dark-mode .section-description,
+body.dark-mode .footer-content,
+body.dark-mode .brand-motto {
+color: #94a3b8 !important;
+}
+
+/* Dark mode: Buttons text */
+body.dark-mode .btn {
+/* Button text colors are controlled by individual button styles */
+/* Only override if needed */
+}
+
+/* Dark mode: Keep headings/titles white for contrast */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode .brand-text h1,
+body.dark-mode .card-header h2,
+body.dark-mode .card-header h3 {
+color: #f1f5f9 !important; /* Keep titles white/bright */
+}
+
+/* Dark mode: Toggle text should be grey */
+body.dark-mode .toggle-text {
+color: #94a3b8 !important;
+}
+
+/* Dark mode: Status messages */
+body.dark-mode .status {
+color: #94a3b8 !important;
+}
+
+/* Dark mode: Timer values - keep slightly brighter for visibility */
+body.dark-mode .timer-value {
+color: #cbd5e1 !important; /* Slightly brighter grey for numbers */
+}
+
+/* Dark mode: Placeholder text */
+body.dark-mode .placeholder {
+color: #64748b !important; /* Darker grey for placeholders */
+}
+
+/* Dark mode: AI disclaimer */
+body.dark-mode .ai-disclaimer {
+background: #422006 !important;
+border-left-color: #F59E0B !important;
+color: #fde68a !important; /* Amber text for warnings */
+}
+
+/* Dark mode: Privacy card text */
+body.dark-mode .privacy-card p,
+body.dark-mode .privacy-card strong {
+color: #94a3b8 !important;
+}
+
+/* Dark mode: Badge text */
+body.dark-mode .badge {
+background: #1e293b !important;
+color: #94a3b8 !important;
+}
+
+/* Dark mode: Recording badge */
+body.dark-mode .recording-badge {
+background-color: #7f1d1d !important;
+color: #fca5a5 !important;
+border-color: #991b1b !important;
+}
+
+/* Dark mode: Status indicator */
+body.dark-mode .status-indicator {
+color: #94a3b8 !important;
+}
+
+/* Dark mode: Dropdown text */
+body.dark-mode .mic-dropdown,
+body.dark-mode .mic-dropdown option {
+color: #cbd5e1 !important;
+}
+
+/* Dark mode: Progress label */
+body.dark-mode .progress-label {
+color: #94a3b8 !important;
+}
+
+/* Dark mode: Editable content boxes - text should be readable grey */
+body.dark-mode .transcript-box,
+body.dark-mode .output-content,
+body.dark-mode .document-paper {
+color: #cbd5e1 !important; /* Slightly brighter for readability */
+}
+
+/* Dark mode: Footer disclaimer */
+body.dark-mode .footer-disclaimer {
+color: #64748b !important;
+}
+
+/* EXCEPTION: Keep mic icon (emoji) normal */
+body.dark-mode .mic-icon {
+/* Emojis don't need color override */
+}
+
+/* EXCEPTION: Keep button icons/text with their specific button colors */
+body.dark-mode .btn-record {
+color: #EF4444 !important; /* Red text for record button */
+}
+
+body.dark-mode .btn-pause {
+color: white !important; /* White text for pause button */
+}
+
+body.dark-mode .btn-stop {
+color: #0EA5E9 !important; /* Blue text for stop button */
+}
+
+body.dark-mode .btn-accent {
+color: white !important; /* White text for accent button */
+}
+
+/* Dark mode: Link color if any */
+body.dark-mode a {
+color: #60a5fa !important; /* Light blue for links */
+}
+
+body.dark-mode a:hover {
+color: #93c5fd !important; /* Lighter blue on hover */
+}
+/* ==========================================
+   PROFESSIONAL NAVIGATION BUTTONS
+   Copy ALL of this and paste at the END of your styles.css file
+   ========================================== */
+
+/* Navigation container */
+.nav-links {
+    display: flex;
+    gap: 8px;
+    margin-right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+/* Navigation button base */
+.nav-link {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* Icon styling */
+.nav-link-icon {
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+
+/* Hover state */
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.9);
+    color: #1e293b;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Active state - current page */
+.nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.nav-link.active .nav-link-icon {
+    opacity: 1;
+}
+
+/* Active state hover */
+.nav-link.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+/* Dark mode adjustments */
+body.dark-mode .nav-links {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+body.dark-mode .nav-link {
+    color: #94a3b8;
+}
+
+body.dark-mode .nav-link:hover {
+    background: rgba(51, 65, 85, 0.9);
+    color: #f1f5f9;
+}
+
+body.dark-mode .nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Responsive: Stack on small screens */
+@media (max-width: 768px) {
+    .nav-links {
+        gap: 4px;
+        padding: 4px;
+    }
+    
+    .nav-link {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .nav-link-text {
+        display: none; /* Hide text on mobile, show only icons */
+    }
+    
+    .nav-link-icon {
+        font-size: 1.2rem;
+        margin: 0;
+    }
 }
