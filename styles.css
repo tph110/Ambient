@@ -80,6 +80,30 @@ body.dark-mode {
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3);
 }
 
+/* Dark Mode - Input fields match background */
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode select,
+body.dark-mode textarea,
+body.dark-mode .transcript-box,
+body.dark-mode .output-content,
+body.dark-mode #transcript,
+body.dark-mode #summary,
+body.dark-mode #formattedLetter {
+    background: var(--surface-color);
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus,
+body.dark-mode .transcript-box:focus,
+body.dark-mode .output-content:focus {
+    background: var(--surface-hover);
+    border-color: var(--primary-color);
+}
+
 /* ================================================================
    BASE STYLES
    ================================================================ */
@@ -292,6 +316,28 @@ p {
 
 .card-body {
     padding: var(--spacing-lg);
+}
+
+/* Session Controls Card - Smaller text and better spacing */
+.panel-left .card-body {
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.panel-left .card-body label {
+    font-size: 0.8125rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.panel-left .card-body p {
+    font-size: 0.8125rem;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Add spacing after telephone mode description */
+.telephone-mode-info,
+.panel-left .card-body > div:has(input[type="checkbox"]) {
+    margin-bottom: var(--spacing-lg);
 }
 
 /* ================================================================
