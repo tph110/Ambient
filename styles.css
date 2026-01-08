@@ -456,16 +456,32 @@ body.dark-mode button,
 body.dark-mode .btn,
 body.dark-mode .btn-secondary,
 body.dark-mode .btn-outline {
-    color: var(--text-main);
+    color: var(--text-main) !important;
 }
 
 body.dark-mode .btn-accent,
 body.dark-mode .btn-record {
-    color: white;
+    color: white !important;
 }
 
 body.dark-mode .btn-record.recording {
-    color: var(--recording-color);
+    color: var(--recording-color) !important;
+}
+
+/* Specific fix for Pause and Resume buttons in dark mode */
+body.dark-mode #pauseBtn,
+body.dark-mode #resumeBtn,
+body.dark-mode button[id*="pause"],
+body.dark-mode button[id*="resume"],
+body.dark-mode .btn-pause,
+body.dark-mode .btn-resume {
+    color: var(--text-main) !important;
+    background: var(--surface-hover) !important;
+}
+
+body.dark-mode #pauseBtn:hover,
+body.dark-mode #resumeBtn:hover {
+    color: var(--text-main) !important;
 }
 
 /* ================================================================
