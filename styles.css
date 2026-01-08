@@ -697,6 +697,120 @@ select {
 * {
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
+/* ================================================================
+   ECHODOC - QUICK START IMPROVEMENTS
+   Add these to your existing styles.css for instant upgrade
+   (Just the essentials - minimal changes for maximum impact)
+   ================================================================ */
+
+/* STEP 1: PROFESSIONAL FONT */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* STEP 2: BETTER BACKGROUND */
+body {
+    background-color: #f1f5f9 !important;
+}
+
+/* STEP 3: CARD SHADOWS & BORDERS */
+.card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+}
+
+.card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* STEP 4: PROFESSIONAL BUTTONS */
+button, .btn {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+button:hover, .btn:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* STEP 5: MEDICAL BLUE PRIMARY ACTIONS */
+.btn-accent,
+.btn-record,
+button.primary {
+    background-color: #0284c7 !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3) !important;
+}
+
+.btn-accent:hover,
+.btn-record:hover,
+button.primary:hover {
+    background-color: #0369a1 !important;
+    box-shadow: 0 6px 10px -1px rgba(2, 132, 199, 0.4) !important;
+}
+
+/* STEP 6: BETTER INPUT FOCUS */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1) !important;
+    outline: none !important;
+}
+
+/* STEP 7: SMOOTH NAVBAR */
+.navbar {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* STEP 8: RECORDING PULSE ANIMATION */
+.btn-record.recording,
+.recording-badge {
+    background-color: #fee2e2 !important;
+    color: #ef4444 !important;
+    border: 1px solid #fecaca !important;
+    animation: pulse-recording 2s infinite !important;
+}
+
+@keyframes pulse-recording {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* STEP 9: BETTER TEXT COLORS */
+h1, h2, h3 {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.025em !important;
+}
+
+p {
+    color: #64748b !important;
+}
+
+/* STEP 10: SOFT BORDERS */
+.card,
+input,
+select,
+textarea,
+button {
+    border-color: #e2e8f0 !important;
+}
+
+/* ================================================================
+   DONE! These 10 steps give you 80% of the professional look
+   ================================================================ */
 
 button, .btn, .card, input, select, textarea {
     transition: all 0.2s ease;
