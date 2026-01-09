@@ -273,12 +273,18 @@ p {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
+    align-self: flex-start;
+    margin-top: 0;
+    padding-top: 0;
 }
 
 .panel-right {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
+    align-self: flex-start;
+    margin-top: 0;
+    padding-top: 0;
 }
 
 /* ================================================================
@@ -645,9 +651,53 @@ select {
    ACTIONS BAR
    ================================================================ */
 .actions-bar {
+    display: none;
+    margin: 0;
+    padding: 0;
+    height: 0;
+    min-height: 0;
+    max-height: 0;
+    overflow: hidden;
+}
+
+/* Show actions-bar only when button is visible */
+.actions-bar:has(button:not([style*="display: none"])),
+.actions-bar:has(button[style*="display: inline"]),
+.actions-bar:has(button[style*="display: flex"]) {
     display: flex;
     justify-content: center;
     margin-bottom: var(--spacing-lg);
+    height: auto;
+    max-height: none;
+}
+
+/* CRITICAL ALIGNMENT FIX - Ensure cards align at top */
+.panel-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    align-self: flex-start;
+}
+
+/* Remove ALL top margin/padding from first elements in right panel */
+.panel-right > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.panel-right > .actions-bar + .card,
+.panel-right > .actions-bar + .output-card {
+    margin-top: 0 !important;
+}
+
+.panel-right .card:first-of-type,
+.panel-right .output-card:first-of-type {
+    margin-top: 0 !important;
+}
+
+/* Force dashboard to align items at start */
+.dashboard-container {
+    align-items: start !important;
 }
 
 /* ================================================================
