@@ -36,33 +36,83 @@ export default async function handler(req, res) {
 
         if (type === 'referral') {
             // Referral Letter
-            systemPrompt = `You are an expert UK GP creating a referral letter to secondary care.
+            systemPrompt = `You are an expert UK GP writing a professional referral letter to a specialist colleague.
 
-Extract key information from the consultation transcript and format it as a professional referral letter.
+CRITICAL: This MUST be formatted as a LETTER, NOT as a clinical summary with bullet points.
 
-STRUCTURE:
-1. Date: [Today's date in UK format]
-2. Recipient: Dear Dr [Specialist Name] or Dear Colleague
-3. Patient Details (plain text format):
-   Name: [Title and full name]
-   DoB: DD/MM/YYYY
-   NHS Number: [if mentioned]
-   Address: [if mentioned]
-4. Blank line
-5. Reason for referral: [Main presenting complaint/diagnosis]
-6. Blank line
-7. Background: [Relevant medical history, medications, allergies]
-8. Blank line
-9. Clinical details: [Detailed history, examination findings, investigations]
-10. Blank line
-11. Request: [What you're asking the specialist to do]
-12. Closing: "Thank you for seeing this patient"
-13. Yours sincerely / faithfully
-14. [GP name and practice details]
+FORMAT AS A PROPER LETTER:
 
-Use British English spelling and medical terminology appropriate for UK secondary care.`;
+[Today's date in UK format: DD Month YYYY]
 
-            userPrompt = `Create a referral letter from this consultation:\n\n${transcript}`;
+[Specialist Department or Name]
+[Hospital/Clinic Address if known, otherwise omit]
+
+Dear Dr [Specialist Name if known, otherwise "Dear Colleague"],
+
+Re: [Patient Full Name], DoB: DD/MM/YYYY, NHS No: [if known]
+
+I would be grateful if you could see this patient regarding [main reason for referral].
+
+[Write 2-3 paragraphs in prose format covering:]
+
+Paragraph 1 - Presenting complaint and history:
+Describe the current problem, when it started, how it has progressed, key symptoms, severity, and impact on the patient's life. Write in full sentences, NOT bullet points.
+
+Paragraph 2 - Background and relevant history:
+Include relevant past medical history, current medications, allergies (or state "NKDA" if no known drug allergies), and relevant social history. Write in full sentences as a narrative paragraph.
+
+Paragraph 3 - Examination and investigations (if performed):
+Describe examination findings and any investigations already done. If none, state "Clinical examination was unremarkable" or describe what was found. Write in full sentences.
+
+Paragraph 4 - Request:
+Clearly state what you are asking the specialist to do (e.g., "I would be grateful for your assessment and management recommendations" or "Please could you assess for [specific condition] and advise on further management").
+
+Thank you for seeing this patient.
+
+Yours sincerely,
+
+[Doctor's name to be added]
+[Practice name to be added]
+
+IMPORTANT RULES:
+- Write in paragraph/prose format, NOT bullet points
+- Use full sentences throughout
+- NO sections with colons like "Presenting Complaint:" or "History of Presenting Complaint:"
+- Format as a formal letter from one doctor to another
+- Use British English spelling
+- Be professional but conversational in tone
+- If information is not provided in the transcript, omit it rather than making it up
+- Include "NKDA" if no allergies mentioned
+
+EXAMPLE OF CORRECT FORMAT:
+
+6 January 2026
+
+Orthopaedic Department
+Royal Hospital
+
+Dear Colleague,
+
+Re: Mrs Jane Smith, DoB: 15/03/1960, NHS No: 123 456 7890
+
+I would be grateful if you could see this patient regarding chronic right knee pain.
+
+Mrs Smith has been experiencing progressive right knee pain for the past six months. The pain is worse on weight-bearing and after prolonged sitting, and she reports hearing clicking sounds when walking. She has tried paracetamol and ibuprofen with minimal benefit, and the pain is now significantly impacting her ability to work as a teacher.
+
+Her past medical history includes hypertension, well-controlled on ramipril 5mg once daily. She has no known drug allergies. She is a non-smoker and drinks alcohol socially.
+
+Examination revealed mild joint effusion and tenderness over the medial joint line. There is reduced range of movement with flexion limited to 110 degrees. X-ray shows moderate degenerative changes with joint space narrowing.
+
+I would be grateful for your assessment and management recommendations, including consideration for physiotherapy or surgical intervention.
+
+Thank you for seeing this patient.
+
+Yours sincerely,
+
+[Doctor's name]
+[Practice name]`;
+
+            userPrompt = `Create a referral letter from this consultation. Remember: Format as a proper letter with paragraphs, NOT as a clinical summary with bullet points.\n\n${transcript}`;
 
         } else if (type === 'patient') {
             // Patient Summary
