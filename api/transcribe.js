@@ -1,18 +1,17 @@
 // File: /api/transcribe.js
 // Deepgram Speech-to-Text API endpoint
-// Replaces OpenAI Whisper with Deepgram for cost savings and medical accuracy
+// Accepts audio data in multiple formats for compatibility
 
 export const config = {
     api: {
-        bodyParser: {
-            sizeLimit: '4.5mb',
-        },
+        bodyParser: false, // Disable body parser to handle FormData
     },
 };
 
 export default async function handler(req, res) {
     console.log('=== Transcribe API Called (Deepgram) ===');
     console.log('Method:', req.method);
+    console.log('Content-Type:', req.headers['content-type']);
 
     if (req.method !== 'POST') {
         console.log('Error: Method not allowed');
@@ -20,16 +19,6 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { audio, format = 'webm' } = req.body;
-        console.log('Request received');
-        console.log('Audio format:', format);
-        console.log('Audio data length:', audio?.length || 0);
-
-        if (!audio) {
-            console.log('Error: No audio data provided');
-            return res.status(400).json({ error: 'Audio data is required' });
-        }
-
         const apiKey = process.env.DEEPGRAM_API_KEY;
         
         if (!apiKey) {
@@ -41,10 +30,100 @@ export default async function handler(req, res) {
 
         console.log('Deepgram API key found');
 
-        // Convert base64 to buffer
-        const audioBuffer = Buffer.from(audio, 'base64');
+        // Read the raw body
+        const chunks = [];
+        for await (const chunk of req) {
+            chunks.push(chunk);
+        }
+        const rawBody = Buffer.concat(chunks);
+        console.log('Raw body size:', rawBody.length, 'bytes');
+
+        // Parse based on content type
+        let audioBuffer;
+        let mimeType = 'audio/webm';
+
+        const contentType = req.headers['content-type'] || '';
+
+        if (contentType.includes('application/json')) {
+            // JSON format: { audio: "base64string", format: "webm" }
+            console.log('Parsing JSON body...');
+            const body = JSON.parse(rawBody.toString());
+            
+            if (!body.audio) {
+                console.log('Error: No audio field in JSON body');
+                return res.status(400).json({ error: 'Audio data is required' });
+            }
+
+            audioBuffer = Buffer.from(body.audio, 'base64');
+            
+            // Determine MIME type
+            if (body.format) {
+                switch (body.format.toLowerCase()) {
+                    case 'webm':
+                    case 'opus':
+                        mimeType = 'audio/webm';
+                        break;
+                    case 'ogg':
+                        mimeType = 'audio/ogg';
+                        break;
+                    case 'mp3':
+                        mimeType = 'audio/mpeg';
+                        break;
+                    case 'wav':
+                        mimeType = 'audio/wav';
+                        break;
+                }
+            }
+        } else if (contentType.includes('multipart/form-data')) {
+            // FormData format (like OpenAI API)
+            console.log('Parsing FormData body...');
+            
+            // Simple FormData parser for audio file
+            const boundary = contentType.split('boundary=')[1];
+            if (!boundary) {
+                return res.status(400).json({ error: 'Invalid multipart/form-data' });
+            }
+
+            const parts = rawBody.toString('binary').split(`--${boundary}`);
+            
+            for (const part of parts) {
+                if (part.includes('Content-Disposition') && part.includes('filename')) {
+                    // Extract the audio data
+                    const contentStart = part.indexOf('\r\n\r\n') + 4;
+                    const contentEnd = part.lastIndexOf('\r\n');
+                    
+                    if (contentStart > 3 && contentEnd > contentStart) {
+                        const audioData = part.substring(contentStart, contentEnd);
+                        audioBuffer = Buffer.from(audioData, 'binary');
+                        
+                        // Determine MIME type from filename
+                        if (part.includes('.webm') || part.includes('audio/webm')) {
+                            mimeType = 'audio/webm';
+                        } else if (part.includes('.ogg')) {
+                            mimeType = 'audio/ogg';
+                        } else if (part.includes('.mp3')) {
+                            mimeType = 'audio/mpeg';
+                        } else if (part.includes('.wav')) {
+                            mimeType = 'audio/wav';
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (!audioBuffer) {
+                console.log('Error: Could not extract audio from FormData');
+                return res.status(400).json({ error: 'Could not extract audio from FormData' });
+            }
+        } else {
+            // Assume raw audio data
+            console.log('Treating as raw audio data...');
+            audioBuffer = rawBody;
+        }
+
         console.log('Audio buffer size:', audioBuffer.length, 'bytes');
         console.log('Audio buffer size:', (audioBuffer.length / 1024).toFixed(2), 'KB');
+        console.log('MIME type:', mimeType);
 
         // Check file size (Vercel limit is 4.5MB)
         if (audioBuffer.length > 4.5 * 1024 * 1024) {
@@ -53,28 +132,6 @@ export default async function handler(req, res) {
                 error: 'Audio file too large. Maximum size is 4.5MB.' 
             });
         }
-
-        // Determine MIME type based on format
-        let mimeType;
-        switch (format.toLowerCase()) {
-            case 'webm':
-            case 'opus':
-                mimeType = 'audio/webm';
-                break;
-            case 'ogg':
-                mimeType = 'audio/ogg';
-                break;
-            case 'mp3':
-                mimeType = 'audio/mpeg';
-                break;
-            case 'wav':
-                mimeType = 'audio/wav';
-                break;
-            default:
-                mimeType = 'audio/webm'; // Default to WebM
-        }
-
-        console.log('MIME type:', mimeType);
 
         // Build Deepgram API URL with parameters
         const deepgramUrl = new URL('https://api.deepgram.com/v1/listen');
@@ -150,6 +207,7 @@ export default async function handler(req, res) {
 
         if (!transcript) {
             console.error('No transcript in Deepgram response');
+            console.error('Deepgram response:', JSON.stringify(result, null, 2));
             return res.status(500).json({ 
                 error: 'Failed to extract transcript from Deepgram response',
                 response: result 
@@ -171,6 +229,7 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Transcription error:', error);
+        console.error('Error stack:', error.stack);
         return res.status(500).json({ 
             error: 'Transcription failed',
             message: error.message 
