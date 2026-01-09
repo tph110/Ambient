@@ -1,100 +1,179 @@
 // File: /api/transcribe.js
-// OpenAI Whisper API endpoint - Using node-fetch for proper FormData handling
+// Deepgram Speech-to-Text API endpoint
+// Replaces OpenAI Whisper with Deepgram for cost savings and medical accuracy
 
-const FormData = require('form-data');
-const fetch = require('node-fetch');
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '4.5mb',
+        },
+    },
+};
 
 export default async function handler(req, res) {
+    console.log('=== Transcribe API Called (Deepgram) ===');
+    console.log('Method:', req.method);
+
     if (req.method !== 'POST') {
+        console.log('Error: Method not allowed');
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        const { audioBlob } = req.body;
+        const { audio, format = 'webm' } = req.body;
+        console.log('Request received');
+        console.log('Audio format:', format);
+        console.log('Audio data length:', audio?.length || 0);
 
-        if (!audioBlob) {
-            return res.status(400).json({ error: 'No audio provided' });
+        if (!audio) {
+            console.log('Error: No audio data provided');
+            return res.status(400).json({ error: 'Audio data is required' });
         }
 
-        // Validate environment variable
-        const apiKey = process.env.OPENAI_API_KEY;
+        const apiKey = process.env.DEEPGRAM_API_KEY;
         
         if (!apiKey) {
-            console.error('OpenAI API key not configured');
+            console.error('Error: Deepgram API key not configured');
             return res.status(500).json({ 
-                error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to environment variables.' 
+                error: 'Deepgram API key not configured. Please add DEEPGRAM_API_KEY to Vercel environment variables.' 
             });
         }
 
-        console.log('Whisper transcription request received');
-        console.log('Audio data length:', audioBlob.length, 'characters (base64)');
-        
-        // Convert base64 to Buffer
-        const audioBuffer = Buffer.from(audioBlob, 'base64');
-        console.log('Audio buffer size:', audioBuffer.length, 'bytes =', (audioBuffer.length / 1024).toFixed(2), 'KB');
+        console.log('Deepgram API key found');
 
-        // Create form data
-        const form = new FormData();
-        
-        // Append audio file with proper options
-        form.append('file', audioBuffer, {
-            filename: 'audio.webm',
-            contentType: 'audio/webm'
-        });
-        
-        // Add required model parameter
-        form.append('model', 'whisper-1');
-        
-        console.log('Sending to OpenAI Whisper API...');
+        // Convert base64 to buffer
+        const audioBuffer = Buffer.from(audio, 'base64');
+        console.log('Audio buffer size:', audioBuffer.length, 'bytes');
+        console.log('Audio buffer size:', (audioBuffer.length / 1024).toFixed(2), 'KB');
 
-        // Use node-fetch (v2) which handles FormData correctly
-        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        // Check file size (Vercel limit is 4.5MB)
+        if (audioBuffer.length > 4.5 * 1024 * 1024) {
+            console.error('Error: Audio file too large:', (audioBuffer.length / 1024 / 1024).toFixed(2), 'MB');
+            return res.status(413).json({ 
+                error: 'Audio file too large. Maximum size is 4.5MB.' 
+            });
+        }
+
+        // Determine MIME type based on format
+        let mimeType;
+        switch (format.toLowerCase()) {
+            case 'webm':
+            case 'opus':
+                mimeType = 'audio/webm';
+                break;
+            case 'ogg':
+                mimeType = 'audio/ogg';
+                break;
+            case 'mp3':
+                mimeType = 'audio/mpeg';
+                break;
+            case 'wav':
+                mimeType = 'audio/wav';
+                break;
+            default:
+                mimeType = 'audio/webm'; // Default to WebM
+        }
+
+        console.log('MIME type:', mimeType);
+
+        // Build Deepgram API URL with parameters
+        const deepgramUrl = new URL('https://api.deepgram.com/v1/listen');
+        
+        // Add query parameters for transcription options
+        deepgramUrl.searchParams.append('model', 'nova-2-medical'); // Medical-specific model
+        deepgramUrl.searchParams.append('language', 'en-GB'); // British English
+        deepgramUrl.searchParams.append('punctuate', 'true'); // Auto-punctuation
+        deepgramUrl.searchParams.append('paragraphs', 'true'); // Paragraph breaks
+        deepgramUrl.searchParams.append('smart_format', 'true'); // Smart formatting
+        deepgramUrl.searchParams.append('diarize', 'false'); // Speaker diarization (off for now)
+
+        console.log('Sending to Deepgram API...');
+        console.log('Using medical model: nova-2-medical');
+        console.log('Language: en-GB (British English)');
+
+        // Send to Deepgram
+        const response = await fetch(deepgramUrl.toString(), {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                ...form.getHeaders()
+                'Authorization': `Token ${apiKey}`,
+                'Content-Type': mimeType,
             },
-            body: form
+            body: audioBuffer,
         });
 
-        console.log('Whisper API response status:', response.status);
+        console.log('Deepgram response status:', response.status);
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Whisper API error:', response.status);
-            console.error('Error response:', errorText);
+            console.error('Deepgram API error:', response.status, errorText);
             
-            // Try to parse error details
-            let errorDetails = errorText;
-            try {
-                const errorJson = JSON.parse(errorText);
-                errorDetails = errorJson.error?.message || errorJson.error || errorText;
-            } catch (e) {
-                // Keep as text if not JSON
+            // Handle specific error codes
+            if (response.status === 401) {
+                return res.status(401).json({ 
+                    error: 'Invalid Deepgram API key. Please check your DEEPGRAM_API_KEY in Vercel.' 
+                });
+            } else if (response.status === 429) {
+                return res.status(429).json({ 
+                    error: 'Rate limit exceeded. Please wait a moment and try again.' 
+                });
+            } else if (response.status === 413) {
+                return res.status(413).json({ 
+                    error: 'Audio file too large for Deepgram API.' 
+                });
             }
             
             return res.status(response.status).json({ 
-                error: 'Whisper transcription failed',
-                details: errorDetails
+                error: `Deepgram API error: ${response.status}`,
+                details: errorText 
             });
         }
 
         const result = await response.json();
-        console.log('Transcription successful!');
-        console.log('Text length:', result.text?.length || 0, 'characters');
+        console.log('Deepgram transcription received');
 
-        // Return transcript
+        // Extract transcript from Deepgram response
+        // Deepgram response format:
+        // {
+        //   results: {
+        //     channels: [{
+        //       alternatives: [{
+        //         transcript: "the transcribed text...",
+        //         confidence: 0.95,
+        //         words: [...]
+        //       }]
+        //     }]
+        //   }
+        // }
+
+        const transcript = result.results?.channels?.[0]?.alternatives?.[0]?.transcript;
+        const confidence = result.results?.channels?.[0]?.alternatives?.[0]?.confidence;
+
+        if (!transcript) {
+            console.error('No transcript in Deepgram response');
+            return res.status(500).json({ 
+                error: 'Failed to extract transcript from Deepgram response',
+                response: result 
+            });
+        }
+
+        console.log('Transcript length:', transcript.length, 'characters');
+        console.log('Confidence score:', confidence);
+        console.log('First 100 chars:', transcript.substring(0, 100));
+
+        // Return in OpenAI-compatible format for easy frontend integration
         return res.status(200).json({
-            text: result.text || '',
-            success: true
+            text: transcript,
+            confidence: confidence,
+            provider: 'deepgram',
+            model: 'nova-2-medical',
+            language: 'en-GB'
         });
 
     } catch (error) {
         console.error('Transcription error:', error);
-        console.error('Error details:', error.message);
         return res.status(500).json({ 
             error: 'Transcription failed',
-            details: error.message 
+            message: error.message 
         });
     }
 }
