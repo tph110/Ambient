@@ -199,16 +199,28 @@ function startLiveTranscription() {
     // Every 5 seconds, transcribe accumulated audio
     liveTranscriptionInterval = setInterval(async () => {
         if (!isLiveTranscribing || liveChunks.length === 0) {
+            console.log('Skipping chunk - no data:', liveChunks.length);
             return;
         }
         
         console.log('Transcribing chunk...', liveChunks.length, 'chunks');
         
-        // Create blob from accumulated chunks
-        const chunkBlob = new Blob(liveChunks, { type: 'audio/webm' });
+        // Copy chunks to process (prevent race condition)
+        const chunksToProcess = [...liveChunks];
         
-        // Clear chunks for next batch
+        // Clear chunks for next batch IMMEDIATELY
         liveChunks = [];
+        
+        // Create blob from copied chunks
+        const chunkBlob = new Blob(chunksToProcess, { type: 'audio/webm' });
+        
+        // Check if blob is large enough (minimum 5KB for 1 second of audio at 12kbps)
+        if (chunkBlob.size < 5000) {
+            console.warn('Chunk too small, skipping:', chunkBlob.size, 'bytes');
+            return;
+        }
+        
+        console.log('Chunk size:', chunkBlob.size, 'bytes =', (chunkBlob.size / 1024).toFixed(1), 'KB');
         
         // Convert to base64
         const reader = new FileReader();
@@ -216,6 +228,14 @@ function startLiveTranscription() {
         
         reader.onloadend = async () => {
             const base64Audio = reader.result.split(',')[1];
+            
+            // Check base64 is valid
+            if (!base64Audio || base64Audio.length < 100) {
+                console.error('Base64 too short or invalid:', base64Audio ? base64Audio.length : 0);
+                return;
+            }
+            
+            console.log('Sending base64 length:', base64Audio.length, 'characters');
             
             try {
                 // Send to transcription API
@@ -230,14 +250,15 @@ function startLiveTranscription() {
                 });
                 
                 if (!response.ok) {
-                    console.error('Chunk transcription failed:', response.status);
+                    const errorText = await response.text();
+                    console.error('Chunk transcription failed:', response.status, errorText);
                     return;
                 }
                 
                 const data = await response.json();
                 
                 if (data.text && data.text.trim()) {
-                    console.log('Chunk transcribed:', data.text.substring(0, 50) + '...');
+                    console.log('✓ Chunk transcribed:', data.text.substring(0, 50) + '...');
                     
                     // Append to transcript
                     finalTranscript += data.text + ' ';
@@ -253,11 +274,17 @@ function startLiveTranscription() {
                     setTimeout(() => {
                         transcriptDiv.style.animation = 'fadeIn 0.3s ease-out';
                     }, 10);
+                } else {
+                    console.log('Empty transcript from chunk (probably silence)');
                 }
                 
             } catch (error) {
                 console.error('Error transcribing chunk:', error);
             }
+        };
+        
+        reader.onerror = (error) => {
+            console.error('FileReader error:', error);
         };
         
     }, 5000); // Every 5 seconds
@@ -660,12 +687,15 @@ async function startRecording() {
                 // NEW: Add to live transcription chunks
                 if (isLiveTranscribing) {
                     liveChunks.push(event.data);
+                    console.log('Added to live chunks:', event.data.size, 'bytes. Live chunks count:', liveChunks.length);
                 }
                 
                 console.log('Audio chunk received:', event.data.size, 'bytes. Total:', currentRecordingSize, 'bytes');
                 
                 // Check size in real-time
                 checkRecordingSize();
+            } else {
+                console.warn('Received empty audio chunk!');
             }
         };
         
