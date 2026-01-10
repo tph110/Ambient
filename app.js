@@ -32,6 +32,11 @@ let sizeMonitorInterval = null;  // Monitor recording size
 let currentRecordingSize = 0;  // Track current size
 let hasShownSizeWarning = false;  // Track if warning shown
 
+// Live transcription variables
+let liveTranscriptionInterval = null;
+let liveChunks = [];
+let isLiveTranscribing = false;
+
 // Audio bars (3-bar compact indicator)
 let audioContext = null;
 let analyser = null;
@@ -173,6 +178,107 @@ function anonymizeTranscript(text) {
     }
     
     return anonymized;
+}
+
+// ==========================================
+// LIVE TRANSCRIPTION FUNCTIONS
+// ==========================================
+
+/**
+ * Start live transcription (sends chunks every 5 seconds)
+ */
+function startLiveTranscription() {
+    console.log('Starting live transcription (5-second intervals)...');
+    isLiveTranscribing = true;
+    liveChunks = [];
+    finalTranscript = '';
+    
+    // Show listening message
+    transcriptDiv.innerHTML = '<p class="placeholder" style="color: #667eea;">🎤 Listening... speak now</p>';
+    
+    // Every 5 seconds, transcribe accumulated audio
+    liveTranscriptionInterval = setInterval(async () => {
+        if (!isLiveTranscribing || liveChunks.length === 0) {
+            return;
+        }
+        
+        console.log('Transcribing chunk...', liveChunks.length, 'chunks');
+        
+        // Create blob from accumulated chunks
+        const chunkBlob = new Blob(liveChunks, { type: 'audio/webm' });
+        
+        // Clear chunks for next batch
+        liveChunks = [];
+        
+        // Convert to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(chunkBlob);
+        
+        reader.onloadend = async () => {
+            const base64Audio = reader.result.split(',')[1];
+            
+            try {
+                // Send to transcription API
+                const response = await fetch('/api/transcribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        audioBlob: base64Audio
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Chunk transcription failed:', response.status);
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.text && data.text.trim()) {
+                    console.log('Chunk transcribed:', data.text.substring(0, 50) + '...');
+                    
+                    // Append to transcript
+                    finalTranscript += data.text + ' ';
+                    
+                    // Update display
+                    transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
+                    
+                    // Auto-scroll to bottom
+                    transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+                    
+                    // Show a subtle animation for new text
+                    transcriptDiv.style.animation = 'none';
+                    setTimeout(() => {
+                        transcriptDiv.style.animation = 'fadeIn 0.3s ease-out';
+                    }, 10);
+                }
+                
+            } catch (error) {
+                console.error('Error transcribing chunk:', error);
+            }
+        };
+        
+    }, 5000); // Every 5 seconds
+    
+    console.log('✓ Live transcription enabled (5-second intervals)');
+}
+
+/**
+ * Stop live transcription
+ */
+function stopLiveTranscription() {
+    isLiveTranscribing = false;
+    
+    if (liveTranscriptionInterval) {
+        clearInterval(liveTranscriptionInterval);
+        liveTranscriptionInterval = null;
+    }
+    
+    liveChunks = [];
+    
+    console.log('Live transcription stopped');
 }
 
 // ==========================================
@@ -551,6 +657,11 @@ async function startRecording() {
                 audioChunks.push(event.data);
                 currentRecordingSize += event.data.size;
                 
+                // NEW: Add to live transcription chunks
+                if (isLiveTranscribing) {
+                    liveChunks.push(event.data);
+                }
+                
                 console.log('Audio chunk received:', event.data.size, 'bytes. Total:', currentRecordingSize, 'bytes');
                 
                 // Check size in real-time
@@ -595,7 +706,7 @@ async function startRecording() {
                 telephoneStreams = null;
             }
             
-            // Create audio blob
+            // Create audio blob for backup/download only
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
             
             // Calculate actual bitrate achieved
@@ -612,14 +723,50 @@ async function startRecording() {
                 console.warn('Your browser may not support bitrate control. Consider using Chrome for better compression.');
             }
             
-            // Transcribe the audio
-            await transcribeAudio(audioBlob);
+            // Don't transcribe again - we already did it live!
+            // Just update UI
+            statusDiv.textContent = 'Recording complete!';
+            statusDiv.classList.remove('recording');
+            
+            // Swap Pause button back to Start button
+            pauseBtn.style.display = 'none';
+            pauseBtn.disabled = true;
+            startBtn.style.display = 'inline-flex';
+            startBtn.disabled = false;
+            
+            stopBtn.disabled = true;
+            
+            // Update button colors based on new state
+            updateButtonColors();
+            
+            // Show buttons if we have transcript
+            if (finalTranscript && finalTranscript.trim()) {
+                clearTranscriptBtn.style.display = 'inline-block';
+                getSummaryBtn.style.display = 'inline-flex';
+                
+                // Animate buttons appearing
+                setTimeout(() => {
+                    anime({
+                        targets: [clearTranscriptBtn, getSummaryBtn],
+                        scale: [0, 1],
+                        opacity: [0, 1],
+                        duration: 400,
+                        delay: anime.stagger(100),
+                        easing: 'easeOutBack'
+                    });
+                }, 100);
+            }
+            
+            console.log('Recording complete, live transcription finished');
         };
         
         // Start recording with 1 second timeslice to get regular size updates
         mediaRecorder.start(1000);
         isRecording = true;
         recordingStartTime = Date.now();
+        
+        // NEW: Start live transcription
+        startLiveTranscription();
         
         // Start audio bars
         startAudioBars();
@@ -661,7 +808,7 @@ async function startRecording() {
             easing: 'easeOutElastic(1, .5)'
         });
         
-        console.log('Recording started with Azure Speech API');
+        console.log('Recording started with live transcription');
         
     } catch (error) {
         console.error('Error starting recording:', error);
@@ -682,6 +829,9 @@ function stopRecording() {
     if (mediaRecorder && isRecording) {
         isRecording = false;
         isPaused = false;
+        
+        // NEW: Stop live transcription
+        stopLiveTranscription();
         
         // Stop timer
         if (recordingTimer) {
@@ -716,13 +866,13 @@ function stopRecording() {
         mediaRecorder.stop();
         
         // Update UI
-        statusDiv.textContent = 'Processing audio...';
+        statusDiv.textContent = 'Processing...';
         statusDiv.classList.remove('recording');
         startBtn.disabled = true; // Keep disabled while processing
         pauseBtn.disabled = true;
         stopBtn.disabled = true;
         
-        console.log('Recording stopped, sending to Whisper API');
+        console.log('Recording stopped');
     }
 }
 
@@ -767,177 +917,6 @@ function pauseRecording() {
         pauseBtn.innerHTML = '<span class="pause-icon"></span><span>Pause</span>';
         
         console.log('Recording resumed');
-    }
-}
-
-// ==========================================
-// OGG OPUS CONVERSION FOR AZURE SPEECH
-// ==========================================
-
-// Transcribe Audio using OpenAI Whisper API
-async function transcribeAudio(audioBlob) {
-    try {
-        // Final safety check before uploading
-        const maxSize = 4 * 1024 * 1024; // 4MB to be safe
-        if (audioBlob.size > maxSize) {
-            const sizeMB = (audioBlob.size / (1024 * 1024)).toFixed(1);
-            const minutes = Math.floor(audioBlob.size / (12000 / 8) / 60);
-            
-            // Show error with download option to save the audio
-            const shouldDownload = confirm(
-                `⚠️ RECORDING TOO LARGE\n\n` +
-                `Size: ${sizeMB}MB (limit: 4MB)\n` +
-                `Duration: ~${minutes} minutes\n\n` +
-                `The recording cannot be transcribed due to file size limits.\n\n` +
-                `Click OK to download the audio file so you don't lose your recording.\n` +
-                `Click Cancel to discard it.\n\n` +
-                `💡 Tip: For longer consultations, stop and restart recording every 10-15 minutes.`
-            );
-            
-            if (shouldDownload) {
-                // Download the audio file as backup
-                const url = URL.createObjectURL(audioBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `consultation-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.webm`;
-                a.click();
-                URL.revokeObjectURL(url);
-                
-                statusDiv.textContent = `✓ Audio saved! Recording was ${sizeMB}MB (~${minutes} min). Please record in shorter segments.`;
-                statusDiv.style.backgroundColor = '#10b981';
-                statusDiv.style.color = 'white';
-            } else {
-                statusDiv.textContent = 'Recording discarded. Keep recordings under 15 minutes.';
-            }
-            
-            throw new Error(`Recording too large: ${sizeMB}MB (approximately ${minutes} minutes). Maximum is 4MB (~40 minutes at 12kbps).`);
-        }
-        
-        statusDiv.textContent = '⏳ Transcribing with AI...';
-        transcriptDiv.innerHTML = '<p class="placeholder">Transcribing your consultation...</p>';
-        
-        console.log('Original audio blob size:', audioBlob.size, 'bytes =', (audioBlob.size / 1024).toFixed(2), 'KB');
-        console.log('Original audio blob type:', audioBlob.type);
-        
-        // OpenAI Whisper accepts WebM directly - no conversion needed!
-        console.log('Sending WebM directly to OpenAI Whisper...');
-        
-        // Convert WebM blob to base64
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        
-        reader.onloadend = async () => {
-            const base64Audio = reader.result.split(',')[1];
-            console.log('Base64 audio length:', base64Audio.length, 'characters');
-            console.log('Estimated size:', (base64Audio.length * 0.75 / 1024).toFixed(2), 'KB');
-            
-            // Call our Whisper API endpoint
-            console.log('Sending to OpenAI Whisper API...');
-            const response = await fetch('/api/transcribe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    audioBlob: base64Audio
-                })
-            });
-            
-            console.log('API response status:', response.status);
-            
-            if (!response.ok) {
-                let errorMessage = 'Transcription failed';
-                
-                // Handle specific error codes
-                if (response.status === 413) {
-                    const audioSizeMB = (audioBlob.size / 1024 / 1024).toFixed(2);
-                    errorMessage = `Recording too large to transcribe.\n\nAudio size: ${audioSizeMB} MB\n\nPlease keep recordings under 15 minutes.`;
-                    console.error('413 Payload Too Large - Audio size:', audioBlob.size, 'bytes');
-                    throw new Error(errorMessage);
-                }
-                
-                if (response.status === 504) {
-                    const durationMinutes = Math.floor(audioBlob.size / (12000 / 8) / 60);
-                    errorMessage = `Transcription timed out. Your recording was approximately ${durationMinutes} minutes long.\n\nPlease keep recordings under 15 minutes for reliable transcription.\n\nFor longer consultations:\n1. Stop recording every 10-15 minutes\n2. Generate summary for each segment\n3. Combine summaries manually`;
-                    console.error('504 Gateway Timeout - Recording too long:', durationMinutes, 'minutes');
-                    throw new Error(errorMessage);
-                }
-                
-                // Try to get error details
-                try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.error || errorMessage;
-                    console.error('API error:', errorData);
-                } catch (e) {
-                    // If JSON parsing fails, don't try to read body again
-                    console.error('Could not parse error response');
-                }
-                
-                throw new Error(errorMessage);
-            }
-            
-            const data = await response.json();
-            console.log('Transcription response:', data);
-            
-            // OpenAI Whisper returns 'text' field
-            finalTranscript = data.text;
-            
-            if (!finalTranscript || finalTranscript.trim() === '') {
-                throw new Error('Received empty transcript from API');
-            }
-            
-            // Display transcript directly - no quality checks
-            transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
-            
-            // Update UI
-            statusDiv.textContent = 'Transcription complete!';
-            statusDiv.classList.remove('recording');
-            
-            // Swap Pause button back to Start button
-            pauseBtn.style.display = 'none';
-            pauseBtn.disabled = true;
-            startBtn.style.display = 'inline-flex';
-            startBtn.disabled = false;
-            
-            stopBtn.disabled = true;
-            
-            // Update button colors based on new state
-            updateButtonColors();
-            
-            // Show buttons
-            if (finalTranscript.trim()) {
-                clearTranscriptBtn.style.display = 'inline-block';
-                getSummaryBtn.style.display = 'inline-flex';
-                
-                // Animate buttons appearing
-                setTimeout(() => {
-                    anime({
-                        targets: [clearTranscriptBtn, getSummaryBtn],
-                        scale: [0, 1],
-                        opacity: [0, 1],
-                        duration: 400,
-                        delay: anime.stagger(100),
-                        easing: 'easeOutBack'
-                    });
-                }, 100);
-            }
-            
-            console.log('Transcription complete, length:', finalTranscript.length, 'characters');
-        };
-        
-        reader.onerror = (error) => {
-            console.error('FileReader error:', error);
-            throw new Error('Failed to read audio file');
-        };
-        
-    } catch (error) {
-        console.error('Transcription error:', error);
-        statusDiv.textContent = 'Transcription failed';
-        transcriptDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
-        startBtn.disabled = false;
-        pauseBtn.disabled = true;
-        pauseBtn.innerHTML = '<span class="pause-icon"></span><span>Pause</span>';
-        stopBtn.disabled = true;
     }
 }
 
@@ -1066,7 +1045,7 @@ async function generateReferralLetter() {
             },
             body: JSON.stringify({
                 transcript: finalSummary,
-                type: 'referral'  // Flag to use different prompt
+                type: 'referral'  // FIXED: Use type parameter
             })
         });
 
@@ -1119,7 +1098,7 @@ async function generatePatientSummary() {
             },
             body: JSON.stringify({
                 transcript: finalSummary,
-                type: 'patient'  // Flag to use patient-friendly prompt
+                type: 'patient'  // FIXED: Use type parameter
             })
         });
 
@@ -1462,7 +1441,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('EchoDoc initialized with Whisper API');
+    console.log('EchoDoc initialized with live transcription (5-second intervals)');
     
     // Initialize page animations
     initializeAnimations();
