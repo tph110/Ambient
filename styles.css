@@ -273,18 +273,12 @@ p {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
-    align-self: flex-start;
-    margin-top: 0;
-    padding-top: 0;
 }
 
 .panel-right {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
-    align-self: flex-start;
-    margin-top: 0;
-    padding-top: 0;
 }
 
 /* ================================================================
@@ -491,6 +485,53 @@ body.dark-mode #resumeBtn:hover {
 }
 
 /* ================================================================
+   STOP/FINISH BUTTON - Ensure Visibility in All Modes
+   ================================================================ */
+
+/* Light mode: Stop button should have proper visibility */
+#stopBtn,
+button[id="stopBtn"],
+.btn-stop {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+#stopBtn:hover,
+button[id="stopBtn"]:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%) !important;
+    color: #ffffff !important;
+}
+
+#stopBtn:disabled,
+button[id="stopBtn"]:disabled {
+    background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%) !important;
+    color: #64748b !important;
+    opacity: 0.6;
+}
+
+/* Dark mode: Stop button maintains same styling */
+body.dark-mode #stopBtn,
+body.dark-mode button[id="stopBtn"],
+body.dark-mode .btn-stop {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+body.dark-mode #stopBtn:hover,
+body.dark-mode button[id="stopBtn"]:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%) !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode #stopBtn:disabled,
+body.dark-mode button[id="stopBtn"]:disabled {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
+    color: #64748b !important;
+}
+
+/* ================================================================
    FORMS & INPUTS - Clean Medical Interface
    ================================================================ */
 input[type="text"],
@@ -651,53 +692,9 @@ select {
    ACTIONS BAR
    ================================================================ */
 .actions-bar {
-    display: none;
-    margin: 0;
-    padding: 0;
-    height: 0;
-    min-height: 0;
-    max-height: 0;
-    overflow: hidden;
-}
-
-/* Show actions-bar only when button is visible */
-.actions-bar:has(button:not([style*="display: none"])),
-.actions-bar:has(button[style*="display: inline"]),
-.actions-bar:has(button[style*="display: flex"]) {
     display: flex;
     justify-content: center;
     margin-bottom: var(--spacing-lg);
-    height: auto;
-    max-height: none;
-}
-
-/* CRITICAL ALIGNMENT FIX - Ensure cards align at top */
-.panel-right {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-    align-self: flex-start;
-}
-
-/* Remove ALL top margin/padding from first elements in right panel */
-.panel-right > *:first-child {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
-
-.panel-right > .actions-bar + .card,
-.panel-right > .actions-bar + .output-card {
-    margin-top: 0 !important;
-}
-
-.panel-right .card:first-of-type,
-.panel-right .output-card:first-of-type {
-    margin-top: 0 !important;
-}
-
-/* Force dashboard to align items at start */
-.dashboard-container {
-    align-items: start !important;
 }
 
 /* ================================================================
