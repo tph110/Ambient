@@ -1066,7 +1066,7 @@ async function generateReferralLetter() {
             },
             body: JSON.stringify({
                 transcript: finalSummary,
-                isReferral: true  // Flag to use different prompt
+                type: 'referral'  // Flag to use different prompt
             })
         });
 
@@ -1119,7 +1119,7 @@ async function generatePatientSummary() {
             },
             body: JSON.stringify({
                 transcript: finalSummary,
-                isPatientSummary: true  // Flag to use patient-friendly prompt
+                type: 'patient'  // Flag to use patient-friendly prompt
             })
         });
 
