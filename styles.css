@@ -838,3 +838,26 @@ select {
 button, .btn, .card, input, select, textarea {
     transition: all 0.2s ease;
 }
+/* FIX: Hide actions-bar when button is hidden */
+.actions-bar {
+    margin-bottom: 0 !important;
+}
+
+.actions-bar:has(button[style*="display: none"]),
+.actions-bar:has(button:not([style*="display"])) {
+    display: none !important;
+}
+
+/* Alternative: Just remove all margin from actions-bar */
+.panel-right > .actions-bar:first-child {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+}
+
+/* When button IS visible, add margin */
+.actions-bar:has(button[style*="display: inline"]),
+.actions-bar:has(button[style*="display: flex"]) {
+    display: flex !important;
+    margin-bottom: var(--spacing-lg) !important;
+}
