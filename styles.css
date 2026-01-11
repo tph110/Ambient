@@ -835,3 +835,24 @@ select {
 button, .btn, .card, input, select, textarea {
     transition: all 0.2s ease;
 }
+/* ==========================================
+   MINIMAL CARD ALIGNMENT FIX
+   Add this to the END of your styles.css file
+   ========================================== */
+
+/* Force container to align cards at the top */
+.container {
+    align-items: flex-start !important;
+}
+
+/* Ensure all cards align to the top */
+.card {
+    align-self: flex-start !important;
+}
+
+/* Remove any unintended top margins */
+.card {
+    margin-top: 0 !important;
+}
+
+/* That's it! Three lines to fix the alignment. */
