@@ -834,6 +834,190 @@ select {
 * {
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
+/* ================================================================
+   AGGRESSIVE CARD ALIGNMENT FIX
+   Add this to the VERY END of your styles.css file
+   Uses !important flags to override everything
+   ================================================================ */
+
+/* NUCLEAR OPTION - Force grid alignment with maximum specificity */
+
+/* Fix 1: Dashboard container - force grid to align at top */
+.dashboard-container,
+div.dashboard-container,
+.container,
+div.container {
+    display: grid !important;
+    align-items: start !important;
+    align-content: start !important;
+    justify-items: stretch !important;
+}
+
+/* Fix 2: Both panels must align to top with maximum priority */
+.panel-left,
+.panel-right,
+div.panel-left,
+div.panel-right,
+.dashboard-container > *,
+.dashboard-container > div {
+    align-self: start !important;
+    vertical-align: top !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Fix 3: ALL cards must have zero top margin and align to start */
+.card,
+div.card,
+.panel-left .card,
+.panel-right .card,
+.panel-left > .card,
+.panel-right > .card,
+.panel-left > div,
+.panel-right > div,
+[class*="card"],
+section.card {
+    margin-top: 0 !important;
+    align-self: start !important;
+    vertical-align: top !important;
+}
+
+/* Fix 4: First child cards absolutely must start at top */
+.panel-left > *:first-child,
+.panel-right > *:first-child,
+.panel-left > .card:first-child,
+.panel-right > .card:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Fix 5: Override any inline styles that might be added by JavaScript */
+.card[style*="margin-top"],
+.card[style*="margin"],
+.panel-left[style*="margin"],
+.panel-right[style*="margin"] {
+    margin-top: 0 !important;
+}
+
+/* Fix 6: Ensure card headers don't add unexpected spacing */
+.card-header,
+.card-body,
+.card > *:first-child {
+    margin-top: 0 !important;
+    padding-top: var(--spacing-lg) !important;
+}
+
+/* Fix 7: Force panels to use flexbox properly internally */
+.panel-left,
+.panel-right {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: var(--spacing-lg) !important;
+}
+
+/* Fix 8: Remove any transforms that might offset cards */
+.card,
+.panel-left,
+.panel-right {
+    transform: none !important;
+    position: relative !important;
+}
+
+/* Fix 9: Ensure sticky positioning doesn't cause offset */
+.panel-left {
+    position: sticky !important;
+    top: calc(80px + var(--spacing-md)) !important;
+    align-self: start !important;
+}
+
+/* Fix 10: Target specific cards by their likely IDs or content */
+#sessionControls,
+#transcript,
+#summary,
+#formattedLetter,
+[id*="session"],
+[id*="control"],
+[id*="summary"],
+[id*="transcript"] {
+    margin-top: 0 !important;
+    align-self: start !important;
+}
+
+/* Fix 11: Remove any absolute/relative positioning that could cause issues */
+.card *:not(.card) {
+    position: static !important;
+}
+
+/* Fix 12: Override any animation states */
+.card.fade-in,
+.card[style*="animation"],
+.panel-left[style*="animation"],
+.panel-right[style*="animation"] {
+    margin-top: 0 !important;
+    transform: translateY(0) !important;
+}
+
+/* ================================================================
+   DEBUGGING MODE (Uncomment to visualize alignment)
+   ================================================================ */
+
+/* Uncomment these to see the layout structure */
+/*
+.dashboard-container {
+    border: 3px solid blue !important;
+    background: rgba(0, 0, 255, 0.05) !important;
+}
+
+.panel-left {
+    border: 3px solid red !important;
+    background: rgba(255, 0, 0, 0.05) !important;
+}
+
+.panel-right {
+    border: 3px solid green !important;
+    background: rgba(0, 255, 0, 0.05) !important;
+}
+
+.card {
+    border: 2px solid orange !important;
+    background: rgba(255, 165, 0, 0.05) !important;
+}
+*/
+
+/* ================================================================
+   FINAL SAFETY NET - Brute force approach
+   ================================================================ */
+
+/* If all else fails, manually position both panels */
+body .dashboard-container .panel-left,
+body .dashboard-container .panel-right {
+    align-self: start !important;
+    margin-top: 0 !important;
+}
+
+body .dashboard-container .panel-left > *,
+body .dashboard-container .panel-right > * {
+    margin-top: 0 !important;
+}
+
+/* Ensure gap between cards, not before first card */
+body .dashboard-container .panel-left > * + *,
+body .dashboard-container .panel-right > * + * {
+    margin-top: var(--spacing-lg) !important;
+}
+
+/* Force first card to have ZERO top margin */
+body .dashboard-container .panel-left > :first-child,
+body .dashboard-container .panel-right > :first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* ================================================================
+   END OF AGGRESSIVE FIX
+   ================================================================ */
 
 button, .btn, .card, input, select, textarea {
     transition: all 0.2s ease;
