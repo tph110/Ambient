@@ -836,23 +836,106 @@ button, .btn, .card, input, select, textarea {
     transition: all 0.2s ease;
 }
 /* ==========================================
-   MINIMAL CARD ALIGNMENT FIX
-   Add this to the END of your styles.css file
+   CARD ALIGNMENT FIX
+   Ensures Session Controls and Structured Clinical Summary cards align at the top
    ========================================== */
 
-/* Force container to align cards at the top */
+/* Main container holding the cards */
 .container {
-    align-items: flex-start !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start !important;  /* Align cards to top */
+    width: 100%;
 }
 
-/* Ensure all cards align to the top */
+/* All cards should align to the top */
 .card {
+    align-self: flex-start !important;  /* Force each card to top */
+    margin-top: 0 !important;  /* Remove any top margin */
+    vertical-align: top !important;  /* For any inline-block scenarios */
+}
+
+/* Specific fix for Session Controls card */
+#sessionControlsCard,
+.session-controls-card,
+[class*="session"] {
     align-self: flex-start !important;
-}
-
-/* Remove any unintended top margins */
-.card {
     margin-top: 0 !important;
 }
 
-/* That's it! Three lines to fix the alignment. */
+/* Specific fix for Structured Clinical Summary card */
+#clinicalSummaryCard,
+.clinical-summary-card,
+[class*="clinical-summary"] {
+    align-self: flex-start !important;
+    margin-top: 0 !important;
+}
+
+/* If cards are in a grid layout */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    align-items: start !important;  /* Align grid items to top */
+}
+
+/* Remove any unintended spacing */
+.card-content {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* If there's a wrapper around cards */
+.card-wrapper {
+    align-self: flex-start !important;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure all direct children of container align top */
+.container > * {
+    align-self: flex-start !important;
+}
+
+/* Remove any baseline alignment */
+.container {
+    align-items: flex-start !important;
+    /* Not baseline! */
+}
+
+/* Fix for any row-based layout */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start !important;
+    gap: 24px;
+}
+
+.row > .card {
+    align-self: flex-start !important;
+}
+
+/* Mobile responsiveness - maintain top alignment */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .card {
+        align-self: stretch !important;
+        margin-top: 0 !important;
+    }
+}
+
+/* Debug mode - uncomment to visualize alignment */
+/*
+.card {
+    border: 2px solid red !important;
+}
+
+.container {
+    border: 2px solid blue !important;
+}
+*/
