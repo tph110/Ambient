@@ -264,7 +264,7 @@ p {
     display: grid;
     grid-template-columns: 380px 1fr;
     gap: var(--spacing-xl);
-    align-items: flex-start;
+    align-items: start;  /* FIXED: Changed from flex-start to start for Grid */
 }
 
 .panel-left {
@@ -273,12 +273,14 @@ p {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
+    align-self: start;  /* ADDED: Ensure panel aligns to top */
 }
 
 .panel-right {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
+    align-self: start;  /* ADDED: Ensure panel aligns to top */
 }
 
 /* ================================================================
@@ -291,6 +293,7 @@ p {
     box-shadow: var(--shadow-sm);
     overflow: hidden;
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    margin-top: 0;  /* ADDED: Ensure no unintended top margin */
 }
 
 .card:hover {
