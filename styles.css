@@ -861,3 +861,22 @@ button, .btn, .card, input, select, textarea {
     display: flex !important;
     margin-bottom: var(--spacing-lg) !important;
 }
+/* Clickable title link */
+.brand-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+    transition: opacity 0.2s ease;
+}
+
+.brand-link:hover {
+    opacity: 0.8;
+}
+
+.brand-link h1 {
+    margin: 0;
+}
+
+a.brand-link {
+    text-decoration: none !important;
+}
