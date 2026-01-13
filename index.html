@@ -1,293 +1,209 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EchoDoc - AI Medical Scribe</title>
-    <meta name="description" content="AI-powered medical scribe for UK GP consultations. Real-time transcription and structured clinical summaries.">
-    
-    <link rel="stylesheet" href="styles.css">
-    
-    <!-- Custom styling for AI disclaimer -->
-    <style>
-        .ai-disclaimer {
-            background: transparent !important;
-            color: #94a3b8 !important;
-            border: none !important;
-            padding: 8px 0 !important;
-            font-size: 0.875rem !important;
-        }
+# Make Title Clickable - Complete Guide
+
+## 🔗 HTML Fix
+
+Find your navbar section in `index.html` (usually near the top). Look for something like:
+
+```html
+<div class="brand">
+    <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
+    <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
+</div>
+```
+
+**Replace with:**
+
+```html
+<div class="brand">
+    <a href="https://ambientdoc.vercel.app/index.html" class="brand-link">
+        <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
+        <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
+    </a>
+</div>
+```
+
+---
+
+## 🎨 CSS Fix (Add to styles.css)
+
+Add this to the **end** of your `styles.css`:
+
+```css
+/* Clickable brand/title styling */
+.brand-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.brand-link:hover {
+    opacity: 0.8;
+}
+
+.brand-link:hover h1 {
+    color: var(--primary-hover);
+}
+
+.brand-link h1,
+.brand-link p {
+    margin: 0;
+}
+
+/* Ensure h1 inside link maintains styling */
+.brand-link h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    transition: color 0.2s ease;
+}
+
+.brand-link .brand-motto {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Remove any default link styling */
+a.brand-link {
+    text-decoration: none !important;
+}
+
+a.brand-link:visited {
+    color: inherit;
+}
+
+a.brand-link:active {
+    color: inherit;
+}
+```
+
+---
+
+## 🚀 Alternative: Just Wrap the h1
+
+If you only want the title clickable (not the motto), use this instead:
+
+```html
+<div class="brand">
+    <a href="https://ambientdoc.vercel.app/index.html" class="brand-link">
+        <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
+    </a>
+    <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
+</div>
+```
+
+With this simpler CSS:
+
+```css
+/* Clickable title only */
+.brand-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+    transition: opacity 0.2s ease;
+}
+
+.brand-link:hover {
+    opacity: 0.8;
+}
+
+.brand-link h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+    transition: color 0.2s ease;
+}
+
+.brand-link:hover h1 {
+    color: var(--primary-hover);
+}
+
+a.brand-link {
+    text-decoration: none !important;
+}
+```
+
+---
+
+## 📋 Complete Example
+
+Here's what your full navbar section should look like:
+
+```html
+<nav class="navbar">
+    <div class="nav-content">
+        <!-- Clickable Brand/Logo -->
+        <div class="brand">
+            <a href="https://ambientdoc.vercel.app/index.html" class="brand-link">
+                <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
+            </a>
+            <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
+        </div>
         
-        body.dark-mode .ai-disclaimer {
-            color: #64748b !important;
-        }
-    </style>
-    
-    <!-- Anime.js for smooth animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" integrity="sha512-aNMyYYxdIxIaot0Y1/PLuEu3eipGCmsEUBrUq+7aVyPGMFH8z0eTP0tkqAvv34fzN6z+201d3T8HPb1svWSKHQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
-    <!-- Google Fonts: Inter for UI, Merriweather for documents -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- Professional Navbar -->
-    <nav class="navbar">
-        <div class="nav-content">
-            <div class="brand">
-                <div class="brand-text">
-                    <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
-                    <p class="brand-motto">Focus on your patient and let EchoDoc handle the notes</p>
-                </div>
-            </div>
-            <div class="navbar-right">
-                <!-- Navigation Buttons -->
-                <div class="nav-links">
-                    <a href="index.html" class="nav-link active">
-                        Clinical Scribe
-                    </a>
-                      <a href="dictation.html" class="nav-link">
-                        AI Dictation
-                    </a>
-                </div>
-                <!-- Compact Audio Level Indicator -->
-                <div class="audio-bars" id="audioBars" style="display: none;">
-                    <div class="audio-bar" id="audioBar1"></div>
-                    <div class="audio-bar" id="audioBar2"></div>
-                    <div class="audio-bar" id="audioBar3"></div>
-                </div>
-                
-                <div class="status-indicator" id="connectionStatus">
-                    <span class="status-dot"></span>
-                    <span>Ready</span>
-                </div>
-                <div class="dark-mode-toggle">
-                    <label class="dark-mode-label">
-                        <input type="checkbox" id="darkModeCheckbox" class="dark-mode-checkbox">
-                        <span class="dark-mode-slider"></span>
-                        <span class="dark-mode-icon">🌙</span>
-                    </label>
-                </div>
+        <!-- Navigation Links -->
+        <div class="navbar-right">
+            <div class="nav-links">
+                <a href="https://ambientdoc.vercel.app/index.html" class="nav-link active">Scribe</a>
+                <a href="#" class="nav-link">About</a>
             </div>
         </div>
-    </nav>
-
-    <!-- Dashboard Container -->
-    <div class="dashboard-container">
-        
-        <!-- LEFT PANEL: Controls & Transcript (Sticky) -->
-        <aside class="panel-left">
-            
-            <!-- Session Controls Card -->
-            <div class="card control-card">
-                <div class="card-header">
-                    <h2>Session Controls</h2>
-                    <div class="recording-badge" id="recordingBadge" style="display: none;">
-                        <span class="pulse-dot"></span>
-                        <span>Recording</span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    
-                    <!-- Microphone Selector -->
-                    <div class="mic-select-container-inline">
-                        <label for="microphoneDropdown">
-                            Audio input:
-                        </label>
-                        <select id="microphoneDropdown" class="mic-dropdown">
-                            <option value="">Loading microphones...</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Telephone Mode Toggle -->
-                    <div class="telephone-mode-toggle">
-                        <label class="toggle-label">
-                            <input type="checkbox" id="telephoneModeCheckbox" class="toggle-checkbox">
-                            <span class="toggle-slider"></span>
-                            <span class="toggle-text">Telephone Consultation Mode</span>
-                        </label>
-                        <p class="toggle-description">Enable for phone calls. Share your telephony window with audio when prompted</p>
-                    </div>
-                    
-                    <!-- Anonymization Toggle -->
-                    <div class="telephone-mode-toggle anonymize-toggle">
-                        <label class="toggle-label">
-                            <input type="checkbox" id="anonymizeCheckbox" class="toggle-checkbox" checked>
-                            <span class="toggle-slider"></span>
-                            <span class="toggle-text">Anonymise Before AI Processing</span>
-                        </label>
-                        <p class="toggle-description">Strip patient names and addresses before sending to AI (recommended for privacy)</p>
-                    </div>
-                    
-                    <!-- Status Message -->
-                    <div class="status" id="status">Ready to record</div>
-                    
-                    <!-- Recording Timer with Visual Countdown -->
-                    <div class="recording-timer" id="recordingTimer" style="display: none;">
-                        <div class="timer-info">
-                            <div class="timer-elapsed">
-                                <span class="timer-label">Elapsed:</span>
-                                <span class="timer-value" id="timerElapsed">00:00</span>
-                            </div>
-                            <div class="timer-remaining">
-                                <span class="timer-label">Est. Time Left:</span>
-                                <span class="timer-value" id="timerRemaining">~45 min</span>
-                            </div>
-                            <div class="timer-size">
-                                <span class="timer-label">Size:</span>
-                                <span class="timer-value" id="timerSize">0.0 MB</span>
-                            </div>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" id="progressBar"></div>
-                        </div>
-                        <div class="progress-label">
-                            <span id="progressPercentage">0%</span>
-                            <span id="progressLimit">Limit: 4.0 MB</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Recording Buttons -->
-                    <div class="button-group-controls">
-                        <button id="startBtn" class="btn btn-record btn-record-animated">
-                            <span class="record-icon"></span>
-                            Start Recording
-                        </button>
-                        <button id="pauseBtn" class="btn btn-pause" style="display: none;">
-                            <span class="pause-icon"></span>
-                            Pause
-                        </button>
-                        <button id="stopBtn" class="btn btn-stop">
-                            <span class="stop-icon"></span>
-                            Finish
-                        </button>
-                    </div>
-                    
-                </div>
-            </div>
-            
-            <!-- Live Transcript Card -->
-            <div class="card transcript-card">
-                <div class="card-header">
-                    <h2>Live Transcript</h2>
-                    <div class="badge-live" style="display: none;" id="liveBadge">Live</div>
-                </div>
-                <div class="card-body">
-                    <div id="transcript" class="transcript-box" contenteditable="true">
-                        <p class="placeholder">Transcription will appear here once you have finished recording</p>
-                    </div>
-                    <button id="clearTranscript" class="btn btn-outline btn-small" style="display: none;">
-                        Clear Transcript
-                    </button>
-                </div>
-            </div>
-            
-        </aside>
-        
-        <!-- RIGHT PANEL: AI-Generated Documents (Scrollable) -->
-        <main class="panel-right">
-            
-            <!-- Generate Button -->
-            <div class="actions-bar">
-                <button id="getSummary" class="btn btn-accent" style="display: none;">
-                    ✨ Generate Clinical Documents
-                </button>
-            </div>
-            
-            <!-- Clinical Summary Card -->
-            <div class="card output-card">
-                <div class="card-header">
-                    <h3>Structured Clinical Summary</h3>
-                    <button id="copySummary" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
-                </div>
-                <div class="card-body">
-                    <p class="ai-disclaimer">AI can make mistakes. Check all content is correct before pasting into the notes</p>
-                    <div id="summary" class="output-content" contenteditable="true">
-                        <p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Referral Letter Card -->
-            <div class="card output-card">
-                <div class="card-header">
-                    <h3>Referral Letter</h3>
-                    <button id="copyReferral" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
-                </div>
-                <div class="card-body">
-                    <button id="generateReferral" class="btn btn-secondary btn-small" style="display: none;">
-                        Generate Referral Letter
-                    </button>
-                    <div id="referralLetter" class="output-content document-paper" contenteditable="true">
-                        <p class="placeholder">Generate a clinical summary first, then create a referral letter for secondary care specialists</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Patient Summary Card -->
-            <div class="card output-card">
-                <div class="card-header">
-                    <h3>Patient Summary</h3>
-                    <button id="copyPatientSummary" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
-                </div>
-                <div class="card-body">
-                    <p class="section-description">Patient-friendly summary in plain English to share with the patient</p>
-                    <button id="generatePatientSummary" class="btn btn-secondary btn-small" style="display: none;">
-                        Generate Patient Summary
-                    </button>
-                    <div id="patientSummary" class="output-content" contenteditable="true">
-                        <p class="placeholder">Generate a clinical summary first, then create a patient-friendly summary to share</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Privacy Notice -->
-            <div class="card privacy-card">
-                <div class="card-header">
-                    <h3>Privacy & Data Protection</h3>
-                </div>
-                <div class="card-body">
-                    <p><strong>Data Privacy:</strong> All audio processing happens via secure API calls. No patient data is stored on our servers. Audio is transcribed and immediately discarded. Transcribed text is anonymized (patient names, addresses, and other personal identifiers are removed) before being sent to AI servers to generate clinical summaries.</p>
-                    <p><strong>Important:</strong> This is a demonstration tool. For production use, ensure GDPR compliance, obtain appropriate patient consent, and follow your organisation's information governance policies.</p>
-                    <p><strong>Responsibility:</strong> Always verify AI-generated content before adding to patient records. The clinician remains responsible for all clinical documentation.</p>
-                </div>
-            </div>
-            
-        </main>
-        
     </div>
-    
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <p>EchoDoc © 2025 | Built for busy UK healthcare professionals</p>
-            <p class="footer-disclaimer">Demonstration tool only • Not for clinical use</p>
-        </div>
-    </footer>
+</nav>
+```
 
-    <script>
-        // Dark Mode Toggle
-        const darkModeCheckbox = document.getElementById('darkModeCheckbox');
-        
-        // Check for saved dark mode preference
-        const savedDarkMode = localStorage.getItem('darkMode');
-        if (savedDarkMode === 'enabled') {
-            document.body.classList.add('dark-mode');
-            darkModeCheckbox.checked = true;
-        }
-        
-        // Toggle dark mode
-        darkModeCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                document.body.classList.add('dark-mode');
-                localStorage.setItem('darkMode', 'enabled');
-            } else {
-                document.body.classList.remove('dark-mode');
-                localStorage.setItem('darkMode', 'disabled');
-            }
-        });
-    </script>
-    
-    <!-- App.js - Simple, no FFmpeg needed for Whisper -->
-    <script src="app.js"></script>
-</body>
-</html>
+---
+
+## 🚀 Deploy
+
+```bash
+git add index.html styles.css
+git commit -m "Make title clickable link to home page"
+git push
+```
+
+---
+
+## ✅ Expected Result
+
+After deploying:
+- ✅ Clicking "EchoDoc" takes you to home page
+- ✅ Hovering shows visual feedback (slightly darker blue)
+- ✅ No underline on the link
+- ✅ Maintains all existing styling
+
+---
+
+## 🎨 Optional: Add Hover Effect
+
+For a more pronounced hover effect, add this CSS:
+
+```css
+.brand-link {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.brand-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.brand-link:hover::after {
+    width: 100%;
+}
+```
+
+This adds an underline animation on hover! ✨
+
+---
+
+**Use Option 2 (just wrap the h1) - it's cleaner and simpler!** 🎯
