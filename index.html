@@ -13,28 +13,39 @@
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
 </head>
 <body>
-    <!-- Navigation Bar -->
+    <!-- Professional Navbar -->
     <nav class="navbar">
         <div class="nav-content">
-            <!-- Clickable Brand/Logo -->
             <div class="brand">
                 <a href="https://ambientdoc.vercel.app/index.html" class="brand-link">
-                    <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
+                    <div class="brand-text">
+                        <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
+                        <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
+                    </div>
                 </a>
-                <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
             </div>
-            
-            <!-- Navigation Links -->
             <div class="navbar-right">
+                <!-- Navigation Links -->
                 <div class="nav-links">
-                    <a href="https://ambientdoc.vercel.app/index.html" class="nav-link active">Scribe</a>
-                    <a href="https://ambientdoc.vercel.app/dictation.html" class="nav-link">AI Dictation</a>
+                    <a href="index.html" class="nav-link active">
+                        <span class="nav-link-text">Clinical Scribe</span>
+                    </a>
+                    <a href="dictation.html" class="nav-link">
+                        <span class="nav-link-text">AI Dictation</span>
+                    </a>
                 </div>
                 
-                <!-- Status Indicator -->
-                <div class="status-indicator">
+                <div class="status-indicator" id="connectionStatus">
                     <span class="status-dot"></span>
                     <span>Ready</span>
+                </div>
+                
+                <div class="dark-mode-toggle">
+                    <label class="dark-mode-label">
+                        <input type="checkbox" id="darkModeCheckbox" class="dark-mode-checkbox">
+                        <span class="dark-mode-slider"></span>
+                        <span class="dark-mode-icon">🌙</span>
+                    </label>
                 </div>
             </div>
         </div>
