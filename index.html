@@ -1,209 +1,237 @@
-# Make Title Clickable - Complete Guide
-
-## 🔗 HTML Fix
-
-Find your navbar section in `index.html` (usually near the top). Look for something like:
-
-```html
-<div class="brand">
-    <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
-    <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
-</div>
-```
-
-**Replace with:**
-
-```html
-<div class="brand">
-    <a href="https://ambientdoc.vercel.app/index.html" class="brand-link">
-        <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
-        <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
-    </a>
-</div>
-```
-
----
-
-## 🎨 CSS Fix (Add to styles.css)
-
-Add this to the **end** of your `styles.css`:
-
-```css
-/* Clickable brand/title styling */
-.brand-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-}
-
-.brand-link:hover {
-    opacity: 0.8;
-}
-
-.brand-link:hover h1 {
-    color: var(--primary-hover);
-}
-
-.brand-link h1,
-.brand-link p {
-    margin: 0;
-}
-
-/* Ensure h1 inside link maintains styling */
-.brand-link h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    transition: color 0.2s ease;
-}
-
-.brand-link .brand-motto {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-top: 2px;
-}
-
-/* Remove any default link styling */
-a.brand-link {
-    text-decoration: none !important;
-}
-
-a.brand-link:visited {
-    color: inherit;
-}
-
-a.brand-link:active {
-    color: inherit;
-}
-```
-
----
-
-## 🚀 Alternative: Just Wrap the h1
-
-If you only want the title clickable (not the motto), use this instead:
-
-```html
-<div class="brand">
-    <a href="https://ambientdoc.vercel.app/index.html" class="brand-link">
-        <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
-    </a>
-    <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
-</div>
-```
-
-With this simpler CSS:
-
-```css
-/* Clickable title only */
-.brand-link {
-    text-decoration: none;
-    color: inherit;
-    display: inline-block;
-    transition: opacity 0.2s ease;
-}
-
-.brand-link:hover {
-    opacity: 0.8;
-}
-
-.brand-link h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin: 0;
-    transition: color 0.2s ease;
-}
-
-.brand-link:hover h1 {
-    color: var(--primary-hover);
-}
-
-a.brand-link {
-    text-decoration: none !important;
-}
-```
-
----
-
-## 📋 Complete Example
-
-Here's what your full navbar section should look like:
-
-```html
-<nav class="navbar">
-    <div class="nav-content">
-        <!-- Clickable Brand/Logo -->
-        <div class="brand">
-            <a href="https://ambientdoc.vercel.app/index.html" class="brand-link">
-                <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
-            </a>
-            <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
-        </div>
-        
-        <!-- Navigation Links -->
-        <div class="navbar-right">
-            <div class="nav-links">
-                <a href="https://ambientdoc.vercel.app/index.html" class="nav-link active">Scribe</a>
-                <a href="#" class="nav-link">About</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoDoc - AI Medical Scribe for Healthcare Professionals</title>
+    <meta name="description" content="AI-powered medical transcription and clinical documentation for UK healthcare professionals. Save 30 minutes per clinic with intelligent scribe technology.">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Anime.js for animations -->
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <!-- Clickable Brand/Logo -->
+            <div class="brand">
+                <a href="https://ambientdoc.vercel.app/index.html" class="brand-link">
+                    <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
+                </a>
+                <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="navbar-right">
+                <div class="nav-links">
+                    <a href="https://ambientdoc.vercel.app/index.html" class="nav-link active">Scribe</a>
+                    <a href="#about" class="nav-link">About</a>
+                </div>
+                
+                <!-- Status Indicator -->
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span>Ready</span>
+                </div>
             </div>
         </div>
+    </nav>
+
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container">
+        
+        <!-- LEFT PANEL: Session Controls -->
+        <aside class="panel-left">
+            
+            <!-- Session Controls Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Session Controls</h3>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Status Display -->
+                    <div id="status" class="status">Ready to record</div>
+                    
+                    <!-- Recording Timer (Hidden by default) -->
+                    <div id="recordingTimer" class="recording-timer" style="display: none;">
+                        <div class="timer-info">
+                            <span class="timer-label">Elapsed:</span>
+                            <span class="timer-value" id="timerElapsed">00:00</span>
+                        </div>
+                        <div class="timer-info">
+                            <span class="timer-label">Remaining:</span>
+                            <span class="timer-value" id="timerRemaining">~20 min</span>
+                        </div>
+                        <div class="timer-info">
+                            <span class="timer-label">Size:</span>
+                            <span class="timer-value" id="timerSize">0.0 MB</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+                        </div>
+                        <div style="text-align: center; font-size: 0.75rem; color: var(--text-tertiary); margin-top: 4px;">
+                            <span id="progressPercentage">0%</span> of 4MB limit
+                        </div>
+                    </div>
+                    
+                    <!-- Audio Visualizer (3 bars) -->
+                    <div id="audioBars" class="audio-bars" style="display: none;">
+                        <div class="audio-bar" id="audioBar1"></div>
+                        <div class="audio-bar" id="audioBar2"></div>
+                        <div class="audio-bar" id="audioBar3"></div>
+                    </div>
+                    
+                    <!-- Microphone Selection -->
+                    <div class="mic-select-container-inline">
+                        <label for="microphoneDropdown">Microphone:</label>
+                        <select id="microphoneDropdown" class="mic-dropdown">
+                            <option value="">Loading microphones...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Telephone Consultation Mode -->
+                    <div class="telephone-mode-container">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
+                            <input type="checkbox" id="telephoneModeCheckbox" style="cursor: pointer;">
+                            <span style="font-weight: 500;">Telephone Consultation Mode</span>
+                        </label>
+                        <p class="telephone-mode-info" style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0 0 var(--spacing-md) 0; line-height: 1.5;">
+                            Captures both your microphone and the phone call audio (via screen share). Requires you to share your telephony software window with audio enabled.
+                        </p>
+                    </div>
+                    
+                    <!-- Anonymization Toggle -->
+                    <div class="anonymization-container">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
+                            <input type="checkbox" id="anonymizeCheckbox" checked style="cursor: pointer;">
+                            <span style="font-weight: 500;">Anonymize Patient Data</span>
+                        </label>
+                        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0 0 var(--spacing-md) 0; line-height: 1.5;">
+                            Automatically removes names, addresses, phone numbers, and other identifying information before sending to AI for summarization.
+                        </p>
+                    </div>
+                    
+                    <!-- Recording Buttons -->
+                    <div class="button-group-controls">
+                        <button id="startBtn" class="btn btn-record">
+                            <span>🔴</span>
+                            <span>Start Recording</span>
+                        </button>
+                        <button id="pauseBtn" class="btn btn-secondary" style="display: none;" disabled>
+                            <span class="pause-icon">⏸</span>
+                            <span>Pause</span>
+                        </button>
+                        <button id="stopBtn" class="btn btn-stop" disabled>
+                            <span>⏹</span>
+                            <span>Finish</span>
+                        </button>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- Transcript Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Transcript</h3>
+                    <button id="clearTranscript" class="btn-icon" title="Clear transcript" style="display: none;">🗑️</button>
+                </div>
+                <div class="card-body">
+                    <div id="transcript" class="transcript-box" contenteditable="true">
+                        <p class="placeholder">Transcription will appear here once you have finished recording</p>
+                    </div>
+                </div>
+            </div>
+            
+        </aside>
+        
+        <!-- RIGHT PANEL: Clinical Documents -->
+        <main class="panel-right">
+            
+            <!-- Generate Button -->
+            <div class="actions-bar">
+                <button id="getSummary" class="btn btn-accent" style="display: none;">
+                    ✨ Generate Clinical Documents
+                </button>
+            </div>
+            
+            <!-- Clinical Summary Card -->
+            <div class="card output-card">
+                <div class="card-header">
+                    <h3>Structured Clinical Summary</h3>
+                    <button id="copySummary" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
+                </div>
+                <div class="card-body">
+                    <p class="ai-disclaimer">AI can make mistakes. Check all content is correct before pasting into the notes</p>
+                    <div id="summary" class="output-content" contenteditable="true">
+                        <p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Referral Letter Card -->
+            <div class="card output-card">
+                <div class="card-header">
+                    <h3>Referral Letter</h3>
+                    <button id="copyReferral" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
+                </div>
+                <div class="card-body">
+                    <button id="generateReferral" class="btn btn-secondary btn-small" style="display: none;">
+                        Generate Referral Letter
+                    </button>
+                    <div id="referralLetter" class="output-content document-paper" contenteditable="true">
+                        <p class="placeholder">Generate a clinical summary first, then create a referral letter for secondary care specialists</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Patient Summary Card -->
+            <div class="card output-card">
+                <div class="card-header">
+                    <h3>Patient Summary</h3>
+                    <button id="copyPatientSummary" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
+                </div>
+                <div class="card-body">
+                    <p class="section-description">Patient-friendly summary in plain English to share with the patient</p>
+                    <button id="generatePatientSummary" class="btn btn-secondary btn-small" style="display: none;">
+                        Generate Patient Summary
+                    </button>
+                    <div id="patientSummary" class="output-content" contenteditable="true">
+                        <p class="placeholder">Generate a clinical summary first, then create a patient-friendly summary to share</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Privacy Notice -->
+            <div class="card privacy-card">
+                <div class="card-header">
+                    <h3>Privacy & Data Protection</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Data Privacy:</strong> All audio processing happens via secure API calls. No patient data is stored on our servers. Audio is transcribed and immediately discarded. Transcribed text is anonymized (patient names, addresses, and other personal identifiers are removed) before being sent to AI servers to generate clinical summaries.</p>
+                    <p><strong>Important:</strong> This is a demonstration tool. For production use, ensure GDPR compliance, obtain appropriate patient consent, and follow your organisation's information governance policies.</p>
+                    <p><strong>Responsibility:</strong> Always verify AI-generated content before adding to patient records. The clinician remains responsible for all clinical documentation.</p>
+                </div>
+            </div>
+            
+        </main>
+        
     </div>
-</nav>
-```
-
----
-
-## 🚀 Deploy
-
-```bash
-git add index.html styles.css
-git commit -m "Make title clickable link to home page"
-git push
-```
-
----
-
-## ✅ Expected Result
-
-After deploying:
-- ✅ Clicking "EchoDoc" takes you to home page
-- ✅ Hovering shows visual feedback (slightly darker blue)
-- ✅ No underline on the link
-- ✅ Maintains all existing styling
-
----
-
-## 🎨 Optional: Add Hover Effect
-
-For a more pronounced hover effect, add this CSS:
-
-```css
-.brand-link {
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.brand-link::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--primary-color);
-    transition: width 0.3s ease;
-}
-
-.brand-link:hover::after {
-    width: 100%;
-}
-```
-
-This adds an underline animation on hover! ✨
-
----
-
-**Use Option 2 (just wrap the h1) - it's cleaner and simpler!** 🎯
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 EchoDoc. Built for UK Healthcare Professionals.</p>
+            <p class="footer-disclaimer">This is a demonstration tool. Not for production clinical use without appropriate governance and patient consent.</p>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+    
+</body>
+</html>
