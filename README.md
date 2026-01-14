@@ -1,196 +1,441 @@
-# Conversation Transcriber & Summarizer
+# EchoDoc - AI Medical Scribe for Healthcare Professionals
 
-A privacy-focused web application that records conversations, transcribes them in real-time, and generates AI-powered summaries using OpenRouter.
+> **Save 30 minutes per clinic with intelligent medical transcription**
 
-## Features
-
-- 🎙️ **Real-time Transcription**: Uses Web Speech API for instant speech-to-text conversion
-- 🤖 **AI Summaries**: Generates concise summaries using Claude 3.5 Sonnet via OpenRouter
-- 🔒 **Privacy First**: All audio processing happens locally in your browser
-- 📱 **Responsive Design**: Works on desktop and mobile devices
-- 🚀 **Easy Deployment**: One-click deployment to Vercel
-
-## Prerequisites
-
-1. A GitHub account
-2. A Vercel account (free tier works fine)
-3. An OpenRouter API key ([Get one here](https://openrouter.ai/))
-
-## Setup Instructions
-
-### Step 1: Get Your OpenRouter API Key
-
-1. Go to [OpenRouter](https://openrouter.ai/)
-2. Sign up or log in
-3. Navigate to Keys section
-4. Create a new API key and copy it
-
-### Step 2: Create GitHub Repository
-
-1. Go to [GitHub](https://github.com/)
-2. Click "New Repository"
-3. Name it (e.g., "conversation-transcriber")
-4. Make it Public or Private (your choice)
-5. Don't initialize with README (we have these files already)
-6. Click "Create Repository"
-
-### Step 3: Upload Your Code to GitHub
-
-You have two options:
-
-**Option A: Using GitHub Web Interface (Easiest)**
-1. On your new repository page, click "uploading an existing file"
-2. Drag and drop all these files:
-   - `index.html`
-   - `styles.css`
-   - `app.js`
-   - `vercel.json`
-   - `README.md`
-3. Click "Commit changes"
-
-**Option B: Using Git Command Line**
-```bash
-# Navigate to the folder containing your files
-cd /path/to/your/files
-
-# Initialize git
-git init
-
-# Add all files
-git add .
-
-# Commit
-git commit -m "Initial commit"
-
-# Add your GitHub repository as remote
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-
-# Push to GitHub
-git branch -M main
-git push -u origin main
-```
-
-### Step 4: Deploy to Vercel
-
-1. Go to [Vercel](https://vercel.com/)
-2. Sign up or log in (use your GitHub account for easiest integration)
-3. Click "Add New" → "Project"
-4. Import your GitHub repository
-5. Vercel will auto-detect the settings (no need to change anything)
-6. Click "Deploy"
-7. Wait for deployment to complete (usually under 1 minute)
-
-### Step 5: Add Your API Key to Vercel
-
-1. Once deployed, go to your project dashboard on Vercel
-2. Click "Settings"
-3. Click "Environment Variables"
-4. Add a new variable:
-   - **Name**: `OPENROUTER_API_KEY`
-   - **Value**: Your OpenRouter API key (paste it here)
-   - **Target**: Select all environments (Production, Preview, Development)
-5. Click "Save"
-6. Go back to "Deployments" and click "Redeploy" on your latest deployment
-
-### Step 6: Test Your App
-
-1. Click on your Vercel deployment URL (something like `your-app.vercel.app`)
-2. Click "Allow" when prompted for microphone access
-3. Click "Start Recording"
-4. Have a conversation or speak into the microphone
-5. Click "Stop Recording"
-6. Click "Generate Summary" to get an AI summary
-
-## How It Works
-
-1. **Recording**: The Web Speech API captures audio from your microphone and transcribes it in real-time
-2. **Transcription**: Text appears live as you speak, with final results shown in black and interim results in gray
-3. **Summary**: When you click "Generate Summary", the transcript is sent to OpenRouter's API, which uses Claude 3.5 Sonnet to create a concise summary
-
-## Browser Compatibility
-
-- ✅ Chrome (Recommended)
-- ✅ Edge
-- ✅ Safari
-- ❌ Firefox (does not support Web Speech API)
-
-## Privacy & Security
-
-- Audio is processed entirely in your browser
-- No audio files are uploaded anywhere
-- Only the text transcript is sent to OpenRouter for summarization
-- Your API key is stored securely in Vercel's environment variables
-- No conversation data is stored on any server
-
-## Customization
-
-### Change the AI Model
-
-In `app.js`, find this line:
-```javascript
-model: 'anthropic/claude-3.5-sonnet',
-```
-
-You can change it to other models available on OpenRouter, such as:
-- `openai/gpt-4-turbo`
-- `anthropic/claude-3-opus`
-- `google/gemini-pro`
-
-### Change the Language
-
-In `app.js`, find this line:
-```javascript
-recognition.lang = 'en-US';
-```
-
-Change to other language codes like:
-- `en-GB` (British English)
-- `es-ES` (Spanish)
-- `fr-FR` (French)
-- `de-DE` (German)
-
-## Troubleshooting
-
-**Microphone not working:**
-- Ensure your browser has microphone permissions enabled
-- HTTPS is required (Vercel provides this automatically)
-- Check if another app is using your microphone
-
-**API Key not working:**
-- Make sure you've added it correctly in Vercel's Environment Variables
-- Redeploy after adding the API key
-- Check your OpenRouter account has credits
-
-**No transcription appearing:**
-- Speak clearly and at a moderate pace
-- Check your internet connection (needed for Speech API)
-- Try using Chrome browser
-
-## Costs
-
-- **Vercel**: Free tier includes 100GB bandwidth/month
-- **OpenRouter**: Pay-per-use, typically $0.003-$0.015 per summary
-- **Web Speech API**: Completely free (provided by browser)
-
-## Future Enhancements
-
-- Save transcripts as downloadable files
-- Support for multiple languages in the UI
-- Speaker identification for multi-person conversations
-- Export summaries to PDF
-- Integration with note-taking apps
-
-## Support
-
-If you encounter issues:
-1. Check the browser console for errors (F12 → Console)
-2. Verify your API key is correct
-3. Ensure you're using a supported browser
-
-## License
-
-This project is open source and available for personal and commercial use.
+EchoDoc is a privacy-focused AI medical scribe application designed specifically for UK healthcare professionals. It transforms clinical consultations into structured documentation using advanced speech recognition and AI summarization.
 
 ---
 
-Built with ❤️ for secure conversation analysis
+## 🎯 Features
+
+### Clinical Scribe (index.html)
+- **🎙️ High-Quality Audio Recording** - Compressed audio (12kbps) for efficient long recordings
+- **🎯 AI-Powered Transcription** - Deepgram's medical-grade transcription API with British English support
+- **🏥 Clinical Summary Generation** - Structured clinical notes in NHS-appropriate format
+- **📄 Referral Letter Generation** - Professional secondary care referral letters
+- **👤 Patient Summary Generation** - Plain-English summaries for patient communication
+- **🔒 Patient Data Anonymization** - Automatically removes names, addresses, NHS numbers, and identifying information
+- **📞 Telephone Consultation Mode** - Captures both microphone and phone call audio
+- **🎤 Microphone Selection** - Choose from available audio input devices
+- **📊 Real-Time Recording Monitoring** - Live audio visualization and file size tracking
+- **⏱️ Recording Timer & Limits** - Prevents data loss with 4MB limit warnings
+- **🌙 Dark Mode** - Eye-friendly dark theme with preference saving
+- **✏️ Editable Outputs** - All generated text is editable before copying
+- **📋 One-Click Copy** - Copy any output directly to clipboard
+
+### AI Dictation (dictation.html)
+- **🎤 Voice-to-Text Dictation** - Continuous dictation for letters and documents
+- **🤖 AI Formatting** - Intelligent formatting and structuring of dictated content
+- **📝 Multiple Output Formats** - Support for various document types
+- **🌙 Dark Mode** - Consistent dark theme across both tools
+
+---
+
+## 🚀 Live Demo
+
+Visit the live application: **[https://ambientdoc.vercel.app](https://ambientdoc.vercel.app)**
+
+---
+
+## 🏗️ Technology Stack
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Frontend** | HTML5, CSS3, JavaScript | Modern responsive UI |
+| **Styling** | Custom CSS with CSS Grid | Professional medical interface |
+| **Animations** | Anime.js | Smooth UI transitions |
+| **Transcription API** | Deepgram (nova-2-medical) | Medical-grade speech-to-text |
+| **AI Summarization** | OpenRouter (Claude Sonnet 4) | Clinical document generation |
+| **Hosting** | Vercel | Serverless deployment |
+| **Audio Processing** | MediaRecorder API | Browser-native recording |
+
+---
+
+## 📋 Prerequisites
+
+Before deploying EchoDoc, you'll need:
+
+1. **GitHub Account** - For version control
+2. **Vercel Account** - For hosting (free tier works)
+3. **Deepgram API Key** - For transcription ([Get one here](https://deepgram.com))
+4. **OpenRouter API Key** - For AI summaries ([Get one here](https://openrouter.ai))
+
+---
+
+## 🔧 Setup Instructions
+
+### Step 1: Clone or Fork the Repository
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/echodoc.git
+cd echodoc
+
+# Or fork it on GitHub and clone your fork
+```
+
+### Step 2: Get Your API Keys
+
+#### Deepgram API Key (Transcription)
+1. Go to [Deepgram Console](https://console.deepgram.com)
+2. Sign up for a free account (includes $200 free credit)
+3. Navigate to "API Keys" section
+4. Create a new API key and copy it
+
+#### OpenRouter API Key (AI Summarization)
+1. Go to [OpenRouter](https://openrouter.ai)
+2. Sign up or log in
+3. Navigate to "Keys" section
+4. Create a new API key and copy it
+
+### Step 3: Deploy to Vercel
+
+#### Option A: One-Click Deploy (Easiest)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/echodoc)
+
+#### Option B: Manual Deploy
+
+1. Go to [Vercel](https://vercel.com)
+2. Sign in with GitHub
+3. Click "Add New Project"
+4. Import your GitHub repository
+5. Vercel auto-detects settings (no configuration needed)
+6. Click "Deploy"
+
+### Step 4: Configure Environment Variables
+
+After deployment:
+
+1. Go to your Vercel project dashboard
+2. Click **Settings** → **Environment Variables**
+3. Add these two variables:
+
+| Name | Value | Environment |
+|------|-------|-------------|
+| `DEEPGRAM_API_KEY` | Your Deepgram API key | Production, Preview, Development |
+| `OPENROUTER_API_KEY` | Your OpenRouter API key | Production, Preview, Development |
+
+4. Click **Save**
+5. Go to **Deployments** → Click **Redeploy** on latest deployment
+
+### Step 5: Test Your Deployment
+
+1. Visit your Vercel URL (e.g., `your-app.vercel.app`)
+2. Allow microphone access when prompted
+3. Click "Start Recording"
+4. Speak for a few seconds
+5. Click "Finish"
+6. Wait for transcription
+7. Click "Generate Clinical Documents"
+8. Verify all features work correctly ✅
+
+---
+
+## 💻 Local Development
+
+To run EchoDoc locally:
+
+### 1. Install Vercel CLI
+
+```bash
+npm install -g vercel
+```
+
+### 2. Clone and Setup
+
+```bash
+git clone https://github.com/YOUR_USERNAME/echodoc.git
+cd echodoc
+```
+
+### 3. Create Local Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+DEEPGRAM_API_KEY=your_deepgram_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+```
+
+### 4. Run Development Server
+
+```bash
+vercel dev
+```
+
+The app will be available at `http://localhost:3000`
+
+---
+
+## 📁 Project Structure
+
+```
+echodoc/
+├── index.html              # Clinical Scribe page
+├── dictation.html          # AI Dictation page
+├── app.js                  # Clinical Scribe JavaScript
+├── dictation.js            # AI Dictation JavaScript
+├── styles.css              # Main stylesheet
+├── api/
+│   ├── transcribe.js       # Deepgram transcription endpoint
+│   └── summarize.js        # OpenRouter summarization endpoint
+├── vercel.json             # Vercel configuration
+└── README.md               # This file
+```
+
+---
+
+## 🎯 How It Works
+
+### Recording Flow
+
+1. **Audio Capture** - MediaRecorder API captures microphone audio at 12kbps
+2. **Compression** - Opus codec compresses audio for efficient storage
+3. **Size Monitoring** - Real-time tracking prevents recordings exceeding 4MB
+4. **Telephone Mode** (Optional) - Mixes microphone + system audio via screen share
+
+### Transcription Flow
+
+1. **Audio Upload** - Compressed WebM audio sent to `/api/transcribe`
+2. **Deepgram Processing** - Deepgram's `nova-2-medical` model transcribes with British English
+3. **Display** - Full transcript displayed in editable text box
+
+### Summarization Flow
+
+1. **Anonymization** (Optional) - Removes patient names, addresses, NHS numbers, phone numbers
+2. **API Request** - Anonymized transcript sent to `/api/summarize`
+3. **Claude Processing** - Claude Sonnet 4 generates structured clinical summary
+4. **Multiple Outputs** - Generate referral letters and patient summaries from clinical summary
+
+---
+
+## 🔒 Privacy & Security
+
+EchoDoc is designed with healthcare data protection in mind:
+
+### ✅ Privacy Features
+
+- **Client-Side Processing** - Audio recorded and compressed in browser
+- **No Audio Storage** - Audio transcribed and immediately discarded
+- **Anonymization** - Optional removal of identifying information before AI processing
+- **HTTPS Required** - All communication encrypted (provided by Vercel)
+- **No Session Storage** - No conversation data stored on servers
+- **Local Storage Only** - Dark mode preferences stored locally
+
+### ⚠️ Important Disclaimers
+
+> **This is a demonstration tool for educational and development purposes.**
+
+For production clinical use:
+- ✅ Obtain appropriate patient consent
+- ✅ Ensure GDPR and NHS data protection compliance
+- ✅ Follow your organization's information governance policies
+- ✅ Verify all AI-generated content before adding to patient records
+- ✅ Maintain clinician responsibility for all documentation
+
+---
+
+## 🌍 Browser Compatibility
+
+| Browser | Status | Notes |
+|---------|--------|-------|
+| Chrome | ✅ Fully Supported | Recommended for best experience |
+| Edge | ✅ Fully Supported | Chromium-based, works perfectly |
+| Safari | ⚠️ Partial Support | May have audio compression issues |
+| Firefox | ✅ Fully Supported | Requires user permission for microphone |
+| Mobile Chrome | ✅ Supported | Responsive design optimized |
+| Mobile Safari | ⚠️ Partial Support | Audio recording may be limited |
+
+**Requirements:**
+- HTTPS connection (provided by Vercel)
+- Microphone access permission
+- Modern browser with MediaRecorder API support
+
+---
+
+## 💰 Cost Breakdown
+
+### Vercel (Hosting)
+- **Free Tier**: 100GB bandwidth/month, 100GB-hrs compute
+- **Pro Tier**: $20/month (if needed for higher usage)
+
+### Deepgram (Transcription)
+- **Free Credit**: $200 free credit on signup
+- **Pay-As-You-Go**: $0.0043/minute (nova-2-medical model)
+- **Example**: 100 x 10-minute consultations = ~$4.30
+
+### OpenRouter (AI Summarization)
+- **Claude Sonnet 4**: ~$3 per million input tokens
+- **Example**: 100 summaries (500 words each) = ~$0.15
+
+**Total Monthly Cost (100 consultations)**: ~$4.45 + hosting
+
+---
+
+## 🎨 Customization
+
+### Change AI Model
+
+In `api/summarize.js`, modify:
+
+```javascript
+model: 'anthropic/claude-sonnet-4-20250514'
+```
+
+Available alternatives:
+- `anthropic/claude-opus-4-20250514` (Most capable, higher cost)
+- `openai/gpt-4-turbo`
+- `openai/gpt-4o`
+
+### Change Transcription Language
+
+In `api/transcribe.js`, modify:
+
+```javascript
+language: 'en-GB'  // British English
+```
+
+Available options:
+- `en-US` - American English
+- `en-AU` - Australian English
+- `es` - Spanish
+- `fr` - French
+- `de` - German
+
+### Modify Clinical Summary Format
+
+In `api/summarize.js`, update the system prompt to customize output format.
+
+---
+
+## 🐛 Troubleshooting
+
+### Issue: Microphone Not Working
+**Solutions:**
+- ✅ Grant microphone permissions in browser settings
+- ✅ Ensure HTTPS connection (required for microphone access)
+- ✅ Check if another app is using the microphone
+- ✅ Try a different browser (Chrome recommended)
+
+### Issue: Transcription Fails
+**Solutions:**
+- ✅ Verify `DEEPGRAM_API_KEY` is set correctly in Vercel
+- ✅ Check Deepgram account has remaining credits
+- ✅ Ensure recording is under 4MB (approximately 40 minutes at 12kbps)
+- ✅ Check browser console for error messages
+
+### Issue: Summary Generation Fails
+**Solutions:**
+- ✅ Verify `OPENROUTER_API_KEY` is set correctly in Vercel
+- ✅ Check OpenRouter account has credits
+- ✅ Ensure transcript is not empty
+- ✅ Check browser console for API errors
+
+### Issue: Recording Stuck at "Loading microphones..."
+**Solutions:**
+- ✅ Hard refresh page (Ctrl+Shift+R)
+- ✅ Check for JavaScript syntax errors in console
+- ✅ Verify all files deployed correctly to Vercel
+- ✅ Clear browser cache
+
+### Issue: Dark Mode Not Working
+**Solutions:**
+- ✅ Verify dark mode CSS is in `styles.css`
+- ✅ Check dark mode JavaScript is in `app.js`
+- ✅ Clear browser localStorage and refresh
+- ✅ Try toggling the dark mode switch multiple times
+
+---
+
+## 🔄 Deployment & Updates
+
+### Automatic Deployment
+Every push to `main` branch automatically deploys to Vercel:
+
+```bash
+git add .
+git commit -m "Your update message"
+git push origin main
+```
+
+### Manual Deployment
+Use Vercel CLI:
+
+```bash
+vercel --prod
+```
+
+### Rollback Deployment
+In Vercel dashboard:
+1. Go to **Deployments**
+2. Find a previous successful deployment
+3. Click **⋯** → **Promote to Production**
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Deepgram** - Medical-grade transcription API
+- **Anthropic** - Claude AI for clinical summarization
+- **OpenRouter** - Unified AI API access
+- **Vercel** - Serverless hosting platform
+- **NHS** - Inspiration for clinical documentation standards
+
+---
+
+## 📞 Support & Contact
+
+- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/echodoc/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/echodoc/discussions)
+- **Email**: your.email@example.com
+
+---
+
+## ⚡ Future Roadmap
+
+- [ ] Multiple speaker identification
+- [ ] Integration with NHS SystmOne/EMIS
+- [ ] PDF export for clinical summaries
+- [ ] Voice commands for hands-free operation
+- [ ] Multi-language support
+- [ ] Consultation templates for common scenarios
+- [ ] Integration with clinical coding systems (SNOMED CT)
+- [ ] Real-time collaborative note-taking
+- [ ] Mobile app (iOS/Android)
+
+---
+
+## 📊 Project Status
+
+**Current Version**: 1.0.0  
+**Status**: Active Development  
+**Last Updated**: January 2025
+
+---
+
+<div align="center">
+
+**Built with ❤️ for UK Healthcare Professionals**
+
+Made by [Your Name] | [GitHub](https://github.com/YOUR_USERNAME) | [Website](https://your-website.com)
+
+</div>
