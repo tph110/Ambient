@@ -880,3 +880,130 @@ button, .btn, .card, input, select, textarea {
 a.brand-link {
     text-decoration: none !important;
 }
+/* ================================================================
+   DARK MODE TOGGLE SWITCH
+   Add this to the END of your styles.css file
+   ================================================================ */
+
+/* Dark Mode Toggle Container */
+.dark-mode-toggle {
+    display: flex;
+    align-items: center;
+    margin-left: var(--spacing-md);
+}
+
+/* Toggle Switch Label (Container) */
+.dark-mode-label {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+    cursor: pointer;
+}
+
+/* Hide the actual checkbox */
+.dark-mode-checkbox {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider background */
+.dark-mode-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-color);
+    border-radius: 26px;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* The slider circle/knob */
+.dark-mode-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* When checked - change background color */
+.dark-mode-checkbox:checked + .dark-mode-slider {
+    background-color: var(--primary-color);
+}
+
+/* When checked - slide the circle to the right */
+.dark-mode-checkbox:checked + .dark-mode-slider:before {
+    transform: translateX(24px);
+}
+
+/* Moon icon next to the switch */
+.dark-mode-icon {
+    position: absolute;
+    right: -32px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.25rem;
+    user-select: none;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Hover effect */
+.dark-mode-label:hover .dark-mode-slider {
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(2, 132, 199, 0.1);
+}
+
+/* Active/pressed effect */
+.dark-mode-checkbox:active + .dark-mode-slider:before {
+    width: 24px;
+}
+
+/* Focus outline for accessibility */
+.dark-mode-checkbox:focus + .dark-mode-slider {
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(2, 132, 199, 0.3);
+}
+
+/* Dark mode - adjust colors */
+body.dark-mode .dark-mode-slider {
+    background-color: var(--border-color);
+}
+
+body.dark-mode .dark-mode-slider:before {
+    background-color: var(--surface-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .dark-mode-checkbox:checked + .dark-mode-slider {
+    background-color: var(--primary-color);
+}
+
+/* Responsive - make slightly smaller on mobile */
+@media (max-width: 640px) {
+    .dark-mode-label {
+        width: 44px;
+        height: 22px;
+    }
+    
+    .dark-mode-slider:before {
+        height: 16px;
+        width: 16px;
+    }
+    
+    .dark-mode-checkbox:checked + .dark-mode-slider:before {
+        transform: translateX(22px);
+    }
+    
+    .dark-mode-icon {
+        font-size: 1rem;
+        right: -28px;
+    }
+}
