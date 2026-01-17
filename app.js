@@ -1557,3 +1557,35 @@ function setupEditableContent() {
         });
     });
 }
+// DARK MODE TOGGLE
+function initializeDarkMode() {
+    const darkModeCheckbox = document.getElementById('darkModeCheckbox');
+    if (!darkModeCheckbox) return;
+    
+    // Load saved preference
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode === 'enabled') {
+        document.body.classList.add('dark-mode');
+        darkModeCheckbox.checked = true;
+    }
+    
+    // Toggle on checkbox change
+    darkModeCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('darkMode', 'enabled');
+            console.log('🌙 Dark mode ON');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('darkMode', 'disabled');
+            console.log('☀️ Dark mode OFF');
+        }
+    });
+}
+
+// Initialize when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeDarkMode);
+} else {
+    initializeDarkMode();
+}
