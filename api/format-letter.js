@@ -38,14 +38,13 @@ export default async function handler(req, res) {
         const systemPrompt = `You are an expert medical secretary specializing in formatting dictated letters for UK healthcare professionals.
 
 YOUR TASK:
-1. Convert the raw dictation transcript into a properly formatted professional letter
+1. Convert the raw dictation transcript into a properly formatted professional document
 2. Remove all dictation commands (e.g., "full stop", "comma", "new paragraph", "delete that")
 3. Add proper punctuation where indicated by voice commands
 4. Use British English spelling and conventions
-5. Format the letter professionally with appropriate structure
+5. Format the document professionally with appropriate structure
 6. Correct any obvious transcription errors or grammatical mistakes
 7. Maintain medical terminology exactly as dictated
-8. Extract key information to populate structured sections (for referral letters)
 
 FORMATTING RULES:
 - "full stop" or "period" → Add a period (.)
@@ -61,25 +60,20 @@ FORMATTING RULES:
 - "delete that" / "scratch that" → Remove the previous sentence
 - "yours sincerely" / "yours faithfully" / "kind regards" → Format as sign-off
 
-EXTRACTING STRUCTURED INFORMATION (for referral letters):
-- **Reason for referral**: Identify the PRIMARY condition or problem being referred (e.g., "Nasal polyps", "Chest pain", "Suspected DVT")
-- **Background**: Extract relevant past medical history, current medications, risk scores, allergies mentioned in the dictation
-- Keep these sections concise - bullet points or brief sentences
-
 ${letterInstructions}
 
 IMPORTANT:
-- Output ONLY the formatted letter text
+- Output ONLY the formatted document text
 - Use British English spelling (e.g., "summarise" not "summarize", "centre" not "center")
 - Do NOT include any preamble, explanation, or meta-commentary
-- Do NOT wrap the letter in markdown code blocks or use markdown formatting
+- Do NOT wrap the text in markdown code blocks or use markdown formatting symbols (like **)
 - Maintain professional medical tone
 - Preserve all medical terminology and abbreviations exactly as dictated
 - Add appropriate spacing between sections
-- Use proper letter structure with clear paragraphs
-- For patient details, use plain text format: "Name:", "DoB:", "NHS Number:", "Address:" (NOT bold, NOT "Re:")`;
+- Use proper structure with clear paragraphs
+- For patient details or headers, use plain text format followed by a dashed underline where specified.`;
 
-        const userPrompt = `Please format this dictated letter transcript into a professional letter:
+        const userPrompt = `Please format this dictated transcript into a professional document:
 
 ${transcript}`;
 
@@ -96,7 +90,7 @@ ${transcript}`;
                 'X-Title': 'EchoDoc Letter Dictation'
             },
             body: JSON.stringify({
-                model: 'deepseek/deepseek-chat', // Fast and good at following instructions
+                model: 'deepseek/deepseek-chat',
                 messages: [
                     {
                         role: 'system',
@@ -107,203 +101,115 @@ ${transcript}`;
                         content: userPrompt
                     }
                 ],
-                temperature: 0.3, // Lower temperature for more consistent formatting
-                max_tokens: 2000
+                temperature: 0.3,
+                max_tokens: 3000
             })
         });
 
-        console.log('OpenRouter response status:', response.status);
-        console.log('OpenRouter response headers:', {
-            'content-type': response.headers.get('content-type'),
-            'x-ratelimit-remaining': response.headers.get('x-ratelimit-remaining')
-        });
-
         if (!response.ok) {
-            let errorText;
-            try {
-                const errorData = await response.json();
-                errorText = JSON.stringify(errorData);
-                console.error('OpenRouter JSON error:', errorData);
-            } catch (e) {
-                errorText = await response.text();
-                console.error('OpenRouter text error:', errorText);
-            }
+            let errorText = await response.text();
             return res.status(response.status).json({ 
                 error: `AI formatting failed (${response.status}): ${errorText.substring(0, 200)}` 
             });
         }
 
         const data = await response.json();
-        console.log('OpenRouter response received successfully');
-        console.log('Response structure:', {
-            hasChoices: !!data.choices,
-            choicesLength: data.choices?.length,
-            hasMessage: !!data.choices?.[0]?.message,
-            hasContent: !!data.choices?.[0]?.message?.content
-        });
-
-        // Extract formatted letter
         const letter = data.choices?.[0]?.message?.content;
 
         if (!letter || letter.trim() === '') {
-            console.error('Empty letter received from AI');
-            return res.status(500).json({ 
-                error: 'AI returned empty response' 
-            });
+            return res.status(500).json({ error: 'AI returned empty response' });
         }
-
-        console.log('Letter formatted successfully');
-        console.log('Letter length:', letter.length, 'characters');
 
         return res.status(200).json({ letter });
 
     } catch (error) {
         console.error('Letter formatting error:', error);
-        return res.status(500).json({ 
-            error: error.message || 'Failed to format letter' 
-        });
+        return res.status(500).json({ error: error.message || 'Failed to format letter' });
     }
 }
 
 // Get letter-specific formatting instructions
 function getLetterInstructions(letterType) {
     switch (letterType) {
+        case 'meeting-minutes':
+            return `LETTER TYPE: Healthcare Meeting Minutes
+
+CRITICAL FORMATTING RULES:
+1. IDENTITY: Use ONLY initials for all names (e.g., "Dr J.S." or "M.P."), NEVER full names.
+2. TITLES: Do NOT use markdown bolding (**). Use plain text followed by a dashed underline.
+   Example:
+   Meeting Details
+   ---------------
+3. LISTS: Use bullet points (•) for all content.
+4. CONTENT: Be comprehensive and detailed. Capture specific data, statistics, and who said what (using initials).
+
+STRUCTURE:
+Meeting Details
+---------------
+• Date: [Extract from transcript]
+• Attendees: [List with initials]
+• Apologies: [List with initials]
+• Chair: [Initials]
+
+Agenda Items Discussed
+----------------------
+[For each item include:]
+• [Topic Name]
+  - [Initials]: [Detailed point/contribution]
+  - [Initials]: [Response/concern]
+  - Outcome: [Decision or agreement]
+  - Rationale: [Why it was decided]
+
+Action Items
+------------
+• [Task description]
+  - Responsible: [Initials]
+  - Due date: [Date or TBD]
+
+Decisions Made
+--------------
+• [Decision with context]
+  - Rationale: [Why]
+
+Risks and Concerns
+------------------
+• [Risk description] - Raised by: [Initials]
+  - Mitigation: [Plan]
+
+Next Meeting
+------------
+• Date/Time/Agenda if mentioned.`;
+
         case 'referral':
             return `LETTER TYPE: Medical Referral Letter
 
 STRUCTURE:
-1. Date (today's date in UK format: DD Month YYYY)
-2. Recipient department/name and address (if provided)
-3. "Dear Dr [Name]" or "Dear Colleague"
-4. Patient details section (NOT bold, NOT using "Re:"):
-   Name: [Full name with title]
-   DoB: DD/MM/YYYY
-   NHS Number: [if mentioned, otherwise omit this line]
-   Address: [if mentioned, otherwise omit this line]
-5. Blank line
-6. **Reason for referral:** [Extract the main condition/problem from the dictation]
-7. Blank line
-8. **Background:** [Extract relevant past medical history, current medications, relevant social history]
-9. Blank line
-10. Clinical narrative (main body):
-    - Presenting complaint and history
-    - Examination findings (if mentioned)
-    - Investigations (if mentioned)
-    - Current management
-11. Blank line
-12. Question/request: What you're asking the specialist to do
-13. Closing: "Thank you for your help with this patient's care"
-14. Sign-off: "Yours sincerely" (if named recipient) or "Yours faithfully" (if Dear Colleague)
-15. [Doctor's name and credentials to be added]
+1. Date (UK format: DD Month YYYY)
+2. Recipient details
+3. Greeting
+4. Patient details: Name, DoB (DD/MM/YYYY), NHS Number
+5. Reason for referral (Plain text header)
+6. Background (Plain text header)
+7. Clinical narrative
+8. Closing and Sign-off
 
-IMPORTANT FORMATTING RULES:
-- Patient details: Use "Name:", "DoB:", "NHS Number:", "Address:" (NOT bold, plain text with colons)
-- DoB format: DD/MM/YYYY (e.g., 07/02/1943)
-- "Reason for referral:" should be on its own line, in bold
-- "Background:" should be on its own line, in bold
-- Extract reason for referral from the clinical content (e.g., if discussing nasal polyps, reason = "Nasal polyps")
-- Extract background from medical history mentioned (e.g., "Atrial fibrillation on apixaban, CHA₂DS₂-VASc score 3")
-- Keep each section concise
-- Use proper paragraph spacing`;
+RULES: Use plain text headers. British English.`;
 
         case 'sick-note':
-            return `LETTER TYPE: Sick Note / Fit Note
-
-STRUCTURE:
-1. Date (today's date)
-2. "To Whom It May Concern"
-3. Re: [Patient Name]
-4. Statement of unfitness for work
-5. Period of absence
-6. Medical reason (keep general, preserve confidentiality)
-7. Any recommendations (e.g., phased return, adjustments)
-8. Sign-off: "Yours faithfully"
-9. [Doctor's name and credentials to be added]
-
-Keep brief and professional. Avoid excessive medical details.`;
+            return `LETTER TYPE: Sick Note / Fit Note. Keep brief. Statement of unfitness, period of absence, and medical reason.`;
 
         case 'to-whom':
-            return `LETTER TYPE: To Whom It May Concern
-
-STRUCTURE:
-1. Date (today's date)
-2. "To Whom It May Concern"
-3. Re: [Patient Name] (if mentioned)
-4. Clear statement of purpose
-5. Relevant supporting information
-6. Conclusion
-7. Sign-off: "Yours faithfully"
-8. [Doctor's name and credentials to be added]
-
-Formal and concise.`;
+            return `LETTER TYPE: To Whom It May Concern. Formal and concise statement of purpose.`;
 
         case 'patient':
-            return `LETTER TYPE: Letter to Patient
-
-STRUCTURE:
-1. Date (today's date)
-2. "Dear [Patient Name]"
-3. Friendly opening
-4. Explanation in plain English (avoid medical jargon)
-5. Clear action points or recommendations
-6. Invitation to contact if questions
-7. Closing: "Kind regards" or "Best wishes"
-8. [Doctor's name and credentials to be added]
-
-Use simple, clear language. Explain medical terms.`;
+            return `LETTER TYPE: Letter to Patient. Use plain English, avoid jargon. Friendly but professional tone.`;
 
         case 'free-text':
-            return `LETTER TYPE: Free Text (No Formatting)
-
-INSTRUCTIONS:
-DO NOT format this as a letter. DO NOT add any structure, dates, greetings, or sign-offs.
-
-Your task is simply to:
-1. Clean up the dictated text by removing dictation commands
-2. Add proper punctuation where indicated by voice commands
-3. Organize into clear paragraphs
-4. Fix any obvious transcription errors
-5. Improve grammar and readability
-
-VOICE COMMANDS TO PROCESS:
-- "full stop" or "period" → Add a period (.)
-- "comma" → Add a comma (,)
-- "new paragraph" → Start a new paragraph
-- "new line" → Add a line break
-- "colon" → Add a colon (:)
-- "question mark" → Add a question mark (?)
-- "delete that" / "scratch that" → Remove the previous sentence
-
-DO NOT ADD:
-- Dates
-- Greetings (Dear X)
-- Sign-offs (Yours sincerely, etc.)
-- Letter structure
-- Headings or sections
-- Any formatting beyond basic paragraphs
-
-OUTPUT:
-Return the cleaned-up text with proper punctuation and paragraph breaks, but NO letter formatting whatsoever.`;
+            return `LETTER TYPE: Free Text. Clean up punctuation and grammar only. No letter structure.`;
 
         case 'general':
         default:
-            return `LETTER TYPE: General Correspondence
-
-STRUCTURE:
-1. Date (today's date)
-2. Recipient address/name (if provided)
-3. Appropriate greeting ("Dear [Name]" or "Dear Sir/Madam")
-4. Clear subject line (if mentioned)
-5. Introduction
-6. Main content in logical paragraphs
-7. Conclusion
-8. Appropriate sign-off:
-   - "Yours sincerely" if named recipient
-   - "Yours faithfully" if unnamed
-   - "Kind regards" for less formal
-9. [Name and credentials to be added]
-
-Professional business letter format.`;
+            return `LETTER TYPE: General Correspondence. Professional business letter format.`;
     }
 }
 
