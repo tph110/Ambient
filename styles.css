@@ -1179,3 +1179,18 @@ body.dark-mode .toggle-description {
         transform: translateX(18px);
     }
 }
+.helper-text {
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border-left: 3px solid var(--primary-color);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+body.dark-mode .helper-text {
+    background: linear-gradient(135deg, #667eea25 0%, #764ba225 100%);
+    color: var(--text-secondary);
+}
