@@ -107,30 +107,30 @@
                     <!-- Telephone Consultation Mode -->
                     <div class="telephone-mode-container">
                         <div class="toggle-option">
-                    <label class="toggle-label">
-                    <input type="checkbox" id="telephoneModeCheckbox" class="toggle-checkbox">
-                    <span class="toggle-slider"></span>
-                    </label>
-                    <div class="toggle-text">
-                        <span class="toggle-title">Telephone Consultation Mode</span>
-                    <p class="toggle-description">Captures both your microphone and the phone call audio (via screen share). Requires you to share your telephony software window with audio enabled.</p>
+                            <label class="toggle-label">
+                                <input type="checkbox" id="telephoneModeCheckbox" class="toggle-checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="toggle-title">Telephone Consultation Mode</span>
+                                <p class="toggle-description">Captures both your microphone and the phone call audio (via screen share). Requires you to share your telephony software window with audio enabled.</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
                     
                     <!-- Anonymization Toggle -->
                     <div class="anonymization-container">
-    <div class="toggle-option">
-        <label class="toggle-label">
-            <input type="checkbox" id="anonymizeCheckbox" class="toggle-checkbox" checked>
-            <span class="toggle-slider"></span>
-        </label>
-        <div class="toggle-text">
-            <span class="toggle-title">Anonymize Patient Data</span>
-            <p class="toggle-description">Automatically removes names, addresses, phone numbers, and other identifying information before sending to AI for summarization.</p>
-        </div>
-    </div>
-</div>
+                        <div class="toggle-option">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="anonymizeCheckbox" class="toggle-checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="toggle-title">Anonymize Patient Data</span>
+                                <p class="toggle-description">Automatically removes names, addresses, phone numbers, and other identifying information before sending to AI for summarization.</p>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Recording Buttons -->
                     <div class="button-group-controls">
@@ -180,12 +180,13 @@
             <div class="card output-card">
                 <div class="card-header">
                     <h3>Structured Clinical Summary</h3>
-                    <button id="copySummary" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
+                    <button id="copySummary" class="btn-icon copy-btn" title="Copy to Clipboard">📋</button>
                 </div>
                 <div class="card-body">
                     <p class="ai-disclaimer">AI can make mistakes. Check all content is correct before pasting into the notes</p>
+                    <p class="helper-text">💡 Tip: You can type or paste consultation details directly here, then generate referral letters and patient summaries below</p>
                     <div id="summary" class="output-content" contenteditable="true">
-                        <p class="placeholder">An AI-generated summary will appear here once you have finished recording</p>
+                        <p class="placeholder">Type or paste consultation details here, or record audio to generate an AI summary</p>
                     </div>
                 </div>
             </div>
@@ -197,11 +198,11 @@
                     <button id="copyReferral" class="btn-icon copy-btn" title="Copy to Clipboard" style="display: none;">📋</button>
                 </div>
                 <div class="card-body">
-                    <button id="generateReferral" class="btn btn-secondary btn-small" style="display: none;">
+                    <button id="generateReferral" class="btn btn-secondary btn-small">
                         Generate Referral Letter
                     </button>
                     <div id="referralLetter" class="output-content document-paper" contenteditable="true">
-                        <p class="placeholder">Generate a clinical summary first, then create a referral letter for secondary care specialists</p>
+                        <p class="placeholder">Click "Generate Referral Letter" to create a professional referral based on the clinical summary above</p>
                     </div>
                 </div>
             </div>
@@ -214,11 +215,11 @@
                 </div>
                 <div class="card-body">
                     <p class="section-description">Patient-friendly summary in plain English to share with the patient</p>
-                    <button id="generatePatientSummary" class="btn btn-secondary btn-small" style="display: none;">
+                    <button id="generatePatientSummary" class="btn btn-secondary btn-small">
                         Generate Patient Summary
                     </button>
                     <div id="patientSummary" class="output-content" contenteditable="true">
-                        <p class="placeholder">Generate a clinical summary first, then create a patient-friendly summary to share</p>
+                        <p class="placeholder">Click "Generate Patient Summary" to create a patient-friendly summary based on the clinical summary above</p>
                     </div>
                 </div>
             </div>
