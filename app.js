@@ -1044,7 +1044,7 @@ async function generateSummary() {
 // Generate Referral Letter
 async function generateReferralLetter() {
     const summaryContent = summaryDiv.innerText.trim();
-    if (!summaryContent) { alert(...); return; }
+    if (!summaryContent) { alert(...); return; 
     
     // Show loading
     generateReferralBtn.disabled = true;
