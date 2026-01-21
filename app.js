@@ -1043,15 +1043,24 @@ async function generateSummary() {
 
 // Generate Referral Letter
 async function generateReferralLetter() {
-    // Get content from summary box (user-typed OR AI-generated)
     const summaryContent = summaryDiv.innerText.trim();
+    if (!summaryContent) { alert(...); return; }
     
-    if (!summaryContent || 
-        summaryContent === 'Type or paste consultation details here, or record audio to generate an AI summary' ||
-        summaryContent.includes('Summary will appear here')) {
-        alert('Please enter consultation details in the Clinical Summary box first');
-        return;
-    }
+    // Show loading
+    generateReferralBtn.disabled = true;
+    
+    // Actually call the API
+    const response = await fetch('/api/summarize', {
+        method: 'POST',
+        body: JSON.stringify({ transcript: summaryContent, type: 'referral' })
+    });
+    
+    // Handle response
+    const data = await response.json();
+    referralLetterDiv.innerHTML = data.summary;
+    
+    // etc...
+}
     // ... rest of function uses summaryContent instead of finalSummary
 
     // Show loading state
