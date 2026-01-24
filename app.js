@@ -116,6 +116,8 @@ async function startRecording() {
         recordingStartTime = Date.now();
         pausedDuration = 0;
         
+        // CRITICAL FIX: Ensure buttons are enabled and visible
+        enableControlButtons();
         updateUI();
         startTimer();
         startSizeMonitor();
@@ -125,32 +127,38 @@ async function startRecording() {
     }
 }
 
+function enableControlButtons() {
+    // Explicitly remove disabled state and forbidden cursor
+    [pauseBtn, stopBtn].forEach(btn => {
+        if (btn) {
+            btn.disabled = false;
+            btn.style.pointerEvents = "auto";
+            btn.style.opacity = "1";
+        }
+    });
+}
+
 function pauseRecording() {
     if (!mediaRecorder || !isRecording) return;
 
     if (!isPaused) {
-        // Switch to PAUSED
         mediaRecorder.pause();
         isPaused = true;
         pauseStartTime = Date.now();
         clearInterval(recordingTimer);
-        statusDiv.textContent = "Paused";
-        pauseBtn.innerText = "Resume";
     } else {
-        // Switch to RESUMED
         mediaRecorder.resume();
         isPaused = false;
-        // Calculate how long we were paused and add it to total paused duration
         pausedDuration += (Date.now() - pauseStartTime);
-        startTimer(); // Restart the interval
-        statusDiv.textContent = "Recording...";
-        pauseBtn.innerText = "Pause";
+        startTimer();
     }
+    updateUI();
 }
 
 function stopRecording() {
     if (mediaRecorder) {
         mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
         isRecording = false;
         isPaused = false;
         clearInterval(recordingTimer);
@@ -163,6 +171,8 @@ function stopRecording() {
         updateUI();
     }
 }
+
+// --- TRANSCRIPTION & AI ---
 
 async function processRecording() {
     statusDiv.textContent = "Transcribing medical audio...";
@@ -193,8 +203,6 @@ async function processRecording() {
         console.error(err);
     }
 }
-
-// --- AI GENERATION ---
 
 async function generateAIContent(type, targetDiv, button) {
     const originalText = button.innerText;
@@ -230,17 +238,24 @@ function anonymizeTranscript(text) {
 // --- UI HELPERS ---
 
 function updateUI() {
+    // Show/Hide buttons based on recording state
     startBtn.style.display = isRecording ? 'none' : 'inline-block';
     pauseBtn.style.display = isRecording ? 'inline-block' : 'none';
     stopBtn.style.display = isRecording ? 'inline-block' : 'none';
+    
+    // Toggle Pause/Resume text
     pauseBtn.innerText = isPaused ? "Resume" : "Pause";
-    statusDiv.textContent = isRecording ? (isPaused ? "Paused" : "Recording...") : "Ready";
+    
+    // Update Status text
+    if (isRecording) {
+        statusDiv.textContent = isPaused ? "Paused" : "Recording...";
+    } else {
+        statusDiv.textContent = "Ready";
+    }
 }
 
 function startTimer() {
-    // Clear any existing timer before starting a new one
     if (recordingTimer) clearInterval(recordingTimer);
-    
     recordingTimer = setInterval(() => {
         const elapsed = Date.now() - recordingStartTime - pausedDuration;
         const mins = Math.floor(elapsed / 60000);
@@ -254,6 +269,7 @@ function startTimer() {
 
 function startSizeMonitor() {
     sizeMonitorInterval = setInterval(() => {
+        if (audioChunks.length === 0) return;
         const size = new Blob(audioChunks).size / (1024 * 1024);
         const sizeLabel = document.getElementById('timerSize');
         if (sizeLabel) sizeLabel.innerText = `${size.toFixed(1)} MB`;
@@ -263,37 +279,33 @@ function startSizeMonitor() {
             const percent = Math.min((size / 4) * 100, 100);
             progressBar.style.width = `${percent}%`;
         }
-
-        if (size > 3.5 && !hasShownSizeWarning) {
-            alert("Approaching 4MB limit. Please finish shortly.");
-            hasShownSizeWarning = true;
-        }
     }, 2000);
 }
 
 // --- INITIALIZATION ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Setup Microphone
     populateMicrophoneDropdown();
-    
-    // 2. Control Buttons
+    initializeDarkMode();
+
+    // Attach core listeners
     startBtn.addEventListener('click', startRecording);
-    pauseBtn.addEventListener('click', pauseRecording); // This was the critical missing/incorrect link
+    pauseBtn.addEventListener('click', pauseRecording);
     stopBtn.addEventListener('click', stopRecording);
     
-    // 3. AI Buttons
+    // AI Listeners
     getSummaryBtn.addEventListener('click', () => generateAIContent('clinical', summaryDiv, getSummaryBtn));
     generateReferralBtn.addEventListener('click', () => generateAIContent('referral', referralLetterDiv, generateReferralBtn));
     generatePatientSummaryBtn.addEventListener('click', () => generateAIContent('patient', patientSummaryDiv, generatePatientSummaryBtn));
     
-    // 4. Dropdown Change
+    // Mic selection
     const micDropdown = document.getElementById('microphoneDropdown');
     if (micDropdown) {
         micDropdown.addEventListener('change', handleMicrophoneSelection);
     }
-
-    initializeDarkMode();
+    
+    // Initial UI state
+    updateUI();
 });
 
 function initializeDarkMode() {
