@@ -530,8 +530,18 @@ function updateButtonColors() { /* Visual Updates */ }
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     console.log('EchoDoc initialized');
+    
+    // Populate microphone dropdown
+    populateMicrophoneDropdown();
+    
     setupEditableContent();
-    setupSummaryBoxPlaceholderRemoval(); // Added as requested
+    setupSummaryBoxPlaceholderRemoval();
+    
+    // Setup microphone dropdown listener
+    const micDropdown = document.getElementById('microphoneDropdown');
+    if (micDropdown) {
+        micDropdown.addEventListener('change', handleMicrophoneSelection);
+    }
 });
 
 function setupEditableContent() {
