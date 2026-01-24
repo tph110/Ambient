@@ -552,7 +552,9 @@ function setupEditableContent() {
         });
     });
 }
-
+document.addEventListener('DOMContentLoaded', () => {
+    populateMicrophoneDropdown();  // ❌ Function doesn't exist!
+});
 function initializeDarkMode() {
     const btn = document.getElementById('darkModeCheckbox');
     if (!btn) return;
