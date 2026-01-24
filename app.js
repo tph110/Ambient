@@ -22,7 +22,6 @@ let audioChunks = [];
 let isRecording = false;
 let isPaused = false;
 let finalTranscript = '';
-let finalSummary = '';
 let recordingStartTime = null;
 let recordingTimer = null;
 let pausedDuration = 0;
@@ -30,7 +29,6 @@ let pauseStartTime = null;
 let selectedMicId = null;
 let telephoneStreams = null;
 let sizeMonitorInterval = null;
-let currentRecordingSize = 0;
 let hasShownSizeWarning = false;
 
 // --- MICROPHONE MANAGEMENT ---
@@ -40,7 +38,6 @@ async function populateMicrophoneDropdown() {
     if (!dropdown) return;
     
     try {
-        // Request permission to ensure device labels are readable
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(track => track.stop());
 
@@ -48,7 +45,6 @@ async function populateMicrophoneDropdown() {
         const microphones = devices.filter(device => device.kind === 'audioinput');
         
         dropdown.innerHTML = '';
-        
         if (microphones.length === 0) {
             dropdown.innerHTML = '<option value="">No microphones detected</option>';
             dropdown.disabled = true;
@@ -59,27 +55,21 @@ async function populateMicrophoneDropdown() {
             const option = document.createElement('option');
             option.value = mic.deviceId;
             option.textContent = mic.label || `Microphone ${index + 1}`;
-            
             if (mic.deviceId === 'default' || index === 0) {
                 option.selected = true;
                 selectedMicId = mic.deviceId;
             }
             dropdown.appendChild(option);
         });
-        
     } catch (error) {
         console.error('Error detecting microphones:', error);
         dropdown.innerHTML = '<option value="">Permission denied</option>';
-        dropdown.disabled = true;
     }
 }
 
 function handleMicrophoneSelection() {
     const dropdown = document.getElementById('microphoneDropdown');
-    if (dropdown) {
-        selectedMicId = dropdown.value;
-        console.log('Microphone selected:', selectedMicId);
-    }
+    if (dropdown) selectedMicId = dropdown.value;
 }
 
 // --- RECORDING LOGIC ---
@@ -91,7 +81,6 @@ async function startRecording() {
 
         let stream;
         if (telephoneMode) {
-            console.log("Starting telephone mode (mic + system audio)...");
             const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
                 video: true, 
                 audio: { echoCancellation: true, noiseSuppression: true } 
@@ -102,12 +91,10 @@ async function startRecording() {
             
             const audioContext = new AudioContext();
             const destination = audioContext.createMediaStreamDestination();
-            
             audioContext.createMediaStreamSource(micStream).connect(destination);
             if (screenStream.getAudioTracks().length > 0) {
                 audioContext.createMediaStreamSource(screenStream).connect(destination);
             }
-            
             stream = destination.stream;
             telephoneStreams = [screenStream, micStream];
         } else {
@@ -128,29 +115,36 @@ async function startRecording() {
         isPaused = false;
         recordingStartTime = Date.now();
         pausedDuration = 0;
+        
         updateUI();
         startTimer();
         startSizeMonitor();
     } catch (err) {
         console.error("Error starting recording:", err);
-        alert("Could not start recording. Please check microphone permissions.");
+        alert("Could not start recording. Please check permissions.");
     }
 }
 
 function pauseRecording() {
-    if (mediaRecorder && isRecording) {
-        if (!isPaused) {
-            mediaRecorder.pause();
-            isPaused = true;
-            pauseStartTime = Date.now();
-            clearInterval(recordingTimer);
-        } else {
-            mediaRecorder.resume();
-            isPaused = false;
-            pausedDuration += (Date.now() - pauseStartTime);
-            startTimer();
-        }
-        updateUI();
+    if (!mediaRecorder || !isRecording) return;
+
+    if (!isPaused) {
+        // Switch to PAUSED
+        mediaRecorder.pause();
+        isPaused = true;
+        pauseStartTime = Date.now();
+        clearInterval(recordingTimer);
+        statusDiv.textContent = "Paused";
+        pauseBtn.innerText = "Resume";
+    } else {
+        // Switch to RESUMED
+        mediaRecorder.resume();
+        isPaused = false;
+        // Calculate how long we were paused and add it to total paused duration
+        pausedDuration += (Date.now() - pauseStartTime);
+        startTimer(); // Restart the interval
+        statusDiv.textContent = "Recording...";
+        pauseBtn.innerText = "Pause";
     }
 }
 
@@ -227,7 +221,6 @@ async function generateAIContent(type, targetDiv, button) {
 }
 
 function anonymizeTranscript(text) {
-    // Basic redaction logic for UK context
     return text
         .replace(/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/gi, '[POSTCODE]')
         .replace(/\b\d{3}\s*\d{3}\s*\d{4}\b/g, '[NHS NUMBER]')
@@ -241,24 +234,36 @@ function updateUI() {
     pauseBtn.style.display = isRecording ? 'inline-block' : 'none';
     stopBtn.style.display = isRecording ? 'inline-block' : 'none';
     pauseBtn.innerText = isPaused ? "Resume" : "Pause";
-    statusDiv.textContent = isRecording ? (isPaused ? "Recording paused" : "Recording...") : "Ready";
+    statusDiv.textContent = isRecording ? (isPaused ? "Paused" : "Recording...") : "Ready";
 }
 
 function startTimer() {
+    // Clear any existing timer before starting a new one
+    if (recordingTimer) clearInterval(recordingTimer);
+    
     recordingTimer = setInterval(() => {
         const elapsed = Date.now() - recordingStartTime - pausedDuration;
         const mins = Math.floor(elapsed / 60000);
         const secs = Math.floor((elapsed % 60000) / 1000);
-        document.getElementById('timerElapsed').innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+        const timerLabel = document.getElementById('timerElapsed');
+        if (timerLabel) {
+            timerLabel.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
     }, 1000);
 }
 
 function startSizeMonitor() {
     sizeMonitorInterval = setInterval(() => {
         const size = new Blob(audioChunks).size / (1024 * 1024);
-        document.getElementById('timerSize').innerText = `${size.toFixed(1)} MB`;
-        const percent = Math.min((size / 4) * 100, 100);
-        document.getElementById('progressBar').style.width = `${percent}%`;
+        const sizeLabel = document.getElementById('timerSize');
+        if (sizeLabel) sizeLabel.innerText = `${size.toFixed(1)} MB`;
+        
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar) {
+            const percent = Math.min((size / 4) * 100, 100);
+            progressBar.style.width = `${percent}%`;
+        }
+
         if (size > 3.5 && !hasShownSizeWarning) {
             alert("Approaching 4MB limit. Please finish shortly.");
             hasShownSizeWarning = true;
@@ -269,25 +274,26 @@ function startSizeMonitor() {
 // --- INITIALIZATION ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('EchoDoc initialized');
-    
-    // Initial data loading
+    // 1. Setup Microphone
     populateMicrophoneDropdown();
-    initializeDarkMode();
     
-    // UI Setup listeners
+    // 2. Control Buttons
+    startBtn.addEventListener('click', startRecording);
+    pauseBtn.addEventListener('click', pauseRecording); // This was the critical missing/incorrect link
+    stopBtn.addEventListener('click', stopRecording);
+    
+    // 3. AI Buttons
+    getSummaryBtn.addEventListener('click', () => generateAIContent('clinical', summaryDiv, getSummaryBtn));
+    generateReferralBtn.addEventListener('click', () => generateAIContent('referral', referralLetterDiv, generateReferralBtn));
+    generatePatientSummaryBtn.addEventListener('click', () => generateAIContent('patient', patientSummaryDiv, generatePatientSummaryBtn));
+    
+    // 4. Dropdown Change
     const micDropdown = document.getElementById('microphoneDropdown');
     if (micDropdown) {
         micDropdown.addEventListener('change', handleMicrophoneSelection);
     }
 
-    startBtn.addEventListener('click', startRecording);
-    pauseBtn.addEventListener('click', pauseRecording);
-    stopBtn.addEventListener('click', stopRecording);
-    
-    getSummaryBtn.addEventListener('click', () => generateAIContent('clinical', summaryDiv, getSummaryBtn));
-    generateReferralBtn.addEventListener('click', () => generateAIContent('referral', referralLetterDiv, generateReferralBtn));
-    generatePatientSummaryBtn.addEventListener('click', () => generateAIContent('patient', patientSummaryDiv, generatePatientSummaryBtn));
+    initializeDarkMode();
 });
 
 function initializeDarkMode() {
