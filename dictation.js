@@ -24,365 +24,19 @@ let recordingStartTime = null;
 let recordingTimer = null;
 let selectedMicId = null;
 
-// Start Recording
-async function startRecording() {
-    try {
-        const constraints = {
-            audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        
-        // Now that we have permission, refresh the microphone list
-        await populateMicrophoneDropdown();
-        
-        // Use same codec as clinical scribe for consistency
-        let options;
-        const preferredCodecs = [
-            { mimeType: 'audio/webm;codecs=opus', bitrate: 12000 },
-            { mimeType: 'audio/ogg;codecs=opus', bitrate: 12000 },
-            { mimeType: 'audio/webm', bitrate: 12000 }
-        ];
-        
-        for (const codec of preferredCodecs) {
-            if (MediaRecorder.isTypeSupported(codec.mimeType)) {
-                options = {
-                    mimeType: codec.mimeType,
-                    audioBitsPerSecond: codec.bitrate
-                };
-                break;
-            }
-        }
-        
-        if (!options) {
-            options = { audioBitsPerSecond: 12000 };
-        }
-        
-        mediaRecorder = new MediaRecorder(stream, options);
-        audioChunks = [];
-        
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                audioChunks.push(event.data);
-            }
-        };
-        
-        mediaRecorder.onstop = async () => {
-            stream.getTracks().forEach(track => track.stop());
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            await transcribeAudio(audioBlob);
-        };
-        
-        mediaRecorder.start(1000);
-        isRecording = true;
-        recordingStartTime = Date.now();
-        
-        // Update UI
-        statusDiv.textContent = '🔴 Dictating...';
-        statusDiv.classList.add('recording');
-        startBtn.disabled = true;
-        startBtn.style.display = 'none';
-        pauseBtn.style.display = 'inline-flex';
-        pauseBtn.disabled = false;
-        stopBtn.disabled = false;
-        
-        // Start timer
-        recordingTimer = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            statusDiv.textContent = `🔴 Dictating... ${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }, 1000);
-        
-        console.log('Dictation started');
-        
-    } catch (error) {
-        console.error('Error starting recording:', error);
-        alert('Failed to start recording. Please check microphone permissions.');
-    }
-}
+// --- MICROPHONE MANAGEMENT ---
 
-// Stop Recording
-function stopRecording() {
-    if (mediaRecorder && isRecording) {
-        isRecording = false;
-        isPaused = false;
-        
-        if (recordingTimer) {
-            clearInterval(recordingTimer);
-            recordingTimer = null;
-        }
-        
-        mediaRecorder.stop();
-        
-        statusDiv.textContent = 'Processing dictation...';
-        statusDiv.classList.remove('recording');
-        startBtn.disabled = true;
-        pauseBtn.disabled = true;
-        stopBtn.disabled = true;
-        
-        console.log('Dictation stopped');
-    }
-}
-
-// Pause/Resume Recording
-function pauseRecording() {
-    if (mediaRecorder && isRecording && !isPaused) {
-        mediaRecorder.pause();
-        isPaused = true;
-        
-        if (recordingTimer) {
-            clearInterval(recordingTimer);
-            recordingTimer = null;
-        }
-        
-        statusDiv.textContent = 'Dictation Paused';
-        statusDiv.classList.remove('recording');
-        pauseBtn.innerHTML = '<span class="resume-icon"></span><span>Resume</span>';
-        
-    } else if (mediaRecorder && isPaused) {
-        mediaRecorder.resume();
-        isPaused = false;
-        
-        recordingTimer = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            statusDiv.textContent = `🔴 Dictating... ${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }, 1000);
-        
-        statusDiv.classList.add('recording');
-        pauseBtn.innerHTML = '<span class="pause-icon"></span><span>Pause</span>';
-    }
-}
-
-// Transcribe Audio using Azure Speech
-async function transcribeAudio(audioBlob) {
-    try {
-        statusDiv.textContent = '⏳ Transcribing dictation...';
-        transcriptDiv.innerHTML = '<p class="placeholder">Transcribing...</p>';
-        
-        console.log('Sending WebM directly to OpenAI Whisper...');
-        console.log('Audio blob size:', audioBlob.size, 'bytes =', (audioBlob.size / 1024).toFixed(2), 'KB');
-        
-        // Convert WebM to base64 (Whisper accepts WebM directly - no conversion needed!)
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        
-        reader.onloadend = async () => {
-            const base64Audio = reader.result.split(',')[1];
-            
-            // Call Whisper transcription API
-            const response = await fetch('/api/transcribe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    audioBlob: base64Audio
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Transcription failed');
-            }
-            
-            const data = await response.json();
-            // Whisper returns 'text' field, not 'transcript'
-            finalTranscript = data.text;
-            
-            if (!finalTranscript || finalTranscript.trim() === '') {
-                throw new Error('Empty transcript received');
-            }
-            
-            // Display transcript
-            transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
-            
-            // Update UI
-            statusDiv.textContent = 'Transcription complete! Click "Format as Letter" to continue.';
-            statusDiv.classList.remove('recording');
-            
-            startBtn.style.display = 'inline-flex';
-            startBtn.disabled = false;
-            pauseBtn.style.display = 'none';
-            stopBtn.disabled = true;
-            
-            // Show buttons
-            clearTranscriptBtn.style.display = 'inline-block';
-            formatLetterBtn.style.display = 'inline-flex';
-            
-            console.log('Transcription complete');
-        };
-        
-    } catch (error) {
-        console.error('Transcription error:', error);
-        statusDiv.textContent = 'Transcription failed';
-        transcriptDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-    }
-}
-
-// Format Letter using AI
-async function formatLetter() {
-    console.log('Format Letter clicked');
-    console.log('Final transcript:', finalTranscript);
-    
-    if (!finalTranscript || !finalTranscript.trim()) {
-        alert('No transcript available to format');
-        return;
-    }
-    
-    formatLetterBtn.disabled = true;
-    formatLetterBtn.textContent = 'Formatting...';
-    formattedLetterDiv.innerHTML = '<p style="color: #667eea;">Formatting letter with AI...</p>';
-    
-    try {
-        const letterType = letterTypeSelect.value;
-        console.log('Letter type:', letterType);
-        
-        // Call formatting API
-        console.log('Calling /api/format-letter...');
-        const response = await fetch('/api/format-letter', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                transcript: finalTranscript,
-                letterType: letterType
-            })
-        });
-        
-        console.log('Format API response status:', response.status);
-        
-        if (!response.ok) {
-            let errorMessage = 'Formatting failed';
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.error || errorMessage;
-                console.error('Format API error:', errorData);
-            } catch (e) {
-                const errorText = await response.text();
-                errorMessage = errorText || errorMessage;
-                console.error('Format API error (text):', errorText);
-            }
-            throw new Error(errorMessage);
-        }
-        
-        const data = await response.json();
-        console.log('Format API response:', data);
-        
-        formattedLetter = data.letter;
-        
-        if (!formattedLetter || formattedLetter.trim() === '') {
-            throw new Error('AI returned empty letter');
-        }
-        
-        // Display formatted letter
-        formattedLetterDiv.innerHTML = `<div>${formattedLetter.replace(/\n/g, '<br>')}</div>`;
-        
-        // Show copy and download buttons
-        copyLetterBtn.style.display = 'inline-flex';
-        downloadLetterBtn.style.display = 'inline-flex';
-        
-        formatLetterBtn.disabled = false;
-        formatLetterBtn.textContent = '✓ Letter Formatted';
-        
-        console.log('Letter formatted successfully');
-        
-    } catch (error) {
-        console.error('Formatting error:', error);
-        formattedLetterDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
-        formatLetterBtn.disabled = false;
-        formatLetterBtn.textContent = '✨ Format as Letter';
-        
-        // Show detailed error in console
-        console.error('Full error details:', {
-            message: error.message,
-            stack: error.stack,
-            transcript: finalTranscript.substring(0, 100) + '...'
-        });
-    }
-}
-
-// Copy Letter to Clipboard
-async function copyLetter() {
-    const letterText = formattedLetterDiv.innerText;
-    
-    if (!letterText || letterText.includes('Formatted letter will appear')) {
-        alert('No letter to copy');
-        return;
-    }
-    
-    try {
-        await navigator.clipboard.writeText(letterText);
-        
-        const originalText = copyLetterBtn.innerHTML;
-        copyLetterBtn.innerHTML = '✓ Copied!';
-        copyLetterBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-        
-        setTimeout(() => {
-            copyLetterBtn.innerHTML = originalText;
-            copyLetterBtn.style.background = '';
-        }, 2000);
-        
-    } catch (error) {
-        console.error('Copy failed:', error);
-        alert('Failed to copy. Please select and copy manually.');
-    }
-}
-
-// Download Letter as Word Document
-async function downloadLetter() {
-    const letterText = formattedLetterDiv.innerText;
-    
-    if (!letterText || letterText.includes('Formatted letter will appear')) {
-        alert('No letter to download');
-        return;
-    }
-    
-    try {
-        // Create simple .docx format
-        // For now, download as .txt (you can enhance to proper Word format later)
-        const blob = new Blob([letterText], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `letter-${new Date().toISOString().slice(0,10)}.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
-        
-        console.log('Letter downloaded');
-        
-    } catch (error) {
-        console.error('Download failed:', error);
-        alert('Failed to download letter');
-    }
-}
-
-// Clear Transcript
-function clearTranscript() {
-    finalTranscript = '';
-    formattedLetter = '';
-    audioChunks = [];
-    
-    transcriptDiv.innerHTML = '<p class="placeholder">Your dictation will appear here as raw text...</p>';
-    formattedLetterDiv.innerHTML = '<p class="placeholder">Formatted letter will appear here...</p>';
-    
-    clearTranscriptBtn.style.display = 'none';
-    formatLetterBtn.style.display = 'none';
-    copyLetterBtn.style.display = 'none';
-    downloadLetterBtn.style.display = 'none';
-    
-    statusDiv.textContent = 'Ready to dictate';
-}
-
-// Populate Microphone Dropdown
 async function populateMicrophoneDropdown() {
     const dropdown = document.getElementById('microphoneDropdown');
+    if (!dropdown) return;
     
     try {
+        // PERMISSION HANDSHAKE: Request access briefly to unlock device labels (names)
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Stop tracks immediately so the recording light turns off
+        stream.getTracks().forEach(track => track.stop());
+
+        // Now that permission is granted, enumerateDevices will return real names
         const devices = await navigator.mediaDevices.enumerateDevices();
         const microphones = devices.filter(device => device.kind === 'audioinput');
         
@@ -397,13 +51,13 @@ async function populateMicrophoneDropdown() {
         microphones.forEach((mic, index) => {
             const option = document.createElement('option');
             option.value = mic.deviceId;
+            // Use the real label if available, otherwise fallback to "Microphone X"
             option.textContent = mic.label || `Microphone ${index + 1}`;
             
             if (mic.deviceId === 'default' || index === 0) {
                 option.selected = true;
                 selectedMicId = mic.deviceId;
             }
-            
             dropdown.appendChild(option);
         });
         
@@ -414,30 +68,253 @@ async function populateMicrophoneDropdown() {
     }
 }
 
-// Handle Microphone Selection
 function handleMicrophoneSelection() {
     const dropdown = document.getElementById('microphoneDropdown');
-    selectedMicId = dropdown.value;
-    console.log('Microphone selected:', dropdown.options[dropdown.selectedIndex].textContent);
+    if (dropdown) {
+        selectedMicId = dropdown.value;
+        console.log('Microphone selected:', dropdown.options[dropdown.selectedIndex].textContent);
+    }
 }
 
-// Event Listeners
-startBtn.addEventListener('click', startRecording);
-pauseBtn.addEventListener('click', pauseRecording);
-stopBtn.addEventListener('click', stopRecording);
-formatLetterBtn.addEventListener('click', formatLetter);
-clearTranscriptBtn.addEventListener('click', clearTranscript);
-copyLetterBtn.addEventListener('click', copyLetter);
-downloadLetterBtn.addEventListener('click', downloadLetter);
+// --- RECORDING LOGIC ---
 
-// Initialize
+async function startRecording() {
+    try {
+        const constraints = {
+            audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Refresh names again just in case a new device was plugged in
+        await populateMicrophoneDropdown();
+        
+        // Use same medical-grade codec settings as main scribe
+        let options;
+        const preferredCodecs = [
+            { mimeType: 'audio/webm;codecs=opus' },
+            { mimeType: 'audio/ogg;codecs=opus' },
+            { mimeType: 'audio/webm' }
+        ];
+
+        for (const codec of preferredCodecs) {
+            if (MediaRecorder.isTypeSupported(codec.mimeType)) {
+                options = codec;
+                break;
+            }
+        }
+
+        mediaRecorder = new MediaRecorder(stream, options);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                audioChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = processRecording;
+
+        mediaRecorder.start(1000); // Collect data every second
+        isRecording = true;
+        isPaused = false;
+        recordingStartTime = Date.now();
+        updateUI();
+        startTimer();
+        
+    } catch (err) {
+        console.error("Error starting recording:", err);
+        statusDiv.textContent = "Error: " + err.message;
+    }
+}
+
+function pauseRecording() {
+    if (mediaRecorder && isRecording) {
+        if (!isPaused) {
+            mediaRecorder.pause();
+            isPaused = true;
+            clearInterval(recordingTimer);
+            statusDiv.textContent = "Recording paused";
+        } else {
+            mediaRecorder.resume();
+            isPaused = false;
+            startTimer();
+            statusDiv.textContent = "Recording...";
+        }
+        updateUI();
+    }
+}
+
+function stopRecording() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        isRecording = false;
+        isPaused = false;
+        clearInterval(recordingTimer);
+        updateUI();
+    }
+}
+
+async function processRecording() {
+    statusDiv.textContent = "Processing audio...";
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    
+    try {
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+            const base64Audio = reader.result.split(',')[1];
+            
+            const response = await fetch('/api/transcribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audioBlob: base64Audio })
+            });
+
+            const data = await response.json();
+            if (data.text) {
+                // Prepend or append new transcription to existing content
+                const newText = data.text.trim();
+                finalTranscript = finalTranscript ? finalTranscript + " " + newText : newText;
+                
+                // Keep the placeholder logic intact
+                const placeholder = transcriptDiv.querySelector('.placeholder');
+                if (placeholder) placeholder.remove();
+                
+                transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
+                statusDiv.textContent = "Transcription complete";
+            }
+        };
+    } catch (err) {
+        console.error("Transcription error:", err);
+        statusDiv.textContent = "Transcription failed";
+    }
+}
+
+// --- AI FORMATTING ---
+
+async function formatLetter() {
+    if (!finalTranscript) {
+        alert("Please record some dictation first.");
+        return;
+    }
+
+    const originalBtnText = formatLetterBtn.innerHTML;
+    formatLetterBtn.innerHTML = '<span>Formatting...</span>';
+    formatLetterBtn.disabled = true;
+    statusDiv.textContent = "AI is formatting your letter...";
+
+    try {
+        const response = await fetch('/api/format-letter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                transcript: finalTranscript,
+                letterType: letterTypeSelect.value
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.formattedLetter) {
+            formattedLetter = data.formattedLetter;
+            
+            // Clean up placeholder
+            const placeholder = formattedLetterDiv.querySelector('.placeholder');
+            if (placeholder) placeholder.remove();
+            
+            formattedLetterDiv.innerHTML = `<div class="letter-content">${formattedLetter.replace(/\n/g, '<br>')}</div>`;
+            statusDiv.textContent = "Letter formatted successfully";
+        } else {
+            throw new Error(data.error || "Failed to format letter");
+        }
+    } catch (err) {
+        console.error("Formatting error:", err);
+        statusDiv.textContent = "Formatting failed";
+        alert("Error: " + err.message);
+    } finally {
+        formatLetterBtn.innerHTML = originalBtnText;
+        formatLetterBtn.disabled = false;
+    }
+}
+
+// --- UI HELPERS ---
+
+function updateUI() {
+    startBtn.style.display = isRecording ? 'none' : 'flex';
+    pauseBtn.style.display = isRecording ? 'flex' : 'none';
+    stopBtn.style.display = isRecording ? 'flex' : 'none';
+    
+    pauseBtn.innerHTML = isPaused ? 
+        '<span class="btn-icon">▶</span><span>Resume</span>' : 
+        '<span class="btn-icon">⏸</span><span>Pause</span>';
+    
+    statusDiv.textContent = isRecording ? (isPaused ? "Recording paused" : "Recording...") : "Ready";
+}
+
+function startTimer() {
+    const startTime = recordingStartTime || Date.now();
+    recordingTimer = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const mins = Math.floor(elapsed / 60000);
+        const secs = Math.floor((elapsed % 60000) / 1000);
+        const timerDisplay = document.getElementById('timerElapsed');
+        if (timerDisplay) {
+            timerDisplay.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+    }, 1000);
+}
+
+function clearTranscript() {
+    if (confirm("Are you sure you want to clear the transcript?")) {
+        finalTranscript = '';
+        transcriptDiv.innerHTML = '<p class="placeholder">Your dictated text will appear here...</p>';
+        formattedLetterDiv.innerHTML = '<p class="placeholder">Your formatted letter will appear here...</p>';
+        statusDiv.textContent = "Cleared";
+    }
+}
+
+function copyLetter() {
+    const text = formattedLetterDiv.innerText;
+    if (!text || text.includes("Your formatted letter")) return;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = copyLetterBtn.innerHTML;
+        copyLetterBtn.innerHTML = '<span>Copied!</span>';
+        setTimeout(() => copyLetterBtn.innerHTML = originalText, 2000);
+    });
+}
+
+function downloadLetter() {
+    const text = formattedLetterDiv.innerText;
+    if (!text || text.includes("Your formatted letter")) return;
+    
+    const element = document.createElement('a');
+    const file = new Blob([text], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `Medical_Letter_${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
+// --- INITIALIZATION ---
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Letter Dictation initialized');
     
-    // Populate microphone dropdown
+    // Populate microphone dropdown immediately
     populateMicrophoneDropdown();
     
-    // Add microphone change listener
+    // Event Listeners
+    startBtn.addEventListener('click', startRecording);
+    pauseBtn.addEventListener('click', pauseRecording);
+    stopBtn.addEventListener('click', stopRecording);
+    formatLetterBtn.addEventListener('click', formatLetter);
+    clearTranscriptBtn.addEventListener('click', clearTranscript);
+    copyLetterBtn.addEventListener('click', copyLetter);
+    downloadLetterBtn.addEventListener('click', downloadLetter);
+
     const micDropdown = document.getElementById('microphoneDropdown');
     if (micDropdown) {
         micDropdown.addEventListener('change', handleMicrophoneSelection);
