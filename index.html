@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EchoDoc - AI Medical Scribe for Healthcare Professionals</title>
-    <meta name="description" content="AI-powered medical transcription and clinical documentation for UK healthcare professionals. Save 30 minutes per clinic with intelligent scribe technology.">
+    <meta name="description" content="AI-powered medical transcription and clinical documentation for UK healthcare professionals.">
     
     <link rel="stylesheet" href="styles.css">
     
@@ -14,26 +14,17 @@
     <nav class="navbar">
         <div class="nav-content">
             <div class="brand">
-                <a href="https://ambientdoc.vercel.app/index.html" class="brand-link">
+                <a href="index.html" class="brand-link">
                     <div class="brand-text">
-                        <h1>EchoDoc <span class="badge">AI Scribe for Healthcare</span></h1>
-                        <p class="brand-motto">Save 30 minutes per clinic with intelligent medical transcription</p>
+                        <h1>EchoDoc <span class="badge">AI Scribe</span></h1>
+                        <p class="brand-motto">Intelligent documentation for UK clinicians</p>
                     </div>
                 </a>
             </div>
             <div class="navbar-right">
                 <div class="nav-links">
-                    <a href="index.html" class="nav-link active">
-                        <span class="nav-link-text">Clinical Scribe</span>
-                    </a>
-                    <a href="dictation.html" class="nav-link">
-                        <span class="nav-link-text">AI Dictation</span>
-                    </a>
-                </div>
-                
-                <div class="status-indicator" id="connectionStatus">
-                    <span class="status-dot"></span>
-                    <span>Ready</span>
+                    <a href="index.html" class="nav-link active">Clinical Scribe</a>
+                    <a href="dictation.html" class="nav-link">AI Dictation</a>
                 </div>
                 
                 <div class="dark-mode-toggle">
@@ -48,7 +39,6 @@
     </nav>
 
     <div class="dashboard-container">
-        
         <aside class="panel-left">
             <div class="card">
                 <div class="card-header">
@@ -59,12 +49,8 @@
                     
                     <div id="recordingTimer" class="recording-timer" style="display: none;">
                         <div class="timer-info">
-                            <span class="timer-label">Elapsed:</span>
+                            <span class="timer-label">Time:</span>
                             <span class="timer-value" id="timerElapsed">00:00</span>
-                        </div>
-                        <div class="timer-info">
-                            <span class="timer-label">Size:</span>
-                            <span class="timer-value" id="timerSize">0.0 MB</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
@@ -72,58 +58,45 @@
                     </div>
                     
                     <div class="mic-select-container-inline">
-                        <label for="microphoneDropdown">Microphone:</label>
                         <select id="microphoneDropdown" class="mic-dropdown">
                             <option value="">Loading microphones...</option>
                         </select>
                     </div>
                     
-                    <div class="telephone-mode-container">
+                    <div class="toggle-group">
                         <div class="toggle-option">
                             <label class="toggle-label">
                                 <input type="checkbox" id="telephoneModeCheckbox" class="toggle-checkbox">
                                 <span class="toggle-slider"></span>
                             </label>
-                            <div class="toggle-text">
-                                <span class="toggle-title">Telephone Mode</span>
-                            </div>
+                            <span class="toggle-title">Telephone Mode</span>
                         </div>
-                    </div>
 
-                    <div class="anonymization-container">
                         <div class="toggle-option">
                             <label class="toggle-label">
                                 <input type="checkbox" id="anonymizeCheckbox" class="toggle-checkbox" checked>
                                 <span class="toggle-slider"></span>
                             </label>
-                            <div class="toggle-text">
-                                <span class="toggle-title">Anonymize Data</span>
-                            </div>
+                            <span class="toggle-title">Anonymize Data</span>
                         </div>
                     </div>
                     
                     <div class="button-group-controls">
-                        <button id="startBtn" class="btn btn-record">
-                            <span>🔴</span> <span>Start Recording</span>
-                        </button>
-                        <button id="pauseBtn" class="btn btn-secondary" style="display: none;">
-                            <span>Pause</span>
-                        </button>
-                        <button id="stopBtn" class="btn btn-stop" style="display: none;">
-                            <span>Finish</span>
-                        </button>
+                        <button id="startBtn" class="btn btn-record">🔴 Start Recording</button>
+                        <button id="pauseBtn" class="btn btn-secondary" style="display: none;">Pause</button>
+                        <button id="stopBtn" class="btn btn-stop" style="display: none;">Finish</button>
                     </div>
                 </div>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <h3>Transcript</h3>
-                    <button id="clearTranscript" class="btn-icon" title="Clear transcript" style="display: none;">🗑️</button>
+                    <h3>Live Transcript</h3>
+                    <button id="clearTranscript" class="btn-icon" title="Clear" style="display: none;">🗑️</button>
                 </div>
                 <div class="card-body">
                     <div id="transcript" class="transcript-box" contenteditable="true">
-                        <p class="placeholder">Transcription will appear here...</p>
+                        <p class="placeholder">Awaiting audio input...</p>
                     </div>
                 </div>
             </div>
@@ -139,26 +112,28 @@
                     </div>
                 </div>
                 <div class="hub-center">
-                    <button id="generateAllBtn" class="primary-hub-btn" disabled>
-                        <span class="btn-icon">✨</span> Generate All Clinical Documents
-                    </button>
+                    <span class="hub-message">Select specific documents to generate below.</span>
                 </div>
                 <div class="hub-right">
-                    <span class="hub-hint">SOAP Note, Referral & Patient Summary</span>
+                    <div class="token-saver-badge">Manual Mode Active</div>
                 </div>
             </div>
             
             <div class="card output-card">
                 <div class="card-header">
                     <h3>Structured Clinical Summary (SOAP)</h3>
-                    <button id="copySummary" class="btn-icon copy-btn" title="Copy">📋</button>
+                    <div class="card-actions">
+                        <button id="copySummary" class="btn-icon" title="Copy">📋</button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div id="summary" class="output-content" contenteditable="true">
-                        <p class="placeholder">Record audio to generate an AI summary...</p>
+                        <p class="placeholder">Will generate only on command...</p>
                     </div>
                     <div class="manual-trigger-area">
-                        <button id="getSummary" class="btn btn-secondary btn-small">Regenerate Summary</button>
+                        <button id="getSummary" class="btn btn-primary btn-small">
+                            ✨ Generate SOAP Note
+                        </button>
                     </div>
                 </div>
             </div>
@@ -166,14 +141,18 @@
             <div class="card output-card">
                 <div class="card-header">
                     <h3>Referral Letter</h3>
-                    <button id="copyReferral" class="btn-icon copy-btn" title="Copy">📋</button>
+                    <div class="card-actions">
+                        <button id="copyReferral" class="btn-icon" title="Copy">📋</button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div id="referralLetter" class="output-content document-paper" contenteditable="true">
-                        <p class="placeholder">Generated referral will appear here...</p>
+                        <p class="placeholder">Will generate only on command...</p>
                     </div>
                     <div class="manual-trigger-area">
-                        <button id="generateReferral" class="btn btn-secondary btn-small">Regenerate Referral</button>
+                        <button id="generateReferral" class="btn btn-primary btn-small">
+                            ✨ Generate Referral Letter
+                        </button>
                     </div>
                 </div>
             </div>
@@ -181,32 +160,28 @@
             <div class="card output-card">
                 <div class="card-header">
                     <h3>Patient Friendly Summary</h3>
-                    <button id="copyPatientSummary" class="btn-icon copy-btn" title="Copy">📋</button>
+                    <div class="card-actions">
+                        <button id="copyPatientSummary" class="btn-icon" title="Copy">📋</button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div id="patientSummary" class="output-content" contenteditable="true">
-                        <p class="placeholder">Patient summary will appear here...</p>
+                        <p class="placeholder">Will generate only on command...</p>
                     </div>
                     <div class="manual-trigger-area">
-                        <button id="generatePatientSummary" class="btn btn-secondary btn-small">Regenerate Summary</button>
+                        <button id="generatePatientSummary" class="btn btn-primary btn-small">
+                            ✨ Generate Patient Version
+                        </button>
                     </div>
                 </div>
             </div>
             
-            <div class="card privacy-card">
-                <div class="card-header">
-                    <h3>Privacy & Data Protection</h3>
-                </div>
-                <div class="card-body">
-                    <p><strong>Anonymization:</strong> Data is anonymized before AI processing. No patient audio is stored after transcription.</p>
-                </div>
-            </div>
         </main>
     </div>
     
     <footer class="footer">
         <div class="footer-content">
-            <p>&copy; 2025 EchoDoc. Built for UK Healthcare Professionals.</p>
+            <p>&copy; 2025 EchoDoc. Clinical Data Privacy Enabled.</p>
         </div>
     </footer>
     
