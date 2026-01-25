@@ -1,22 +1,28 @@
 // File: app.js
-// DOM Elements
+
+// DOM Elements - Navigation & Controls
 const startBtn = document.getElementById('startBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
+const statusDiv = document.getElementById('status');
+
+// DOM Elements - Content Areas
 const transcriptDiv = document.getElementById('transcript');
 const summaryDiv = document.getElementById('summary');
 const referralLetterDiv = document.getElementById('referralLetter');
 const patientSummaryDiv = document.getElementById('patientSummary');
-const statusDiv = document.getElementById('status');
-const getSummaryBtn = document.getElementById('getSummary');
-const clearTranscriptBtn = document.getElementById('clearTranscript');
-const copySummaryBtn = document.getElementById('copySummary');
-const generateReferralBtn = document.getElementById('generateReferral');
-const copyReferralBtn = document.getElementById('copyReferral');
-const generatePatientSummaryBtn = document.getElementById('generatePatientSummary');
-const copyPatientSummaryBtn = document.getElementById('copyPatientSummary');
 
-// State
+// DOM Elements - AI Buttons
+const generateAllBtn = document.getElementById('generateAllBtn');
+const getSummaryBtn = document.getElementById('getSummary');
+const generateReferralBtn = document.getElementById('generateReferral');
+const generatePatientSummaryBtn = document.getElementById('generatePatientSummary');
+
+// DOM Elements - Hub
+const processingHub = document.getElementById('processingHub');
+const hubStatusText = document.getElementById('hubStatusText');
+
+// State Management
 let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
@@ -29,7 +35,6 @@ let pauseStartTime = null;
 let selectedMicId = null;
 let telephoneStreams = null;
 let sizeMonitorInterval = null;
-let hasShownSizeWarning = false;
 
 // --- MICROPHONE MANAGEMENT ---
 
@@ -63,7 +68,6 @@ async function populateMicrophoneDropdown() {
         });
     } catch (error) {
         console.error('Error detecting microphones:', error);
-        dropdown.innerHTML = '<option value="">Permission denied</option>';
     }
 }
 
@@ -116,11 +120,17 @@ async function startRecording() {
         recordingStartTime = Date.now();
         pausedDuration = 0;
         
-        // CRITICAL FIX: Ensure buttons are enabled and visible
         enableControlButtons();
         updateUI();
         startTimer();
         startSizeMonitor();
+        
+        // Ensure hub is reset if starting a new recording
+        processingHub.classList.add('inactive');
+        processingHub.classList.remove('active');
+        generateAllBtn.disabled = true;
+        hubStatusText.innerText = "Recording in progress...";
+
     } catch (err) {
         console.error("Error starting recording:", err);
         alert("Could not start recording. Please check permissions.");
@@ -128,7 +138,6 @@ async function startRecording() {
 }
 
 function enableControlButtons() {
-    // Explicitly remove disabled state and forbidden cursor
     [pauseBtn, stopBtn].forEach(btn => {
         if (btn) {
             btn.disabled = false;
@@ -140,7 +149,6 @@ function enableControlButtons() {
 
 function pauseRecording() {
     if (!mediaRecorder || !isRecording) return;
-
     if (!isPaused) {
         mediaRecorder.pause();
         isPaused = true;
@@ -172,7 +180,7 @@ function stopRecording() {
     }
 }
 
-// --- TRANSCRIPTION & AI ---
+// --- TRANSCRIPTION & HUB LOGIC ---
 
 async function processRecording() {
     statusDiv.textContent = "Transcribing medical audio...";
@@ -193,9 +201,7 @@ async function processRecording() {
             if (data.text) {
                 finalTranscript = data.text;
                 transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
-                statusDiv.textContent = "Transcription complete";
-                getSummaryBtn.style.display = 'inline-block';
-                clearTranscriptBtn.style.display = 'inline-block';
+                activateProcessingHub();
             }
         };
     } catch (err) {
@@ -204,13 +210,60 @@ async function processRecording() {
     }
 }
 
+function activateProcessingHub() {
+    statusDiv.textContent = "Transcription complete";
+    processingHub.classList.remove('inactive');
+    processingHub.classList.add('active');
+    generateAllBtn.disabled = false;
+    hubStatusText.innerText = "Consultation ready for processing";
+    
+    // Smooth animation using Anime.js
+    if (window.anime) {
+        anime({
+            targets: '#processingHub',
+            translateY: [-20, 0],
+            opacity: [0, 1],
+            duration: 800,
+            easing: 'easeOutExpo'
+        });
+    }
+}
+
+// --- BATCH AI GENERATION ---
+
+async function generateAllDocuments() {
+    generateAllBtn.disabled = true;
+    const originalContent = generateAllBtn.innerHTML;
+    generateAllBtn.innerHTML = `<span class="spinner"></span> Processing All...`;
+    hubStatusText.innerText = "AI is analyzing the consultation...";
+
+    try {
+        // Run all three AI tasks simultaneously for speed
+        await Promise.all([
+            generateAIContent('clinical', summaryDiv, getSummaryBtn),
+            generateAIContent('referral', referralLetterDiv, generateReferralBtn),
+            generateAIContent('patient', patientSummaryDiv, generatePatientSummaryBtn)
+        ]);
+        
+        hubStatusText.innerText = "All documents generated successfully";
+        generateAllBtn.innerHTML = `<span>✅</span> All Documents Ready`;
+        generateAllBtn.style.background = "#10b981"; // Success Green
+    } catch (err) {
+        console.error("Batch error:", err);
+        hubStatusText.innerText = "Error during generation. Please try again.";
+        generateAllBtn.disabled = false;
+        generateAllBtn.innerHTML = originalContent;
+    }
+}
+
 async function generateAIContent(type, targetDiv, button) {
     const originalText = button.innerText;
-    button.innerText = "Processing...";
+    button.innerText = "...";
     button.disabled = true;
 
-    const anonymize = document.getElementById('anonymizeCheckbox').checked;
-    const contentToProcess = anonymize ? anonymizeTranscript(transcriptDiv.innerText) : transcriptDiv.innerText;
+    const anonymize = document.getElementById('anonymizeCheckbox')?.checked;
+    // Use finalTranscript directly to ensure data is current
+    const contentToProcess = anonymize ? anonymizeTranscript(finalTranscript) : finalTranscript;
 
     try {
         const response = await fetch('/api/summarize', {
@@ -222,6 +275,7 @@ async function generateAIContent(type, targetDiv, button) {
         targetDiv.innerHTML = `<p>${data.summary.replace(/\n/g, '<br>')}</p>`;
     } catch (err) {
         console.error(err);
+        targetDiv.innerHTML = `<p style="color:red">Failed to generate ${type}.</p>`;
     } finally {
         button.innerText = originalText;
         button.disabled = false;
@@ -238,17 +292,14 @@ function anonymizeTranscript(text) {
 // --- UI HELPERS ---
 
 function updateUI() {
-    // Show/Hide buttons based on recording state
     startBtn.style.display = isRecording ? 'none' : 'inline-block';
     pauseBtn.style.display = isRecording ? 'inline-block' : 'none';
     stopBtn.style.display = isRecording ? 'inline-block' : 'none';
-    
-    // Toggle Pause/Resume text
     pauseBtn.innerText = isPaused ? "Resume" : "Pause";
     
-    // Update Status text
     if (isRecording) {
         statusDiv.textContent = isPaused ? "Paused" : "Recording...";
+        document.getElementById('recordingTimer').style.display = 'block';
     } else {
         statusDiv.textContent = "Ready";
     }
@@ -261,9 +312,7 @@ function startTimer() {
         const mins = Math.floor(elapsed / 60000);
         const secs = Math.floor((elapsed % 60000) / 1000);
         const timerLabel = document.getElementById('timerElapsed');
-        if (timerLabel) {
-            timerLabel.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
+        if (timerLabel) timerLabel.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
     }, 1000);
 }
 
@@ -288,23 +337,20 @@ document.addEventListener('DOMContentLoaded', () => {
     populateMicrophoneDropdown();
     initializeDarkMode();
 
-    // Attach core listeners
+    // Event Listeners
     startBtn.addEventListener('click', startRecording);
     pauseBtn.addEventListener('click', pauseRecording);
     stopBtn.addEventListener('click', stopRecording);
+    generateAllBtn.addEventListener('click', generateAllDocuments);
     
-    // AI Listeners
+    // Individual Regenerate Listeners
     getSummaryBtn.addEventListener('click', () => generateAIContent('clinical', summaryDiv, getSummaryBtn));
     generateReferralBtn.addEventListener('click', () => generateAIContent('referral', referralLetterDiv, generateReferralBtn));
     generatePatientSummaryBtn.addEventListener('click', () => generateAIContent('patient', patientSummaryDiv, generatePatientSummaryBtn));
     
-    // Mic selection
     const micDropdown = document.getElementById('microphoneDropdown');
-    if (micDropdown) {
-        micDropdown.addEventListener('change', handleMicrophoneSelection);
-    }
-    
-    // Initial UI state
+    if (micDropdown) micDropdown.addEventListener('change', handleMicrophoneSelection);
+
     updateUI();
 });
 
