@@ -1194,3 +1194,51 @@ body.dark-mode .helper-text {
     background: linear-gradient(135deg, #667eea25 0%, #764ba225 100%);
     color: var(--text-secondary);
 }
+.processing-hub {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When transcription is complete, we remove 'inactive' */
+.processing-hub.inactive {
+    opacity: 0.6;
+    filter: grayscale(1);
+    pointer-events: none;
+    background: #f8fafc;
+}
+
+.processing-hub.active {
+    opacity: 1;
+    filter: grayscale(0);
+    border-color: var(--primary-color);
+    background: linear-gradient(to right, #ffffff, #f0f9ff);
+}
+
+.status-dot {
+    height: 8px;
+    width: 8px;
+    background-color: #cbd5e1;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.active .status-dot {
+    background-color: #10b981; /* Success Green */
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    70% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
