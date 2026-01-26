@@ -13,6 +13,10 @@ const copyLetterBtn = document.getElementById('copyLetter');
 const downloadLetterBtn = document.getElementById('downloadLetter');
 const letterTypeSelect = document.getElementById('letterType');
 
+// Hub Elements
+const processingHub = document.getElementById('processingHub');
+const hubStatusText = document.getElementById('hubStatusText');
+
 // State
 let mediaRecorder = null;
 let audioChunks = [];
@@ -31,17 +35,13 @@ async function populateMicrophoneDropdown() {
     if (!dropdown) return;
     
     try {
-        // PERMISSION HANDSHAKE: Request access briefly to unlock device labels (names)
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Stop tracks immediately so the recording light turns off
         stream.getTracks().forEach(track => track.stop());
 
-        // Now that permission is granted, enumerateDevices will return real names
         const devices = await navigator.mediaDevices.enumerateDevices();
         const microphones = devices.filter(device => device.kind === 'audioinput');
         
         dropdown.innerHTML = '';
-        
         if (microphones.length === 0) {
             dropdown.innerHTML = '<option value="">No microphones detected</option>';
             dropdown.disabled = true;
@@ -51,29 +51,21 @@ async function populateMicrophoneDropdown() {
         microphones.forEach((mic, index) => {
             const option = document.createElement('option');
             option.value = mic.deviceId;
-            // Use the real label if available, otherwise fallback to "Microphone X"
             option.textContent = mic.label || `Microphone ${index + 1}`;
-            
             if (mic.deviceId === 'default' || index === 0) {
                 option.selected = true;
                 selectedMicId = mic.deviceId;
             }
             dropdown.appendChild(option);
         });
-        
     } catch (error) {
         console.error('Error detecting microphones:', error);
-        dropdown.innerHTML = '<option value="">Permission denied</option>';
-        dropdown.disabled = true;
     }
 }
 
 function handleMicrophoneSelection() {
     const dropdown = document.getElementById('microphoneDropdown');
-    if (dropdown) {
-        selectedMicId = dropdown.value;
-        console.log('Microphone selected:', dropdown.options[dropdown.selectedIndex].textContent);
-    }
+    if (dropdown) selectedMicId = dropdown.value;
 }
 
 // --- RECORDING LOGIC ---
@@ -85,10 +77,6 @@ async function startRecording() {
         };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         
-        // Refresh names again just in case a new device was plugged in
-        await populateMicrophoneDropdown();
-        
-        // Use same medical-grade codec settings as main scribe
         let options;
         const preferredCodecs = [
             { mimeType: 'audio/webm;codecs=opus' },
@@ -105,42 +93,30 @@ async function startRecording() {
 
         mediaRecorder = new MediaRecorder(stream, options);
         audioChunks = [];
-
         mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                audioChunks.push(event.data);
-            }
+            if (event.data.size > 0) audioChunks.push(event.data);
         };
 
         mediaRecorder.onstop = processRecording;
-
-        mediaRecorder.start(1000); // Collect data every second
+        mediaRecorder.start(1000);
+        
         isRecording = true;
         isPaused = false;
         recordingStartTime = Date.now();
+        
+        // Reset the Hub for the new session
+        if (processingHub) {
+            processingHub.classList.add('inactive');
+            processingHub.classList.remove('active');
+            formatLetterBtn.disabled = true;
+        }
+
         updateUI();
         startTimer();
         
     } catch (err) {
         console.error("Error starting recording:", err);
         statusDiv.textContent = "Error: " + err.message;
-    }
-}
-
-function pauseRecording() {
-    if (mediaRecorder && isRecording) {
-        if (!isPaused) {
-            mediaRecorder.pause();
-            isPaused = true;
-            clearInterval(recordingTimer);
-            statusDiv.textContent = "Recording paused";
-        } else {
-            mediaRecorder.resume();
-            isPaused = false;
-            startTimer();
-            statusDiv.textContent = "Recording...";
-        }
-        updateUI();
     }
 }
 
@@ -156,7 +132,7 @@ function stopRecording() {
 }
 
 async function processRecording() {
-    statusDiv.textContent = "Processing audio...";
+    statusDiv.textContent = "Processing medical dictation...";
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
     
     try {
@@ -173,36 +149,54 @@ async function processRecording() {
 
             const data = await response.json();
             if (data.text) {
-                // Prepend or append new transcription to existing content
-                const newText = data.text.trim();
-                finalTranscript = finalTranscript ? finalTranscript + " " + newText : newText;
+                finalTranscript = data.text.trim();
                 
-                // Keep the placeholder logic intact
+                // Remove placeholder
                 const placeholder = transcriptDiv.querySelector('.placeholder');
                 if (placeholder) placeholder.remove();
                 
                 transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
-                statusDiv.textContent = "Transcription complete";
+                activateProcessingHub();
             }
         };
     } catch (err) {
-        console.error("Transcription error:", err);
         statusDiv.textContent = "Transcription failed";
+    }
+}
+
+// --- NEW: UI ACTIVATION ---
+
+function activateProcessingHub() {
+    statusDiv.textContent = "Transcription ready";
+    if (processingHub) {
+        processingHub.classList.remove('inactive');
+        processingHub.classList.add('active');
+        if (hubStatusText) hubStatusText.innerText = "Dictation ready for formatting";
+    }
+    
+    formatLetterBtn.disabled = false;
+
+    // Trigger entrance animation if anime.js is loaded
+    if (window.anime && processingHub) {
+        anime({
+            targets: '#processingHub',
+            translateY: [-20, 0],
+            opacity: [0, 1],
+            duration: 800,
+            easing: 'easeOutExpo'
+        });
     }
 }
 
 // --- AI FORMATTING ---
 
 async function formatLetter() {
-    if (!finalTranscript) {
-        alert("Please record some dictation first.");
-        return;
-    }
+    if (!finalTranscript) return;
 
     const originalBtnText = formatLetterBtn.innerHTML;
-    formatLetterBtn.innerHTML = '<span>Formatting...</span>';
+    formatLetterBtn.innerHTML = '<span>AI is writing...</span>';
     formatLetterBtn.disabled = true;
-    statusDiv.textContent = "AI is formatting your letter...";
+    formattedLetterDiv.style.opacity = "0.5";
 
     try {
         const response = await fetch('/api/format-letter', {
@@ -218,38 +212,28 @@ async function formatLetter() {
         
         if (data.formattedLetter) {
             formattedLetter = data.formattedLetter;
-            
-            // Clean up placeholder
             const placeholder = formattedLetterDiv.querySelector('.placeholder');
             if (placeholder) placeholder.remove();
             
             formattedLetterDiv.innerHTML = `<div class="letter-content">${formattedLetter.replace(/\n/g, '<br>')}</div>`;
-            statusDiv.textContent = "Letter formatted successfully";
-        } else {
-            throw new Error(data.error || "Failed to format letter");
+            statusDiv.textContent = "Letter ready";
         }
     } catch (err) {
-        console.error("Formatting error:", err);
-        statusDiv.textContent = "Formatting failed";
-        alert("Error: " + err.message);
+        alert("Formatting failed. Please try again.");
     } finally {
         formatLetterBtn.innerHTML = originalBtnText;
         formatLetterBtn.disabled = false;
+        formattedLetterDiv.style.opacity = "1";
     }
 }
 
-// --- UI HELPERS ---
+// --- UI HELPERS & LISTENERS ---
 
 function updateUI() {
     startBtn.style.display = isRecording ? 'none' : 'flex';
     pauseBtn.style.display = isRecording ? 'flex' : 'none';
     stopBtn.style.display = isRecording ? 'flex' : 'none';
-    
-    pauseBtn.innerHTML = isPaused ? 
-        '<span class="btn-icon">▶</span><span>Resume</span>' : 
-        '<span class="btn-icon">⏸</span><span>Pause</span>';
-    
-    statusDiv.textContent = isRecording ? (isPaused ? "Recording paused" : "Recording...") : "Ready";
+    statusDiv.textContent = isRecording ? (isPaused ? "Paused" : "Recording...") : "Ready";
 }
 
 function startTimer() {
@@ -259,25 +243,13 @@ function startTimer() {
         const mins = Math.floor(elapsed / 60000);
         const secs = Math.floor((elapsed % 60000) / 1000);
         const timerDisplay = document.getElementById('timerElapsed');
-        if (timerDisplay) {
-            timerDisplay.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
+        if (timerDisplay) timerDisplay.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
     }, 1000);
-}
-
-function clearTranscript() {
-    if (confirm("Are you sure you want to clear the transcript?")) {
-        finalTranscript = '';
-        transcriptDiv.innerHTML = '<p class="placeholder">Your dictated text will appear here...</p>';
-        formattedLetterDiv.innerHTML = '<p class="placeholder">Your formatted letter will appear here...</p>';
-        statusDiv.textContent = "Cleared";
-    }
 }
 
 function copyLetter() {
     const text = formattedLetterDiv.innerText;
     if (!text || text.includes("Your formatted letter")) return;
-    
     navigator.clipboard.writeText(text).then(() => {
         const originalText = copyLetterBtn.innerHTML;
         copyLetterBtn.innerHTML = '<span>Copied!</span>';
@@ -285,38 +257,14 @@ function copyLetter() {
     });
 }
 
-function downloadLetter() {
-    const text = formattedLetterDiv.innerText;
-    if (!text || text.includes("Your formatted letter")) return;
-    
-    const element = document.createElement('a');
-    const file = new Blob([text], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = `Medical_Letter_${new Date().toISOString().slice(0,10)}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-}
-
-// --- INITIALIZATION ---
-
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Letter Dictation initialized');
-    
-    // Populate microphone dropdown immediately
     populateMicrophoneDropdown();
     
-    // Event Listeners
     startBtn.addEventListener('click', startRecording);
-    pauseBtn.addEventListener('click', pauseRecording);
     stopBtn.addEventListener('click', stopRecording);
     formatLetterBtn.addEventListener('click', formatLetter);
-    clearTranscriptBtn.addEventListener('click', clearTranscript);
     copyLetterBtn.addEventListener('click', copyLetter);
-    downloadLetterBtn.addEventListener('click', downloadLetter);
-
+    
     const micDropdown = document.getElementById('microphoneDropdown');
-    if (micDropdown) {
-        micDropdown.addEventListener('change', handleMicrophoneSelection);
-    }
+    if (micDropdown) micDropdown.addEventListener('change', handleMicrophoneSelection);
 });
