@@ -233,3 +233,40 @@ body.dark-mode .ai-disclaimer {
     color: #fde68a;
     border-left-color: #f59e0b;
 }
+/* Card Header Layout Adjustment */
+.card-header .header-main {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Compact version of the accent button for headers */
+.btn-accent-small {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-accent-small:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.btn-accent-small:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Remove the old processing hub styles if they exist */
+.actions-bar { display: none !important; }
