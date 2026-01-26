@@ -133,6 +133,12 @@ function stopRecording() {
 
 async function processRecording() {
     statusDiv.textContent = "Processing medical dictation...";
+    
+    if (audioChunks.length === 0) {
+        statusDiv.textContent = "No audio recorded.";
+        return;
+    }
+
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
     
     try {
@@ -147,24 +153,28 @@ async function processRecording() {
                 body: JSON.stringify({ audioBlob: base64Audio })
             });
 
+            if (!response.ok) throw new Error("Transcription server error");
+
             const data = await response.json();
             if (data.text) {
                 finalTranscript = data.text.trim();
                 
-                // Remove placeholder
-                const placeholder = transcriptDiv.querySelector('.placeholder');
-                if (placeholder) placeholder.remove();
+                // Remove placeholder and update content
+                transcriptDiv.innerHTML = '';
+                const p = document.createElement('p');
+                p.textContent = finalTranscript;
+                transcriptDiv.appendChild(p);
                 
-                transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
                 activateProcessingHub();
             }
         };
     } catch (err) {
+        console.error("Transcription failed:", err);
         statusDiv.textContent = "Transcription failed";
     }
 }
 
-// --- NEW: UI ACTIVATION ---
+// --- UI HUB ACTIVATION ---
 
 function activateProcessingHub() {
     statusDiv.textContent = "Transcription ready";
@@ -176,14 +186,14 @@ function activateProcessingHub() {
     
     formatLetterBtn.disabled = false;
 
-    // Trigger entrance animation if anime.js is loaded
-    if (window.anime && processingHub) {
+    // Trigger entrance animation
+    if (window.anime) {
         anime({
             targets: '#processingHub',
-            translateY: [-20, 0],
+            translateY: [20, 0],
             opacity: [0, 1],
-            duration: 800,
-            easing: 'easeOutExpo'
+            duration: 600,
+            easing: 'easeOutCubic'
         });
     }
 }
@@ -194,7 +204,7 @@ async function formatLetter() {
     if (!finalTranscript) return;
 
     const originalBtnText = formatLetterBtn.innerHTML;
-    formatLetterBtn.innerHTML = '<span>AI is writing...</span>';
+    formatLetterBtn.innerHTML = '✨ AI is writing...';
     formatLetterBtn.disabled = true;
     formattedLetterDiv.style.opacity = "0.5";
 
@@ -208,17 +218,23 @@ async function formatLetter() {
             })
         });
 
+        if (!response.ok) throw new Error("Formatting server error");
+
         const data = await response.json();
         
         if (data.formattedLetter) {
             formattedLetter = data.formattedLetter;
-            const placeholder = formattedLetterDiv.querySelector('.placeholder');
-            if (placeholder) placeholder.remove();
             
-            formattedLetterDiv.innerHTML = `<div class="letter-content">${formattedLetter.replace(/\n/g, '<br>')}</div>`;
+            // Fixed: Inject content directly without nesting classes
+            formattedLetterDiv.innerHTML = formattedLetter.replace(/\n/g, '<br>');
+            
             statusDiv.textContent = "Letter ready";
+
+            // Smooth scroll to the result
+            formattedLetterDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     } catch (err) {
+        console.error("Formatting error:", err);
         alert("Formatting failed. Please try again.");
     } finally {
         formatLetterBtn.innerHTML = originalBtnText;
@@ -234,28 +250,38 @@ function updateUI() {
     pauseBtn.style.display = isRecording ? 'flex' : 'none';
     stopBtn.style.display = isRecording ? 'flex' : 'none';
     statusDiv.textContent = isRecording ? (isPaused ? "Paused" : "Recording...") : "Ready";
+    
+    if (isRecording) {
+        statusDiv.classList.add('recording');
+    } else {
+        statusDiv.classList.remove('recording');
+    }
 }
 
 function startTimer() {
-    const startTime = recordingStartTime || Date.now();
+    const timerDisplay = document.getElementById('timerElapsed');
+    if (recordingTimer) clearInterval(recordingTimer);
+    
     recordingTimer = setInterval(() => {
-        const elapsed = Date.now() - startTime;
+        const elapsed = Date.now() - recordingStartTime;
         const mins = Math.floor(elapsed / 60000);
         const secs = Math.floor((elapsed % 60000) / 1000);
-        const timerDisplay = document.getElementById('timerElapsed');
         if (timerDisplay) timerDisplay.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
     }, 1000);
 }
 
 function copyLetter() {
     const text = formattedLetterDiv.innerText;
-    if (!text || text.includes("Your formatted letter")) return;
+    if (!text || text.includes("Formatted letter will appear")) return;
+    
     navigator.clipboard.writeText(text).then(() => {
         const originalText = copyLetterBtn.innerHTML;
-        copyLetterBtn.innerHTML = '<span>Copied!</span>';
+        copyLetterBtn.innerHTML = '✅';
         setTimeout(() => copyLetterBtn.innerHTML = originalText, 2000);
     });
 }
+
+// --- INITIALIZATION ---
 
 document.addEventListener('DOMContentLoaded', () => {
     populateMicrophoneDropdown();
@@ -264,6 +290,17 @@ document.addEventListener('DOMContentLoaded', () => {
     stopBtn.addEventListener('click', stopRecording);
     formatLetterBtn.addEventListener('click', formatLetter);
     copyLetterBtn.addEventListener('click', copyLetter);
+    
+    // Clear functionality
+    if (clearTranscriptBtn) {
+        clearTranscriptBtn.addEventListener('click', () => {
+            if (confirm("Clear transcription?")) {
+                transcriptDiv.innerHTML = '<p class="placeholder">Your dictation will appear here...</p>';
+                finalTranscript = '';
+                processingHub.classList.add('inactive');
+            }
+        });
+    }
     
     const micDropdown = document.getElementById('microphoneDropdown');
     if (micDropdown) micDropdown.addEventListener('change', handleMicrophoneSelection);
