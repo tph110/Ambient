@@ -519,3 +519,45 @@ body.dark-mode .nav-link.active {
         content: 'Layout: SINGLE COLUMN (<1024px)';
     }
 }
+/* Update the Actions Bar to support the Hub logic */
+.actions-bar {
+    margin: 20px 0;
+    text-align: center;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 2px dashed #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+/* Logic for Hidden/Shown states */
+.actions-bar.inactive {
+    display: none !important;
+}
+
+.actions-bar.active {
+    display: block !important;
+    border-style: solid;
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+/* Dark mode for the Hub */
+body.dark-mode .actions-bar {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+body.dark-mode .actions-bar.active {
+    border-color: #667eea;
+    background: #1e293b;
+}
+
+.hub-status-text {
+    font-size: 0.85rem;
+    color: #667eea;
+    margin-bottom: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
