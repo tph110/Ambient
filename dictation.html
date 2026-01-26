@@ -212,17 +212,39 @@
         </aside>
         
         <main class="panel-right">
-            <div class="card transcript-card">
-                <div class="card-header">
-                    <h2>Raw Transcription</h2>
-                    <button id="clearTranscript" class="btn-icon" title="Clear">🗑️</button>
-                </div>
-                <div class="card-body">
-                    <div id="transcript" class="transcript-box" contenteditable="true">
-                        <p class="placeholder">Your dictation will appear here as raw text...</p>
-                    </div>
-                </div>
+    <div class="card transcript-card">
+        <div class="card-header">
+            <h2>Raw Transcription</h2>
+            <button id="clearTranscript" class="btn-icon" title="Clear">🗑️</button>
+        </div>
+        <div class="card-body">
+            <div id="transcript" class="transcript-box" contenteditable="true">
+                <p class="placeholder">Your dictation will appear here as raw text...</p>
             </div>
+        </div>
+    </div>
+    
+    <div class="card letter-card">
+        <div class="card-header">
+            <div class="header-main">
+                <h3>Formatted Letter</h3>
+                <button id="formatLetter" class="btn btn-accent-small" disabled>
+                    ✨ Generate Letter
+                </button>
+            </div>
+            <div class="letter-actions">
+                <button id="copyLetter" class="btn-icon copy-btn" title="Copy">📋</button>
+                <button id="downloadLetter" class="btn-icon download-btn" title="Download">💾</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="ai-disclaimer">AI can make mistakes. Verify clinical content.</p>
+            <div id="formattedLetter" class="letter-content" contenteditable="true">
+                <p class="placeholder">Formatted letter will appear here after clicking 'Generate'...</p>
+            </div>
+        </div>
+    </div>
+</main>
             
             <div id="processingHub" class="actions-bar inactive">
                 <div id="hubStatusText" class="hub-status-text">Dictation ready</div>
