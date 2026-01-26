@@ -194,45 +194,50 @@ function activateProcessingHub() {
 // --- AI FORMATTING ---
 
 async function formatLetter() {
-    if (!finalTranscript) return;
+    // 1. Grab text directly from the transcription box
+    const transcriptBox = document.getElementById('transcript');
+    const rawText = transcriptBox ? transcriptBox.innerText.trim() : "";
 
-    const originalBtnText = formatLetterBtn.innerHTML;
-    formatLetterBtn.innerHTML = '✨ AI is writing...';
-    formatLetterBtn.disabled = true;
-    formattedLetterDiv.style.opacity = "0.5";
+    // 2. Safety check: Don't run if empty or placeholder
+    if (!rawText || rawText.includes("Your dictation will appear")) {
+        alert("Please dictate some text first!");
+        return;
+    }
+
+    // 3. UI Feedback
+    const btn = document.getElementById('formatLetter');
+    const outputArea = document.getElementById('formattedLetter');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = "⏳ AI is formatting...";
+    btn.disabled = true;
+    outputArea.style.opacity = "0.5";
 
     try {
         const response = await fetch('/api/format-letter', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                transcript: finalTranscript,
-                letterType: letterTypeSelect.value
+                transcript: rawText,
+                letterType: document.getElementById('letterType').value
             })
         });
-
-        if (!response.ok) throw new Error("Formatting server error");
 
         const data = await response.json();
         
         if (data.formattedLetter) {
-            formattedLetter = data.formattedLetter;
-            
-            // Fixed: Inject content directly without nesting classes
-            formattedLetterDiv.innerHTML = formattedLetter.replace(/\n/g, '<br>');
-            
-            statusDiv.textContent = "Letter ready";
-
-            // Smooth scroll to the result
-            formattedLetterDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Success! Update the UI
+            outputArea.innerHTML = data.formattedLetter.replace(/\n/g, '<br>');
+            statusDiv.textContent = "Letter generated successfully.";
         }
     } catch (err) {
-        console.error("Formatting error:", err);
-        alert("Formatting failed. Please try again.");
+        console.error("Error:", err);
+        alert("Connection to AI failed. Please try again.");
     } finally {
-        formatLetterBtn.innerHTML = originalBtnText;
-        formatLetterBtn.disabled = false;
-        formattedLetterDiv.style.opacity = "1";
+        // Reset button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        outputArea.style.opacity = "1";
     }
 }
 
