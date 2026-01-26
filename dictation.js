@@ -133,12 +133,6 @@ function stopRecording() {
 
 async function processRecording() {
     statusDiv.textContent = "Processing medical dictation...";
-    
-    if (audioChunks.length === 0) {
-        statusDiv.textContent = "No audio recorded.";
-        return;
-    }
-
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
     
     try {
@@ -153,23 +147,22 @@ async function processRecording() {
                 body: JSON.stringify({ audioBlob: base64Audio })
             });
 
-            if (!response.ok) throw new Error("Transcription server error");
-
             const data = await response.json();
             if (data.text) {
                 finalTranscript = data.text.trim();
                 
-                // Remove placeholder and update content
-                transcriptDiv.innerHTML = '';
-                const p = document.createElement('p');
-                p.textContent = finalTranscript;
-                transcriptDiv.appendChild(p);
+                // 1. Update Transcript Text
+                transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
                 
-                activateProcessingHub();
+                // 2. ENABLE the permanent Generate button
+                const genBtn = document.getElementById('formatLetter');
+                if (genBtn) {
+                    genBtn.disabled = false;
+                    statusDiv.textContent = "Transcription ready. Click 'Generate Letter'.";
+                }
             }
         };
     } catch (err) {
-        console.error("Transcription failed:", err);
         statusDiv.textContent = "Transcription failed";
     }
 }
