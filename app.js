@@ -35,6 +35,10 @@ let selectedMicId = null;
 let telephoneStreams = null;
 let sizeMonitorInterval = null;
 
+// UPDATED: More conservative size limits accounting for base64 overhead
+const MAX_RAW_AUDIO_SIZE_MB = 3;  // Raw audio limit (becomes ~4MB when base64 encoded)
+const MAX_BASE64_SIZE_MB = 4.5;   // Vercel's limit
+
 // --- MICROPHONE MANAGEMENT ---
 
 async function populateMicrophoneDropdown() {
@@ -67,6 +71,7 @@ async function populateMicrophoneDropdown() {
         });
     } catch (error) {
         console.error('Error detecting microphones:', error);
+        statusDiv.textContent = 'Microphone access denied. Please allow microphone access.';
     }
 }
 
@@ -106,7 +111,22 @@ async function startRecording() {
             });
         }
 
-        mediaRecorder = new MediaRecorder(stream);
+        // Use more aggressive compression
+        let options;
+        const preferredCodecs = [
+            { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 12000 },
+            { mimeType: 'audio/ogg;codecs=opus', audioBitsPerSecond: 12000 },
+            { mimeType: 'audio/webm', audioBitsPerSecond: 12000 }
+        ];
+
+        for (const codec of preferredCodecs) {
+            if (MediaRecorder.isTypeSupported(codec.mimeType)) {
+                options = codec;
+                break;
+            }
+        }
+
+        mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorder.ondataavailable = (event) => {
             if (event.data.size > 0) audioChunks.push(event.data);
         };
@@ -127,7 +147,8 @@ async function startRecording() {
 
     } catch (err) {
         console.error("Error starting recording:", err);
-        alert("Could not start recording. Please check permissions.");
+        alert("Could not start recording. Please check permissions and try again.");
+        statusDiv.textContent = "Recording failed";
     }
 }
 
@@ -140,6 +161,12 @@ function resetWorkflow() {
     [getSummaryBtn, generateReferralBtn, generatePatientSummaryBtn].forEach(btn => {
         btn.disabled = true;
     });
+    
+    // Clear previous outputs
+    transcriptDiv.innerHTML = '<p class="placeholder">Recording in progress...</p>';
+    summaryDiv.innerHTML = '<p class="placeholder">Will generate only on command...</p>';
+    referralLetterDiv.innerHTML = '<p class="placeholder">Will generate only on command...</p>';
+    patientSummaryDiv.innerHTML = '<p class="placeholder">Will generate only on command...</p>';
 }
 
 function enableControlButtons() {
@@ -188,30 +215,90 @@ function stopRecording() {
 // --- TRANSCRIPTION & INDEPENDENT ACTIVATION ---
 
 async function processRecording() {
-    statusDiv.textContent = "Transcribing medical audio...";
+    statusDiv.textContent = "Preparing audio for transcription...";
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
     
+    // Check raw audio size
+    const rawSizeMB = audioBlob.size / (1024 * 1024);
+    console.log(`Raw audio size: ${rawSizeMB.toFixed(2)} MB`);
+    
+    if (rawSizeMB > MAX_RAW_AUDIO_SIZE_MB) {
+        statusDiv.textContent = "Recording too long";
+        alert(`Recording is too large (${rawSizeMB.toFixed(1)}MB). Please keep recordings under ${MAX_RAW_AUDIO_SIZE_MB}MB (about ${Math.floor(MAX_RAW_AUDIO_SIZE_MB * 8 * 60 / 12)} minutes).\n\nTip: Record shorter consultations or split long sessions.`);
+        return;
+    }
+    
     try {
+        statusDiv.textContent = "Transcribing medical audio...";
+        
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = async () => {
             const base64Audio = reader.result.split(',')[1];
-            const response = await fetch('/api/transcribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ audioBlob: base64Audio })
-            });
+            const base64SizeMB = (base64Audio.length * 0.75) / (1024 * 1024); // Approximate decoded size
+            
+            console.log(`Base64 size: ${base64SizeMB.toFixed(2)} MB`);
+            
+            if (base64SizeMB > MAX_BASE64_SIZE_MB) {
+                statusDiv.textContent = "Audio file too large";
+                alert(`Encoded audio is too large for transmission (${base64SizeMB.toFixed(1)}MB). Maximum is ${MAX_BASE64_SIZE_MB}MB.\n\nPlease record a shorter consultation.`);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/transcribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ audioBlob: base64Audio })
+                });
 
-            const data = await response.json();
-            if (data.text) {
-                finalTranscript = data.text;
-                transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
-                activateIndependentWorkflow();
+                // Check if response is JSON before parsing
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const errorText = await response.text();
+                    console.error('Non-JSON response:', errorText);
+                    throw new Error(`Server returned non-JSON response (${response.status}). This may indicate a file size or server error.`);
+                }
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `Transcription failed with status ${response.status}`);
+                }
+                
+                if (data.text) {
+                    finalTranscript = data.text;
+                    transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
+                    activateIndependentWorkflow();
+                } else {
+                    throw new Error('No transcript returned from server');
+                }
+            } catch (err) {
+                console.error('Transcription error:', err);
+                statusDiv.textContent = "Transcription failed";
+                
+                let errorMessage = "Transcription failed. ";
+                if (err.message.includes('413') || err.message.includes('Payload Too Large')) {
+                    errorMessage += "The audio file is too large. Please record a shorter consultation.";
+                } else if (err.message.includes('Failed to fetch') || err.message.includes('network')) {
+                    errorMessage += "Network error. Please check your connection and try again.";
+                } else {
+                    errorMessage += err.message;
+                }
+                
+                alert(errorMessage);
             }
         };
+        
+        reader.onerror = () => {
+            statusDiv.textContent = "Failed to read audio file";
+            alert("Failed to process audio file. Please try recording again.");
+        };
+        
     } catch (err) {
-        statusDiv.textContent = "Transcription failed";
-        console.error(err);
+        statusDiv.textContent = "Processing failed";
+        console.error('Processing error:', err);
+        alert("Failed to process recording: " + err.message);
     }
 }
 
@@ -262,16 +349,22 @@ async function generateAIContent(type, targetDiv, button) {
             body: JSON.stringify({ transcript: contentToProcess, type: type })
         });
         
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `AI generation failed (${response.status})`);
+        }
+        
         const data = await response.json();
         
         if (data.summary) {
             targetDiv.innerHTML = `<p>${data.summary.replace(/\n/g, '<br>')}</p>`;
         } else {
-            throw new Error("No summary returned");
+            throw new Error("No summary returned from AI");
         }
     } catch (err) {
-        console.error(err);
-        targetDiv.innerHTML = `<p style="color:red">Failed to generate document. Please check your connection.</p>`;
+        console.error('AI generation error:', err);
+        targetDiv.innerHTML = `<p style="color:red">Failed to generate document: ${err.message}</p>`;
+        alert(`Failed to generate ${type} document: ${err.message}`);
     } finally {
         button.innerText = originalText.replace("Generate", "Regenerate");
         button.disabled = false;
@@ -298,7 +391,10 @@ function updateUI() {
         statusDiv.textContent = isPaused ? "Paused" : "Recording...";
         document.getElementById('recordingTimer').style.display = 'block';
     } else {
-        statusDiv.textContent = "Ready";
+        document.getElementById('recordingTimer').style.display = 'none';
+        if (!finalTranscript) {
+            statusDiv.textContent = "Ready";
+        }
     }
 }
 
@@ -322,10 +418,48 @@ function startSizeMonitor() {
         
         const progressBar = document.getElementById('progressBar');
         if (progressBar) {
-            const percent = Math.min((size / 4) * 100, 100);
+            const percent = Math.min((size / MAX_RAW_AUDIO_SIZE_MB) * 100, 100);
             progressBar.style.width = `${percent}%`;
+            
+            // Warning color when approaching limit
+            if (percent > 80) {
+                progressBar.style.background = '#ef4444'; // red
+            } else if (percent > 60) {
+                progressBar.style.background = '#f59e0b'; // orange
+            } else {
+                progressBar.style.background = '#0284c7'; // blue
+            }
+        }
+        
+        // Auto-stop if too large
+        if (size >= MAX_RAW_AUDIO_SIZE_MB) {
+            console.warn('Recording size limit reached, auto-stopping');
+            stopRecording();
+            alert(`Recording stopped automatically - reached ${MAX_RAW_AUDIO_SIZE_MB}MB limit.\n\nProcessing your audio now...`);
         }
     }, 2000);
+}
+
+// --- COPY FUNCTIONS ---
+
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.innerText;
+    
+    if (!text || text.includes('placeholder') || text.includes('Will generate')) {
+        alert('Nothing to copy yet!');
+        return;
+    }
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const copyBtn = event.target;
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '✅';
+        setTimeout(() => copyBtn.innerHTML = originalText, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy to clipboard');
+    });
 }
 
 // --- INITIALIZATION ---
@@ -349,6 +483,11 @@ document.addEventListener('DOMContentLoaded', () => {
     generatePatientSummaryBtn.addEventListener('click', () => 
         generateAIContent('patient', patientSummaryDiv, generatePatientSummaryBtn));
     
+    // Copy button listeners
+    document.getElementById('copySummary')?.addEventListener('click', () => copyToClipboard('summary'));
+    document.getElementById('copyReferral')?.addEventListener('click', () => copyToClipboard('referralLetter'));
+    document.getElementById('copyPatientSummary')?.addEventListener('click', () => copyToClipboard('patientSummary'));
+    
     const micDropdown = document.getElementById('microphoneDropdown');
     if (micDropdown) micDropdown.addEventListener('change', handleMicrophoneSelection);
 
@@ -358,7 +497,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeDarkMode() {
     const btn = document.getElementById('darkModeCheckbox');
     if (!btn) return;
-    if (localStorage.getItem('darkMode') === 'enabled') document.body.classList.add('dark-mode');
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode');
+        btn.checked = true;
+    }
     btn.addEventListener('change', () => {
         document.body.classList.toggle('dark-mode');
         localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
