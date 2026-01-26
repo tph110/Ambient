@@ -7,15 +7,11 @@ const stopBtn = document.getElementById('stopBtn');
 const transcriptDiv = document.getElementById('transcript');
 const formattedLetterDiv = document.getElementById('formattedLetter');
 const statusDiv = document.getElementById('status');
-const formatLetterBtn = document.getElementById('formatLetter');
+const formatLetterBtn = document.getElementById('formatLetterBtn'); // FIXED: Changed from 'formatLetter' to 'formatLetterBtn'
 const clearTranscriptBtn = document.getElementById('clearTranscript');
 const copyLetterBtn = document.getElementById('copyLetter');
 const downloadLetterBtn = document.getElementById('downloadLetter');
 const letterTypeSelect = document.getElementById('letterType');
-
-// Hub Elements
-const processingHub = document.getElementById('processingHub');
-const hubStatusText = document.getElementById('hubStatusText');
 
 // State
 let mediaRecorder = null;
@@ -104,10 +100,8 @@ async function startRecording() {
         isPaused = false;
         recordingStartTime = Date.now();
         
-        // Reset the Hub for the new session
-        if (processingHub) {
-            processingHub.classList.add('inactive');
-            processingHub.classList.remove('active');
+        // Reset button state for new session
+        if (formatLetterBtn) {
             formatLetterBtn.disabled = true;
         }
 
@@ -147,47 +141,30 @@ async function processRecording() {
                 body: JSON.stringify({ audioBlob: base64Audio })
             });
 
+            if (!response.ok) {
+                throw new Error(`Transcription failed: ${response.status}`);
+            }
+
             const data = await response.json();
             if (data.text) {
                 finalTranscript = data.text.trim();
                 
-                // 1. Update Transcript Text
+                // Update Transcript Text
                 transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
                 
-                // 2. ENABLE the permanent Generate button
-                const genBtn = document.getElementById('formatLetter');
-                if (genBtn) {
-                    genBtn.disabled = false;
+                // ENABLE the Generate button
+                if (formatLetterBtn) {
+                    formatLetterBtn.disabled = false;
                     statusDiv.textContent = "Transcription ready. Click 'Generate Letter'.";
                 }
+            } else {
+                throw new Error('No transcript returned from API');
             }
         };
     } catch (err) {
-        statusDiv.textContent = "Transcription failed";
-    }
-}
-
-// --- UI HUB ACTIVATION ---
-
-function activateProcessingHub() {
-    statusDiv.textContent = "Transcription ready";
-    if (processingHub) {
-        processingHub.classList.remove('inactive');
-        processingHub.classList.add('active');
-        if (hubStatusText) hubStatusText.innerText = "Dictation ready for formatting";
-    }
-    
-    formatLetterBtn.disabled = false;
-
-    // Trigger entrance animation
-    if (window.anime) {
-        anime({
-            targets: '#processingHub',
-            translateY: [20, 0],
-            opacity: [0, 1],
-            duration: 600,
-            easing: 'easeOutCubic'
-        });
+        console.error('Transcription error:', err);
+        statusDiv.textContent = "Transcription failed: " + err.message;
+        alert("Transcription failed. Please check your connection and try again.");
     }
 }
 
@@ -205,13 +182,14 @@ async function formatLetter() {
     }
 
     // 3. UI Feedback
-    const btn = document.getElementById('formatLetter');
+    const btn = formatLetterBtn;
     const outputArea = document.getElementById('formattedLetter');
     const originalText = btn.innerHTML;
     
     btn.innerHTML = "⏳ AI is formatting...";
     btn.disabled = true;
     outputArea.style.opacity = "0.5";
+    statusDiv.textContent = "Generating formatted letter...";
 
     try {
         const response = await fetch('/api/format-letter', {
@@ -223,19 +201,27 @@ async function formatLetter() {
             })
         });
 
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `API error: ${response.status}`);
+        }
+
         const data = await response.json();
         
-        if (data.formattedLetter) {
+        if (data.letter) {
             // Success! Update the UI
-            outputArea.innerHTML = data.formattedLetter.replace(/\n/g, '<br>');
+            outputArea.innerHTML = data.letter.replace(/\n/g, '<br>');
             statusDiv.textContent = "Letter generated successfully.";
+            btn.innerHTML = "🔄 Regenerate Letter";
+        } else {
+            throw new Error('No letter returned from API');
         }
     } catch (err) {
         console.error("Error:", err);
-        alert("Connection to AI failed. Please try again.");
+        statusDiv.textContent = "Letter generation failed.";
+        alert("AI formatting failed: " + err.message + "\n\nPlease check your connection and try again.");
     } finally {
         // Reset button
-        btn.innerHTML = originalText;
         btn.disabled = false;
         outputArea.style.opacity = "1";
     }
@@ -270,12 +256,18 @@ function startTimer() {
 
 function copyLetter() {
     const text = formattedLetterDiv.innerText;
-    if (!text || text.includes("Formatted letter will appear")) return;
+    if (!text || text.includes("Formatted letter will appear")) {
+        alert("No letter to copy yet!");
+        return;
+    }
     
     navigator.clipboard.writeText(text).then(() => {
         const originalText = copyLetterBtn.innerHTML;
         copyLetterBtn.innerHTML = '✅';
         setTimeout(() => copyLetterBtn.innerHTML = originalText, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy to clipboard');
     });
 }
 
@@ -286,8 +278,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     startBtn.addEventListener('click', startRecording);
     stopBtn.addEventListener('click', stopRecording);
-    formatLetterBtn.addEventListener('click', formatLetter);
-    copyLetterBtn.addEventListener('click', copyLetter);
+    
+    // FIXED: Attach event listener to the correct button
+    if (formatLetterBtn) {
+        formatLetterBtn.addEventListener('click', formatLetter);
+    }
+    
+    if (copyLetterBtn) {
+        copyLetterBtn.addEventListener('click', copyLetter);
+    }
     
     // Clear functionality
     if (clearTranscriptBtn) {
@@ -295,11 +294,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm("Clear transcription?")) {
                 transcriptDiv.innerHTML = '<p class="placeholder">Your dictation will appear here...</p>';
                 finalTranscript = '';
-                processingHub.classList.add('inactive');
+                if (formatLetterBtn) {
+                    formatLetterBtn.disabled = true;
+                }
             }
         });
     }
     
     const micDropdown = document.getElementById('microphoneDropdown');
     if (micDropdown) micDropdown.addEventListener('change', handleMicrophoneSelection);
+    
+    updateUI();
 });
