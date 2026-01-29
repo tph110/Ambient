@@ -155,6 +155,8 @@ IMPORTANT FORMATTING RULES:
 - Use appropriate medical terminology
 - Format for direct copy-paste into EMIS/SystmOne
 
+CRITICAL: DO NOT USE HYPHENS OR BULLET POINTS. Write in prose format with full sentences.
+
 REQUIRED SECTIONS (in this order):
 1. Presenting Complaint
 2. History of Presenting Complaint
@@ -169,7 +171,8 @@ REQUIRED SECTIONS (in this order):
 SECTION FORMATTING:
 - Each section heading should be in Title Case, plain text, with a colon (e.g., "Presenting Complaint:")
 - DO NOT use ** or any markdown formatting
-- Use bullet points (with hyphens) for lists within sections
+- Write content in PROSE FORMAT with full sentences
+- DO NOT use hyphens (-) or bullet points
 - If a section wasn't covered in the consultation, write "Not documented" or omit the section
 
 SPECIFIC SECTION GUIDANCE:
@@ -181,6 +184,7 @@ SPECIFIC SECTION GUIDANCE:
 
 **History of Presenting Complaint:**
 - THIS SECTION SHOULD BE DETAILED AND COMPREHENSIVE
+- Write in PROSE format with full sentences, NOT bullet points
 - Include ALL relevant details from the consultation
 - Capture the full narrative of how the complaint developed
 - Include timeline (when it started, how it progressed)
@@ -190,17 +194,17 @@ SPECIFIC SECTION GUIDANCE:
 - Include what the patient has tried already
 - Include associated symptoms
 - Include impact on daily activities/work/sleep
-- Use 5-10 bullet points or 2-4 full paragraphs
+- Write as 2-4 flowing paragraphs
 - Be thorough - this is the most important clinical section
 
 **Other sections:**
-- Past Medical History: List conditions (2-4 bullet points)
-- Medications: List with doses if mentioned
-- Allergies: List with reactions
-- Social History: Relevant details (smoking, alcohol, occupation, living situation)
-- Examination Findings: What was examined and found
-- Assessment: Clinical impression/diagnosis
-- Plan: What was decided (investigations, treatment, follow-up)
+- Past Medical History: List conditions as prose (e.g., "The patient has a history of asthma and hypertension")
+- Medications: Write as sentences (e.g., "Current medications include ramipril 5mg once daily and salbutamol inhaler as needed")
+- Allergies: Write as prose (e.g., "No known drug allergies" or "Allergic to penicillin with rash reaction")
+- Social History: Write relevant details in sentences
+- Examination Findings: Describe what was examined and found in prose
+- Assessment: Clinical impression/diagnosis in prose
+- Plan: Describe what was decided in prose
 
 DO NOT INCLUDE:
 - QOF outcomes section
@@ -209,29 +213,40 @@ DO NOT INCLUDE:
 - Quality improvement metrics
 - Administrative notes
 - Markdown formatting (**bold**, *italic*, etc.)
+- Hyphens or bullet points
 
 OUTPUT FORMAT:
 Return ONLY the formatted clinical summary. Do not include any preamble, explanation, or meta-commentary.
 Use plain text format suitable for direct copy-paste into medical records systems.
 
-EXAMPLE FORMAT:
+EXAMPLE FORMAT (NO HYPHENS OR BULLETS):
+
 Presenting Complaint:
-- 3-day history of productive cough and fever
+3-day history of productive cough and fever
 
 History of Presenting Complaint:
-- Symptoms began 3 days ago with rhinorrhoea and sore throat
-- Progressed to productive cough with green sputum within 24 hours
-- Cough worse at night, affecting sleep quality
-- Fever documented up to 38.5°C, particularly in evenings
-- Reports mild shortness of breath on exertion (climbing stairs)
-- No chest pain, no haemoptysis
-- Tried paracetamol and increased fluids with minimal improvement
-- Unable to attend work for past 2 days due to fatigue and cough
-- No recent travel, no sick contacts identified
+Symptoms began 3 days ago with rhinorrhoea and sore throat. This progressed to a productive cough with green sputum within 24 hours. The cough is worse at night and is affecting sleep quality. Fever has been documented up to 38.5°C, particularly in the evenings. The patient reports mild shortness of breath on exertion when climbing stairs. There is no chest pain and no haemoptysis. Tried paracetamol and increased fluids with minimal improvement. Unable to attend work for the past 2 days due to fatigue and cough. No recent travel and no sick contacts identified.
 
 Past Medical History:
-- Asthma (well-controlled)
-- Hypertension`;
+The patient has a history of asthma which is well-controlled, and hypertension.
+
+Medications:
+Current medications include salbutamol inhaler 100mcg as needed for asthma, and amlodipine 5mg once daily for hypertension.
+
+Allergies:
+No known drug allergies.
+
+Social History:
+Non-smoker. Drinks alcohol socially. Works as a teacher.
+
+Examination Findings:
+Temperature 37.8°C. Respiratory rate 18 per minute. Oxygen saturations 96% on room air. Chest examination revealed coarse crackles in the right lower zone. No wheeze heard. Cardiovascular examination unremarkable.
+
+Assessment:
+Lower respiratory tract infection, likely community-acquired pneumonia affecting the right lower lobe.
+
+Plan:
+Started on oral amoxicillin 500mg three times daily for 7 days. Advised to continue regular paracetamol for fever and pain relief. Encouraged to maintain good fluid intake and rest. Safety netting advice provided regarding worsening breathlessness, chest pain, or persistent high fever. Advised to return if symptoms worsen or do not improve within 48 hours. Fit note provided for 5 days.`;
 
             userPrompt = `Create a structured clinical summary from this GP consultation transcript:\n\n${transcript}`;
         }
