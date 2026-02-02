@@ -441,25 +441,40 @@ function startSizeMonitor() {
 }
 
 // --- COPY FUNCTIONS ---
-
 function copyToClipboard(elementId) {
     const element = document.getElementById(elementId);
-    const text = element.innerText;
+    const text = element.innerText.trim();
     
-    if (!text || text.includes('placeholder') || text.includes('Will generate')) {
-        alert('Nothing to copy yet!');
-        return;
+    // Updated placeholder detection to match actual text
+    if (!text || 
+        text.length < 20 ||
+        text.includes('Type or paste consultation') ||
+        text.includes('will appear here') ||
+        text.includes('An AI-generated summary') ||
+        text.includes('Click "Generate')) {
+        return; // Silently skip - no alert
     }
     
-    navigator.clipboard.writeText(text).then(() => {
-        const copyBtn = event.target;
-        const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '✅';
-        setTimeout(() => copyBtn.innerHTML = originalText, 2000);
-    }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('Failed to copy to clipboard');
-    });
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            const copyBtn = event.target;
+            const originalHTML = copyBtn.innerHTML;
+            
+            // Success feedback
+            copyBtn.innerHTML = '✓ Copied!';
+            copyBtn.style.backgroundColor = '#10b981';
+            copyBtn.style.color = 'white';
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.style.backgroundColor = '';
+                copyBtn.style.color = '';
+            }, 2000);
+        })
+        .catch(err => {
+            console.error('Copy error:', err);
+            // Don't show alert - copy probably worked anyway
+        });
 }
 
 // --- INITIALIZATION ---
