@@ -177,12 +177,12 @@ SECTION FORMATTING:
 
 SPECIFIC SECTION GUIDANCE:
 
-**Presenting Complaint:**
+Presenting Complaint:
 - Keep this brief (1-2 lines)
 - Just the main symptom/problem
 - Example: "3-day history of productive cough and fever"
 
-**History of Presenting Complaint:**
+History of Presenting Complaint:
 - THIS SECTION SHOULD BE DETAILED AND COMPREHENSIVE
 - Write in PROSE format with full sentences, NOT bullet points
 - Include ALL relevant details from the consultation
@@ -197,7 +197,7 @@ SPECIFIC SECTION GUIDANCE:
 - Write as 2-4 flowing paragraphs
 - Be thorough - this is the most important clinical section
 
-**Other sections:**
+Other sections:
 - Past Medical History: List conditions as prose (e.g., "The patient has a history of asthma and hypertension")
 - Medications: Write as sentences (e.g., "Current medications include ramipril 5mg once daily and salbutamol inhaler as needed")
 - Allergies: Write as prose (e.g., "No known drug allergies" or "Allergic to penicillin with rash reaction")
@@ -205,6 +205,11 @@ SPECIFIC SECTION GUIDANCE:
 - Examination Findings: Describe what was examined and found in prose
 - Assessment: Clinical impression/diagnosis in prose
 - Plan: Describe what was decided in prose
+
+IMPORTANT - FLAG UNCERTAINTY:
+- Do not make up or assume clinical details not present in the transcript
+- If any clinically important details were ambiguous or not captured (e.g. allergies not mentioned, medications not listed, examination not performed), add a brief note at the very end of the summary under a plain-text heading "Recording Notes:" listing what could not be captured
+- Only include "Recording Notes:" if there is something genuinely worth flagging — do not add it if the transcript was complete
 
 DO NOT INCLUDE:
 - QOF outcomes section
@@ -252,7 +257,7 @@ Started on oral amoxicillin 500mg three times daily for 7 days. Advised to conti
         }
 
         console.log('Calling OpenRouter API...');
-        console.log('Using model: deepseek/deepseek-chat');
+        console.log('Using model: deepseek/deepseek-v3.2');
 
         // Call OpenRouter API
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -260,11 +265,11 @@ Started on oral amoxicillin 500mg three times daily for 7 days. Advised to conti
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://ambientdoc.vercel.app',
+                'HTTP-Referer': 'https://echodoc.vercel.app',
                 'X-Title': 'EchoDoc Clinical Scribe'
             },
             body: JSON.stringify({
-                model: 'deepseek/deepseek-chat',
+                model: 'deepseek/deepseek-v3.2',
                 messages: [
                     {
                         role: 'system',
@@ -276,7 +281,7 @@ Started on oral amoxicillin 500mg three times daily for 7 days. Advised to conti
                     }
                 ],
                 temperature: 0.3,
-                max_tokens: 2000
+                max_tokens: 4000
             })
         });
 
