@@ -105,7 +105,7 @@ export default async function handler(req, res) {
 
         // Build Deepgram API URL with medical model
         const deepgramUrl = new URL('https://api.deepgram.com/v1/listen');
-        deepgramUrl.searchParams.append('model', 'nova-2-medical'); // Medical-specific model
+        deepgramUrl.searchParams.append('model', 'nova-3-medical'); // Medical-specific model (upgraded from nova-2-medical)
         deepgramUrl.searchParams.append('language', 'en-GB'); // British English
         deepgramUrl.searchParams.append('punctuate', 'true'); // Auto-punctuation
         deepgramUrl.searchParams.append('paragraphs', 'true'); // Paragraph breaks
@@ -113,7 +113,7 @@ export default async function handler(req, res) {
         deepgramUrl.searchParams.append('diarize', 'false'); // Single speaker for now
 
         console.log('Sending to Deepgram API...');
-        console.log('Model: nova-2-medical (medical terminology)');
+        console.log('Model: nova-3-medical (upgraded - improved medical terminology accuracy)');
         console.log('Language: en-GB (British English)');
         console.log('Audio size:', audioSizeMB.toFixed(2), 'MB');
 
@@ -190,7 +190,7 @@ export default async function handler(req, res) {
             confidence: confidence,
             words: words,
             provider: 'deepgram',
-            model: 'nova-2-medical'
+            model: 'nova-3-medical'
         });
 
     } catch (error) {
