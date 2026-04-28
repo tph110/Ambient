@@ -22,6 +22,7 @@ export default async function handler(req, res) {
 
         const today = new Date().toLocaleDateString('en-GB', {
             day: 'numeric', month: 'long', year: 'numeric'
+        }); // e.g. "28 April 2026"
 
         const systemPrompt = `You are an expert UK GP writing a professional referral letter to a specialist in secondary care.
 
