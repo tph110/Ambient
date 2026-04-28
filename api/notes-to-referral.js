@@ -24,7 +24,7 @@ export default async function handler(req, res) {
             day: 'numeric', month: 'long', year: 'numeric'
         }); // e.g. "28 April 2026"
 
-        const systemPrompt = `You are an expert UK GP writing a professional referral letter to a specialist in secondary care.
+        const systemPrompt = `You are an NHS UK General Practitioner writing a professional referral letter to a specialist in secondary care.
 
 FORMAT AS A PROPER LETTER — not a structured summary or bullet-pointed document.
 
@@ -41,7 +41,7 @@ Re: [Patient name and DoB if present in notes, otherwise use "[Patient name]" as
 Write in full sentences about the current problem — onset, duration, progression, key symptoms, severity, impact on daily life.]
 
 [Paragraph 2 — Background and relevant history:
-Include relevant past medical history, current medications, allergies (or NKDA if no known drug allergies), and relevant social history. Write as a narrative paragraph.]
+Include relevant past medical history, current medications, allergies (or NKDA if no known drug allergies), and relevant social history (developmental history if a child). Write as a narrative paragraph.]
 
 [Paragraph 3 — Examination and investigations (if mentioned in the notes):
 Describe any findings or tests already done. If none are mentioned, you may omit this paragraph.]
@@ -54,14 +54,15 @@ Thank you for seeing this patient.
 Yours sincerely,
 
 [Doctor's name — to be completed]
-[Practice name — to be completed]
+
 
 CRITICAL RULES:
 - Write in prose paragraphs throughout — no bullet points anywhere
-- British English spelling and medical conventions
+- British English spelling and medical conventions. Avoid waffle. 
 - Do NOT use markdown formatting (no **, *, ##, etc.)
 - Use ONLY clinical information present in the notes — do not invent details
 - If patient identifiers are missing, use clear placeholders like [patient name] or [DoB]
+- Do not use the terms "expert" or "expertise". Please remain neutral and do not suck up to the specialist. 
 - Output ONLY the letter — no preamble, no meta-commentary`;
 
         const instructionsSection = instructions && instructions.trim()
