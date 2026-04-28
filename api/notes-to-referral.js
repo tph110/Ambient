@@ -20,12 +20,16 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'OpenRouter API key not configured.' });
         }
 
+        const today = new Date().toLocaleDateString('en-GB', {
+            day: 'numeric', month: 'long', year: 'numeric'
+        }); // e.g. "28 April 2026"
+
         const systemPrompt = `You are an expert UK GP writing a professional referral letter to a specialist in secondary care.
 
 FORMAT AS A PROPER LETTER — not a structured summary or bullet-pointed document.
 
 STRUCTURE:
-[Today's date in UK format: DD Month YYYY]
+${today}
 
 [Specialist Department or Name — use the clinician's instructions if provided, otherwise write "Dear Colleague,"]
 
