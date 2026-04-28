@@ -1,384 +1,271 @@
-// Letter Dictation App - dictation.js
-
-// DOM Elements
-const startBtn = document.getElementById('startBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const stopBtn = document.getElementById('stopBtn');
-const transcriptDiv = document.getElementById('transcript');
-const formattedLetterDiv = document.getElementById('formattedLetter');
-const statusDiv = document.getElementById('status');
-const formatLetterBtn = document.getElementById('formatLetterBtn');
-const clearTranscriptBtn = document.getElementById('clearTranscript');
-const copyLetterBtn = document.getElementById('copyLetter');
-const downloadLetterBtn = document.getElementById('downloadLetter');
-const letterTypeSelect = document.getElementById('letterType');
-
-// State
-let mediaRecorder = null;
-let audioChunks = [];
-let isRecording = false;
-let isPaused = false;
-let finalTranscript = '';
-let formattedLetter = '';
-let recordingStartTime = null;
-let recordingTimer = null;
-let selectedMicId = null;
-let sizeMonitorInterval = null;
-
-// UPDATED: More conservative size limits accounting for base64 overhead
-const MAX_RAW_AUDIO_SIZE_MB = 3;  // Raw audio limit (becomes ~4MB when base64 encoded)
-const MAX_BASE64_SIZE_MB = 4.5;   // Vercel's limit
-
-// --- MICROPHONE MANAGEMENT ---
-
-async function populateMicrophoneDropdown() {
-    const dropdown = document.getElementById('microphoneDropdown');
-    if (!dropdown) return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letter Dictation - EchoDoc</title>
+    <meta name="description" content="Voice dictation for writing letters with automatic formatting">
     
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
-
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const microphones = devices.filter(device => device.kind === 'audioinput');
-        
-        dropdown.innerHTML = '';
-        if (microphones.length === 0) {
-            dropdown.innerHTML = '<option value="">No microphones detected</option>';
-            dropdown.disabled = true;
-            return;
-        }
-        
-        microphones.forEach((mic, index) => {
-            const option = document.createElement('option');
-            option.value = mic.deviceId;
-            option.textContent = mic.label || `Microphone ${index + 1}`;
-            if (mic.deviceId === 'default' || index === 0) {
-                option.selected = true;
-                selectedMicId = mic.deviceId;
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dictation-style.css">
+    
+    <style>
+        /* Force two-column layout on desktop */
+        @media screen and (min-width: 1024px) {
+            .dictation-container {
+                display: grid !important;
+                grid-template-columns: 380px 1fr !important;
+                gap: 32px !important;
             }
-            dropdown.appendChild(option);
-        });
-    } catch (error) {
-        console.error('Error detecting microphones:', error);
-        statusDiv.textContent = 'Microphone access denied. Please allow microphone access.';
-    }
-}
-
-function handleMicrophoneSelection() {
-    const dropdown = document.getElementById('microphoneDropdown');
-    if (dropdown) selectedMicId = dropdown.value;
-}
-
-// --- RECORDING LOGIC ---
-
-async function startRecording() {
-    try {
-        const constraints = {
-            audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        
-        // Use more aggressive compression
-        let options;
-        const preferredCodecs = [
-            { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 12000 },
-            { mimeType: 'audio/ogg;codecs=opus', audioBitsPerSecond: 12000 },
-            { mimeType: 'audio/webm', audioBitsPerSecond: 12000 }
-        ];
-
-        for (const codec of preferredCodecs) {
-            if (MediaRecorder.isTypeSupported(codec.mimeType)) {
-                options = codec;
-                break;
+            aside.panel-left { 
+                grid-column: 1 !important; 
+                position: sticky !important; 
+                top: 100px !important;
+            }
+            main.panel-right { 
+                grid-column: 2 !important; 
             }
         }
 
-        mediaRecorder = new MediaRecorder(stream, options);
-        audioChunks = [];
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) audioChunks.push(event.data);
-        };
-
-        mediaRecorder.onstop = processRecording;
-        mediaRecorder.start();
-        
-        isRecording = true;
-        isPaused = false;
-        recordingStartTime = Date.now();
-        
-        // Reset button state for new session
-        if (formatLetterBtn) {
-            formatLetterBtn.disabled = true;
+        /* Professional Letter Type Selector */
+        .letter-type-selector-pro {
+            margin-bottom: 20px;
         }
 
-        updateUI();
-        startTimer();
-        startSizeMonitor();
-        
-    } catch (err) {
-        console.error("Error starting recording:", err);
-        statusDiv.textContent = "Recording failed";
-        alert("Could not start recording. Please check microphone permissions and try again.");
-    }
-}
+        .letter-type-selector-pro label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-function stopRecording() {
-    if (mediaRecorder && isRecording) {
-        mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(track => track.stop());
-        isRecording = false;
-        isPaused = false;
-        clearInterval(recordingTimer);
-        clearInterval(sizeMonitorInterval);
-        updateUI();
-    }
-}
+        .select-wrapper {
+            position: relative;
+            display: block;
+        }
 
-async function processRecording() {
-    statusDiv.textContent = "Preparing audio for transcription...";
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        .letter-type-dropdown-pro {
+            width: 100%;
+            padding: 12px 40px 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1e293b;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            font-family: inherit;
+        }
+
+        .letter-type-dropdown-pro:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .letter-type-dropdown-pro:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .select-arrow {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #64748b;
+            font-size: 0.7rem;
+        }
+
+        /* Dark Mode Overrides */
+        body.dark-mode .letter-type-selector-pro label { color: #94a3b8; }
+        body.dark-mode .letter-type-dropdown-pro {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f1f5f9;
+        }
+        body.dark-mode .letter-type-dropdown-pro:hover { background: #0f172a; }
+        body.dark-mode .select-arrow { color: #94a3b8; }
+
+        .ai-disclaimer {
+            background: transparent !important;
+            color: #94a3b8 !important;
+            border: none !important;
+            padding: 8px 0 !important;
+            font-size: 0.875rem !important;
+        }
+
+        body.dark-mode .ai-disclaimer { color: #64748b !important; }
+        body.dark-mode .mic-select-container-inline label { color: #f1f5f9 !important; }
+
+        /* Hub Styling */
+        .hub-status-text {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
     
-    // Check raw audio size
-    const rawSizeMB = audioBlob.size / (1024 * 1024);
-    console.log(`Raw audio size: ${rawSizeMB.toFixed(2)} MB`);
-    
-    if (rawSizeMB > MAX_RAW_AUDIO_SIZE_MB) {
-        statusDiv.textContent = "Recording too long";
-        alert(`Recording is too large (${rawSizeMB.toFixed(1)}MB). Please keep recordings under ${MAX_RAW_AUDIO_SIZE_MB}MB (about ${Math.floor(MAX_RAW_AUDIO_SIZE_MB * 8 * 60 / 12)} minutes).\n\nTip: Dictate shorter letters or split long content.`);
-        return;
-    }
-    
-    try {
-        statusDiv.textContent = "Transcribing dictation...";
-        
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = async () => {
-            const base64Audio = reader.result.split(',')[1];
-            const base64SizeMB = (base64Audio.length * 0.75) / (1024 * 1024);
-            
-            console.log(`Base64 size: ${base64SizeMB.toFixed(2)} MB`);
-            
-            if (base64SizeMB > MAX_BASE64_SIZE_MB) {
-                statusDiv.textContent = "Audio file too large";
-                alert(`Encoded audio is too large for transmission (${base64SizeMB.toFixed(1)}MB). Maximum is ${MAX_BASE64_SIZE_MB}MB.\n\nPlease dictate a shorter letter.`);
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/transcribe', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ audioBlob: base64Audio })
-                });
-
-                // Check if response is JSON before parsing
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const errorText = await response.text();
-                    console.error('Non-JSON response:', errorText);
-                    throw new Error(`Server returned non-JSON response (${response.status}). This may indicate a file size or server error.`);
-                }
-
-                const data = await response.json();
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="brand">
+                <div class="brand-text">
+                    <h1>EchoDoc <span class="badge">AI Dictation</span></h1>
+                    <p class="brand-motto">Effortlessly dictate letters and let EchoDoc handle the rest</p>
+                </div>
+            </div>
+            <div class="navbar-right">
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">Clinical Scribe</a>
+                    <a href="dictation.html" class="nav-link active">AI Dictation</a>
+                    <a href="notes-referral.html" class="nav-link">Notes to Referral</a>
+                </div>
                 
-                if (!response.ok) {
-                    throw new Error(data.error || `Transcription failed with status ${response.status}`);
-                }
+                <div class="status-indicator" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span id="timerElapsed">0:00</span>
+                </div>
                 
-                if (data.text) {
-                    finalTranscript = data.text.trim();
+                <div class="dark-mode-toggle">
+                    <label class="dark-mode-label">
+                        <input type="checkbox" id="darkModeCheckbox" class="dark-mode-checkbox">
+                        <span class="dark-mode-slider"></span>
+                        <span class="dark-mode-icon">🌙</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dictation-container">
+        <aside class="panel-left">
+            <div class="card control-card">
+                <div class="card-header">
+                    <h2>Dictation Controls</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mic-select-container-inline">
+                        <label for="microphoneDropdown">Audio input:</label>
+                        <select id="microphoneDropdown" class="mic-dropdown">
+                            <option value="">Loading microphones...</option>
+                        </select>
+                    </div>
                     
-                    // Update Transcript Text
-                    transcriptDiv.innerHTML = `<p>${finalTranscript}</p>`;
+                    <div class="letter-type-selector-pro">
+                        <label for="letterType">Select Letter Type</label>
+                        <div class="select-wrapper">
+                            <select id="letterType" class="letter-type-dropdown-pro">
+                                <option value="free-text">Free Text (No Formatting)</option>
+                                <option value="general">General Letter</option>
+                                <option value="meeting-minutes">Meeting Minutes</option>
+                                <option value="referral">Referral Letter</option>
+                                <option value="sick-note">Sick Note / Fit Note</option>
+                                <option value="to-whom">To Whom It May Concern</option>
+                                <option value="patient">Letter to Patient</option>
+                            </select>
+                            <span class="select-arrow">▼</span>
+                        </div>
+                    </div>
                     
-                    // ENABLE the Generate button
-                    if (formatLetterBtn) {
-                        formatLetterBtn.disabled = false;
-                        statusDiv.textContent = "Transcription ready. Click 'Generate Letter'.";
-                    }
-                } else {
-                    throw new Error('No transcript returned from API');
-                }
-            } catch (err) {
-                console.error('Transcription error:', err);
-                statusDiv.textContent = "Transcription failed";
-                
-                let errorMessage = "Transcription failed. ";
-                if (err.message.includes('413') || err.message.includes('Payload Too Large')) {
-                    errorMessage += "The audio file is too large. Please dictate a shorter letter.";
-                } else if (err.message.includes('Failed to fetch') || err.message.includes('network')) {
-                    errorMessage += "Network error. Please check your connection and try again.";
-                } else {
-                    errorMessage += err.message;
-                }
-                
-                alert(errorMessage);
-            }
-        };
+                    <div class="status" id="status">Ready to dictate</div>
+                    
+                    <div class="button-group-controls">
+                        <button id="startBtn" class="btn btn-record">
+                            <span class="record-icon"></span> Start Dictating
+                        </button>
+                        <button id="pauseBtn" class="btn btn-pause" style="display: none;">
+                            <span class="pause-icon"></span> Pause
+                        </button>
+                        <button id="stopBtn" class="btn btn-stop" style="display: none;">
+                            <span class="stop-icon"></span> Finish
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card commands-card">
+                <div class="card-header"><h2>Voice Commands</h2></div>
+                <div class="card-body">
+                    <div class="commands-list">
+                        <div class="command-item"><span class="command-say">"New paragraph"</span><span class="command-result">→ New Para</span></div>
+                        <div class="command-item"><span class="command-say">"Full stop"</span><span class="command-result">→ Add (.)</span></div>
+                        <div class="command-item"><span class="command-say">"Comma"</span><span class="command-result">→ Add (,)</span></div>
+                    </div>
+                    <p class="commands-note">AI will handle formatting automatically</p>
+                </div>
+            </div>
+        </aside>
         
-        reader.onerror = () => {
-            statusDiv.textContent = "Failed to read audio file";
-            alert("Failed to process audio file. Please try recording again.");
-        };
-        
-    } catch (err) {
-        statusDiv.textContent = "Processing failed";
-        console.error('Processing error:', err);
-        alert("Failed to process recording: " + err.message);
-    }
-}
-
-// --- AI FORMATTING ---
-
-async function formatLetter() {
-    // 1. Grab text directly from the transcription box
-    const transcriptBox = document.getElementById('transcript');
-    const rawText = transcriptBox ? transcriptBox.innerText.trim() : "";
-
-    // 2. Safety check: Don't run if empty or placeholder
-    if (!rawText || rawText.includes("Your dictation will appear")) {
-        alert("Please dictate some text first!");
-        return;
-    }
-
-    // 3. UI Feedback
-    const btn = formatLetterBtn;
-    const outputArea = document.getElementById('formattedLetter');
-    const originalText = btn.innerHTML;
+        <main class="panel-right">
+            <div class="card transcript-card">
+                <div class="card-header">
+                    <h2>Raw Transcription</h2>
+                    <button id="clearTranscript" class="btn-icon" title="Clear">🗑️</button>
+                </div>
+                <div class="card-body">
+                    <div id="transcript" class="transcript-box" contenteditable="true">
+                        <p class="placeholder">Your dictation will appear here as raw text...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card letter-card">
+                <div class="card-header">
+                    <div class="header-main">
+                        <h3>Formatted Letter</h3>
+                        <button id="formatLetterBtn" class="btn-accent-small" disabled>
+                            ✨ Generate Letter
+                        </button>
+                    </div>
+                    <div class="letter-actions">
+                        <button id="copyLetter" class="btn-icon copy-btn" title="Copy">📋</button>
+                        <button id="downloadLetter" class="btn-icon download-btn" title="Download">💾</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="ai-disclaimer">AI can make mistakes. Verify clinical content.</p>
+                    <div id="formattedLetter" class="letter-content" contenteditable="true">
+                        <p class="placeholder">Formatted letter will appear here after clicking 'Generate'...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
     
-    btn.innerHTML = "⏳ AI is formatting...";
-    btn.disabled = true;
-    outputArea.style.opacity = "0.5";
-    statusDiv.textContent = "Generating formatted letter...";
+    <footer class="footer">
+        <div class="footer-content">
+            <p>EchoDoc © 2025 | Letter Dictation Tool</p>
+        </div>
+    </footer>
 
-    try {
-        const response = await fetch('/api/format-letter', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                transcript: rawText,
-                letterType: document.getElementById('letterType').value
-            })
+    <script>
+        // Dark Mode Toggle Logic
+        const darkModeCheckbox = document.getElementById('darkModeCheckbox');
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeCheckbox.checked = true;
+        }
+        darkModeCheckbox.addEventListener('change', function() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', this.checked ? 'enabled' : 'disabled');
         });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || `API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (data.letter) {
-            // Success! Update the UI
-            outputArea.innerHTML = data.letter.replace(/\n/g, '<br>');
-            statusDiv.textContent = "Letter generated successfully.";
-            btn.innerHTML = "🔄 Regenerate Letter";
-        } else {
-            throw new Error('No letter returned from API');
-        }
-    } catch (err) {
-        console.error("Error:", err);
-        statusDiv.textContent = "Letter generation failed.";
-        alert("AI formatting failed: " + err.message + "\n\nPlease check your connection and try again.");
-    } finally {
-        // Reset button
-        btn.disabled = false;
-        outputArea.style.opacity = "1";
-    }
-}
-
-// --- UI HELPERS & LISTENERS ---
-
-function updateUI() {
-    startBtn.style.display = isRecording ? 'none' : 'flex';
-    pauseBtn.style.display = isRecording ? 'flex' : 'none';
-    stopBtn.style.display = isRecording ? 'flex' : 'none';
-    statusDiv.textContent = isRecording ? (isPaused ? "Paused" : "Recording...") : "Ready";
-    
-    if (isRecording) {
-        statusDiv.classList.add('recording');
-    } else {
-        statusDiv.classList.remove('recording');
-    }
-}
-
-function startTimer() {
-    const timerDisplay = document.getElementById('timerElapsed');
-    if (recordingTimer) clearInterval(recordingTimer);
-    
-    recordingTimer = setInterval(() => {
-        const elapsed = Date.now() - recordingStartTime;
-        const mins = Math.floor(elapsed / 60000);
-        const secs = Math.floor((elapsed % 60000) / 1000);
-        if (timerDisplay) timerDisplay.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
-    }, 1000);
-}
-
-function startSizeMonitor() {
-    sizeMonitorInterval = setInterval(() => {
-        if (audioChunks.length === 0) return;
-        const size = new Blob(audioChunks).size / (1024 * 1024);
-        
-        // Auto-stop if too large
-        if (size >= MAX_RAW_AUDIO_SIZE_MB) {
-            console.warn('Recording size limit reached, auto-stopping');
-            stopRecording();
-            alert(`Recording stopped automatically - reached ${MAX_RAW_AUDIO_SIZE_MB}MB limit.\n\nProcessing your audio now...`);
-        }
-    }, 2000);
-}
-
-function copyLetter() {
-    const text = formattedLetterDiv.innerText;
-    if (!text || text.includes("Formatted letter will appear")) {
-        alert("No letter to copy yet!");
-        return;
-    }
-    
-    navigator.clipboard.writeText(text).then(() => {
-        const originalText = copyLetterBtn.innerHTML;
-        copyLetterBtn.innerHTML = '✅';
-        setTimeout(() => copyLetterBtn.innerHTML = originalText, 2000);
-    }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('Failed to copy to clipboard');
-    });
-}
-
-// --- INITIALIZATION ---
-
-document.addEventListener('DOMContentLoaded', () => {
-    populateMicrophoneDropdown();
-    
-    startBtn.addEventListener('click', startRecording);
-    stopBtn.addEventListener('click', stopRecording);
-    
-    // Attach event listener to the correct button
-    if (formatLetterBtn) {
-        formatLetterBtn.addEventListener('click', formatLetter);
-    }
-    
-    if (copyLetterBtn) {
-        copyLetterBtn.addEventListener('click', copyLetter);
-    }
-    
-    // Clear functionality
-    if (clearTranscriptBtn) {
-        clearTranscriptBtn.addEventListener('click', () => {
-            if (confirm("Clear transcription?")) {
-                transcriptDiv.innerHTML = '<p class="placeholder">Your dictation will appear here...</p>';
-                finalTranscript = '';
-                if (formatLetterBtn) {
-                    formatLetterBtn.disabled = true;
-                }
-            }
-        });
-    }
-    
-    const micDropdown = document.getElementById('microphoneDropdown');
-    if (micDropdown) micDropdown.addEventListener('change', handleMicrophoneSelection);
-    
-    updateUI();
-});
+    </script>
+    <script src="dictation.js"></script>
+</body>
+</html>
