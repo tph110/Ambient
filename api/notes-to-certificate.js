@@ -44,16 +44,17 @@ Your task is to read the consultation notes and return a JSON object with EXACTL
   "impactWrittenExams": "Impact on sitting written examinations. Write 'None' if no impact.",
   "impactOralExams": "Impact on sitting oral or practical examinations. Write 'None' if no impact.",
   "impactOther": "Any other impacts not covered above. Write 'None' if no other impacts.",
-  "examArrangements": "none" or "all" or "time_period" or "exam_type" — whether alternative exam arrangements are recommended,
-  "examTimePeriod": "If time_period selected: specify dates. Otherwise empty string.",
+  "examArrangements": "none" or "all" or "time_period" or "exam_type" — whether alternative arrangements or deadline extensions are needed. Use "time_period" if the notes mention a deadline extension or specific time period of difficulty. Use "all" if arrangements are needed for all assessments. Use "exam_type" for specific types only. Use "none" only if no arrangements or extensions are mentioned.",
+  "examTimePeriod": "If time_period selected: specify the extension or period clearly, e.g. '3-week extension to Trinity term essay deadline from 2 May 2026'. Otherwise empty string.",
   "examType": "If exam_type selected: specify which types. Otherwise empty string.",
-  "examRecommendations": "Optional: specific recommendations for adjustments e.g. extra time, rest breaks, separate room, use of word processor. Be specific and clinically justified. Write empty string if none."
+  "examRecommendations": "Specific recommendations for adjustments or extensions, clinically justified. Include any deadline extensions mentioned in the notes with exact dates if given. Write empty string if none."
 }
 
 RULES:
 - Base ALL answers strictly on the consultation notes provided. Do not invent clinical details.
 - For impact fields: describe the degree of difficulty (mild/moderate/severe) and whether it is consistent or fluctuating.
 - For diagnosis: write clearly for a University administrator who is not medically trained.
+- IMPORTANT: If the notes mention a deadline extension, essay extension, or any specific accommodation request, always set examArrangements to "time_period" or "exam_type" as appropriate — never "none".
 - Return ONLY the JSON object — no markdown, no preamble, no explanation.`;
 
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
