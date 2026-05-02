@@ -155,7 +155,7 @@ IMPORTANT FORMATTING RULES:
 - Use appropriate medical terminology
 - Format for direct copy-paste into EMIS/SystmOne
 
-CRITICAL: DO NOT USE HYPHENS OR BULLET POINTS. Write in prose format with full sentences.
+CRITICAL: DO NOT USE HYPHENS OR BULLET POINTS, except in the History of Presenting Complaint section which should use bullet points. All other sections must be written in prose format with full sentences.
 
 REQUIRED SECTIONS (in this order):
 1. Presenting Complaint
@@ -184,9 +184,8 @@ Presenting Complaint:
 
 History of Presenting Complaint:
 - THIS SECTION SHOULD BE DETAILED AND COMPREHENSIVE
-- Write in PROSE format with full sentences, NOT bullet points
+- Write as BULLET POINTS, one per clinical detail
 - Include ALL relevant details from the consultation
-- Capture the full narrative of how the complaint developed
 - Include timeline (when it started, how it progressed)
 - Include character of symptoms (sharp/dull pain, colour of sputum, etc.)
 - Include severity and frequency
@@ -194,7 +193,7 @@ History of Presenting Complaint:
 - Include what the patient has tried already
 - Include associated symptoms
 - Include impact on daily activities/work/sleep
-- Write as 2-4 flowing paragraphs
+- Each bullet point should be a concise but complete clinical statement
 - Be thorough - this is the most important clinical section
 
 Other sections:
@@ -230,7 +229,14 @@ Presenting Complaint:
 3-day history of productive cough and fever
 
 History of Presenting Complaint:
-Symptoms began 3 days ago with rhinorrhoea and sore throat. This progressed to a productive cough with green sputum within 24 hours. The cough is worse at night and is affecting sleep quality. Fever has been documented up to 38.5°C, particularly in the evenings. The patient reports mild shortness of breath on exertion when climbing stairs. There is no chest pain and no haemoptysis. Tried paracetamol and increased fluids with minimal improvement. Unable to attend work for the past 2 days due to fatigue and cough. No recent travel and no sick contacts identified.
+- Symptoms began 3 days ago with rhinorrhoea and sore throat, progressing to productive cough within 24 hours
+- Cough productive of green sputum, worse at night and disrupting sleep
+- Fever documented up to 38.5°C, particularly in the evenings
+- Mild shortness of breath on exertion when climbing stairs
+- No chest pain, no haemoptysis
+- Tried paracetamol and increased fluids with minimal improvement
+- Unable to attend work for the past 2 days due to fatigue
+- No recent travel, no sick contacts identified
 
 Past Medical History:
 The patient has a history of asthma which is well-controlled, and hypertension.
