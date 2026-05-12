@@ -8,6 +8,7 @@ const notesInput = document.getElementById('notesInput');
 const certificateOutput = document.getElementById('certificateOutput');
 const statusMsg = document.getElementById('statusMsg');
 const darkModeCheckbox = document.getElementById('darkModeCheckbox');
+const copyBtnDefaultHtml = copyBtn.innerHTML;
 
 // --- DARK MODE ---
 const savedDark = localStorage.getItem('echodoc-dark-mode') === 'true';
@@ -163,7 +164,7 @@ function renderCertificate(cert, today) {
         <div class="cert-section">
             <div class="cert-section-title">Doctor's Details</div>
             <div class="doctor-block">
-                ✅ Your details, declaration, and today's date (<strong>${today}</strong>) are already pre-filled on the template. Sign and date as usual.
+                Your details, declaration, and today's date (<strong>${today}</strong>) are already pre-filled on the template. Sign and date as usual.
             </div>
         </div>
 
@@ -181,9 +182,9 @@ generateBtn.addEventListener('click', async () => {
     }
 
     generateBtn.disabled = true;
-    generateBtn.textContent = '⏳ Completing certificate...';
+    generateBtn.textContent = 'Completing certificate…';
     showStatus('Calling AI — usually takes 5–10 seconds...', 'info');
-    certificateOutput.innerHTML = '<div class="placeholder-cert"><p>⏳ Generating...</p></div>';
+    certificateOutput.innerHTML = '<div class="placeholder-cert"><p>Generating certificate…</p></div>';
 
     try {
         const response = await fetch('/api/notes-to-certificate', {
@@ -202,11 +203,11 @@ generateBtn.addEventListener('click', async () => {
 
     } catch (error) {
         console.error('Certificate error:', error);
-        certificateOutput.innerHTML = '<div class="placeholder-cert"><div class="placeholder-icon">🎓</div><p>Error generating certificate — please try again.</p></div>';
+        certificateOutput.innerHTML = '<div class="placeholder-cert"><div class="placeholder-icon" aria-hidden="true"></div><p>Error generating certificate — please try again.</p></div>';
         showStatus(`Error: ${error.message}`, 'error');
     } finally {
         generateBtn.disabled = false;
-        generateBtn.textContent = '🎓 Complete Certificate';
+        generateBtn.textContent = 'Complete certificate';
     }
 });
 
@@ -218,9 +219,13 @@ copyBtn.addEventListener('click', async () => {
     }
     try {
         await navigator.clipboard.writeText(certificateOutput.innerText);
-        copyBtn.textContent = '✅';
+        copyBtn.innerHTML = '<svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+        copyBtn.classList.add('is-copied');
         showStatus('Copied to clipboard.', 'success');
-        setTimeout(() => { copyBtn.textContent = '📋'; }, 2000);
+        setTimeout(() => {
+            copyBtn.innerHTML = copyBtnDefaultHtml;
+            copyBtn.classList.remove('is-copied');
+        }, 2000);
     } catch {
         showStatus('Copy failed — select and copy manually.', 'error');
     }
@@ -230,8 +235,8 @@ copyBtn.addEventListener('click', async () => {
 clearBtn.addEventListener('click', () => {
     certificateOutput.innerHTML = `
         <div class="placeholder-cert">
-            <div class="placeholder-icon">🎓</div>
-            <p>Paste consultation notes and click <strong>Complete Certificate</strong>.</p>
+            <div class="placeholder-icon" aria-hidden="true"></div>
+            <p>Paste consultation notes and click <strong>Complete certificate</strong>.</p>
             <p style="font-size: 0.8rem; margin-top: 8px;">All fields will be filled automatically. Add the patient name yourself before submitting.</p>
         </div>`;
     statusMsg.style.display = 'none';

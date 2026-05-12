@@ -385,7 +385,9 @@ function updateUI() {
     startBtn.style.display = isRecording ? 'none' : 'inline-block';
     pauseBtn.style.display = isRecording ? 'inline-block' : 'none';
     stopBtn.style.display = isRecording ? 'inline-block' : 'none';
-    pauseBtn.innerText = isPaused ? "Resume" : "Pause";
+    pauseBtn.innerHTML = isPaused
+        ? '<span class="pause-icon" aria-hidden="true"></span> Resume'
+        : '<span class="pause-icon" aria-hidden="true"></span> Pause';
     
     if (isRecording) {
         statusDiv.textContent = isPaused ? "Paused" : "Recording...";
@@ -427,7 +429,7 @@ function startSizeMonitor() {
             } else if (percent > 60) {
                 progressBar.style.background = '#f59e0b'; // orange
             } else {
-                progressBar.style.background = '#0284c7'; // blue
+                progressBar.style.background = '#0369a1';
             }
         }
         
@@ -457,18 +459,15 @@ function copyToClipboard(elementId) {
     
     navigator.clipboard.writeText(text)
         .then(() => {
-            const copyBtn = event.target;
+            const copyBtn = event.currentTarget;
             const originalHTML = copyBtn.innerHTML;
             
-            // Success feedback
-            copyBtn.innerHTML = '✓ Copied!';
-            copyBtn.style.backgroundColor = '#10b981';
-            copyBtn.style.color = 'white';
+            copyBtn.innerHTML = '<svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+            copyBtn.classList.add('is-copied');
             
             setTimeout(() => {
                 copyBtn.innerHTML = originalHTML;
-                copyBtn.style.backgroundColor = '';
-                copyBtn.style.color = '';
+                copyBtn.classList.remove('is-copied');
             }, 2000);
         })
         .catch(err => {

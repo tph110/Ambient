@@ -10,6 +10,7 @@ const instructionsInput = document.getElementById('instructionsInput');
 const letterOutput = document.getElementById('letterOutput');
 const statusMsg = document.getElementById('statusMsg');
 const darkModeCheckbox = document.getElementById('darkModeCheckbox');
+const copyBtnDefaultHtml = copyBtn.innerHTML;
 
 // --- DARK MODE ---
 function applyDarkMode(enabled) {
@@ -70,7 +71,7 @@ generateBtn.addEventListener('click', async () => {
 
     // UI: loading state
     generateBtn.disabled = true;
-    generateBtn.textContent = '⏳ Generating...';
+    generateBtn.textContent = 'Generating letter…';
     showStatus('Calling AI — this usually takes 5–15 seconds...', 'info');
     clearPlaceholder();
     letterOutput.textContent = '';
@@ -106,7 +107,7 @@ generateBtn.addEventListener('click', async () => {
         showStatus(`Error: ${error.message}`, 'error');
     } finally {
         generateBtn.disabled = false;
-        generateBtn.textContent = '✨ Generate Referral Letter';
+        generateBtn.textContent = 'Generate referral letter';
     }
 });
 
@@ -121,10 +122,12 @@ copyBtn.addEventListener('click', async () => {
 
     try {
         await navigator.clipboard.writeText(text);
-        copyBtn.textContent = '✅';
+        copyBtn.innerHTML = '<svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+        copyBtn.classList.add('is-copied');
         showStatus('Copied to clipboard.', 'success');
         setTimeout(() => {
-            copyBtn.textContent = '📋';
+            copyBtn.innerHTML = copyBtnDefaultHtml;
+            copyBtn.classList.remove('is-copied');
             hideStatus();
         }, 2000);
     } catch {

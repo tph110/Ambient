@@ -250,7 +250,7 @@ async function formatLetter() {
     const outputArea = document.getElementById('formattedLetter');
     const originalText = btn.innerHTML;
     
-    btn.innerHTML = "⏳ AI is formatting...";
+    btn.innerHTML = "Formatting letter…";
     btn.disabled = true;
     outputArea.style.opacity = "0.5";
     statusDiv.textContent = "Generating formatted letter...";
@@ -276,13 +276,14 @@ async function formatLetter() {
             // Success! Update the UI
             outputArea.innerHTML = data.letter.replace(/\n/g, '<br>');
             statusDiv.textContent = "Letter generated successfully.";
-            btn.innerHTML = "🔄 Regenerate Letter";
+            btn.innerHTML = "Regenerate letter";
         } else {
             throw new Error('No letter returned from API');
         }
     } catch (err) {
         console.error("Error:", err);
         statusDiv.textContent = "Letter generation failed.";
+        btn.innerHTML = originalText;
         alert("AI formatting failed: " + err.message + "\n\nPlease check your connection and try again.");
     } finally {
         // Reset button
@@ -341,8 +342,12 @@ function copyLetter() {
     
     navigator.clipboard.writeText(text).then(() => {
         const originalText = copyLetterBtn.innerHTML;
-        copyLetterBtn.innerHTML = '✅';
-        setTimeout(() => copyLetterBtn.innerHTML = originalText, 2000);
+        copyLetterBtn.innerHTML = '<svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+        copyLetterBtn.classList.add('is-copied');
+        setTimeout(() => {
+            copyLetterBtn.innerHTML = originalText;
+            copyLetterBtn.classList.remove('is-copied');
+        }, 2000);
     }).catch(err => {
         console.error('Failed to copy:', err);
         alert('Failed to copy to clipboard');

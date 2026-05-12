@@ -35,12 +35,12 @@
 
 /* Card base styles */
 .card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: var(--surface-color, #fff);
+    border-radius: var(--radius-lg, 14px);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 0.1));
     margin-bottom: 20px;
     overflow: hidden;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color, #e2e8f0);
 }
 
 .card-header {
@@ -55,7 +55,7 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--text-main, #1e293b);
 }
 
 .card-body {
@@ -80,7 +80,7 @@
 .letter-content {
     min-height: 400px;
     max-height: 800px;
-    font-family: 'Inter', serif;
+    font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
     line-height: 1.8;
 }
 
@@ -89,15 +89,15 @@
    ========================================== */
 
 .btn-accent-small {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, #075985 100%);
     color: white;
     border: none;
     padding: 8px 16px;
-    border-radius: 6px;
+    border-radius: var(--radius-md, 10px);
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -105,7 +105,7 @@
 
 .btn-accent-small:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(3, 105, 161, 0.35);
 }
 
 .btn-accent-small:disabled {
@@ -117,7 +117,7 @@
 
 /* Dark mode button styling */
 body.dark-mode .btn-accent-small {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, #075985 100%);
     color: white;
 }
 
@@ -211,20 +211,23 @@ body.dark-mode .ai-disclaimer {
 
 .btn-icon {
     background: transparent;
-    border: none;
-    font-size: 1.2rem;
+    border: 1px solid transparent;
+    font-size: 1rem;
     cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
+    padding: 8px 10px;
+    border-radius: var(--radius-md, 10px);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    color: var(--text-secondary);
 }
 
 .btn-icon:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: var(--primary-muted);
+    color: var(--primary-color);
 }
 
 body.dark-mode .btn-icon:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--primary-muted);
+    color: var(--primary-color);
 }
 
 /* Commands card styling */
